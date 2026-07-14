@@ -1,0 +1,87 @@
+{
+  "pipelineId": "TC-SCA-025",
+  "runId": "sca-20260518-134944",
+  "dryRun": true,
+  "cveId": "CVE-2024-22120",
+  "sourceFile": "samples/cve-2024-22120/audit.c",
+  "outputDir": "reports/TC-SCA-025",
+  "steps": [
+    {
+      "stepId": "cve_consistency",
+      "name": "CVE 数据一致性检查",
+      "command": "python3 scripts/root_cause_analysis.py /home/ubuntu/securecodeact/samples/cve-2024-22120/audit.c",
+      "outputDir": "/home/ubuntu/securecodeact/reports/TC-SCA-025",
+      "artifacts": []
+    },
+    {
+      "stepId": "cpg_analysis",
+      "name": "Joern CPG 分析",
+      "command": "bash scripts/joern_cpg_smoke.sh /home/ubuntu/securecodeact/samples/cve-2024-22120/audit.c",
+      "outputDir": "/home/ubuntu/securecodeact/reports/TC-SCA-025/cpg",
+      "artifacts": [
+        "/home/ubuntu/securecodeact/reports/TC-SCA-025/cpg/joern-cpg.json"
+      ]
+    },
+    {
+      "stepId": "poc_gate",
+      "name": "PoC 安全闸门",
+      "command": "python3 scripts/poc_gate.py CVE-2024-22120 /home/ubuntu/securecodeact/reports/TC-SCA-025/poc/sample_poc.py --no-require-sandbox --output /home/ubuntu/securecodeact/reports/TC-SCA-025/poc",
+      "outputDir": "/home/ubuntu/securecodeact/reports/TC-SCA-025/poc",
+      "artifacts": [
+        "/home/ubuntu/securecodeact/reports/TC-SCA-025/poc/poc_audit.jsonl"
+      ]
+    },
+    {
+      "stepId": "patch_generate",
+      "name": "Patch 生成",
+      "command": "python3 scripts/gen_fix_patch.py /home/ubuntu/securecodeact/samples/cve-2024-22120/audit.c --cve CVE-2024-22120 --output /home/ubuntu/securecodeact/reports/TC-SCA-025/patch/patch.diff",
+      "outputDir": "reports/TC-SCA-025",
+      "artifacts": [
+        "/home/ubuntu/securecodeact/reports/TC-SCA-025/patch/patch.diff"
+      ]
+    },
+    {
+      "stepId": "patch_guard",
+      "name": "Patch 安全检查",
+      "command": "python3 scripts/patch_guard.py /home/ubuntu/securecodeact/reports/TC-SCA-025/patch/patch.diff --policy configs/patch_policy.yaml --output /home/ubuntu/securecodeact/reports/TC-SCA-025/patch/patch-guard.json",
+      "outputDir": "reports/TC-SCA-025",
+      "artifacts": [
+        "/home/ubuntu/securecodeact/reports/TC-SCA-025/patch/patch-guard.json"
+      ]
+    },
+    {
+      "stepId": "patch_apply_check",
+      "name": "Patch 预检查",
+      "command": "python3 scripts/patch_apply.py /home/ubuntu/securecodeact/samples/cve-2024-22120/audit.c --diff /home/ubuntu/securecodeact/reports/TC-SCA-025/patch/patch.diff --check --output-dir /home/ubuntu/securecodeact/reports/TC-SCA-025/patch",
+      "outputDir": "reports/TC-SCA-025",
+      "artifacts": [
+        "/home/ubuntu/securecodeact/reports/TC-SCA-025/patch/patch-apply-result.json"
+      ]
+    },
+    {
+      "stepId": "patch_apply",
+      "name": "Patch 临时工作区应用",
+      "command": "python3 scripts/patch_apply.py /home/ubuntu/securecodeact/samples/cve-2024-22120/audit.c --diff /home/ubuntu/securecodeact/reports/TC-SCA-025/patch/patch.diff --apply --workdir /home/ubuntu/securecodeact/reports/TC-SCA-025/patch/workdir --output-dir /home/ubuntu/securecodeact/reports/TC-SCA-025/patch",
+      "outputDir": "reports/TC-SCA-025",
+      "artifacts": []
+    },
+    {
+      "stepId": "regression",
+      "name": "回归验证",
+      "command": "python3 scripts/regression_runner.py /home/ubuntu/securecodeact/samples/cve-2024-22120/audit.c --diff /home/ubuntu/securecodeact/reports/TC-SCA-025/patch/patch.diff --cve CVE-2024-22120 --output-dir /home/ubuntu/securecodeact/reports/TC-SCA-025/patch",
+      "outputDir": "reports/TC-SCA-025",
+      "artifacts": [
+        "/home/ubuntu/securecodeact/reports/TC-SCA-025/patch/regression-result.json"
+      ]
+    },
+    {
+      "stepId": "patch_report",
+      "name": "修复报告生成",
+      "command": "python3 scripts/patch_report.py --output-dir /home/ubuntu/securecodeact/reports/TC-SCA-025/patch --cve CVE-2024-22120",
+      "outputDir": "reports/TC-SCA-025",
+      "artifacts": [
+        "/home/ubuntu/securecodeact/reports/TC-SCA-025/patch/patch_run.json"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,49 @@
+# SecureCodeAct Runtime Lite Image
+# 基于 OpenHands 1.6.0 官方 runtime 镜像，预装安全分析工具
+# 禁用 BrowserEnv，减少资源占用
+#
+# 构建命令：
+#   docker build -f containers/Dockerfile-lite -t securecodeact-runtime:1.6.0-lite .
+#
+# 使用方式：
+#   docker run -d --name openhands-sca --network host \
+#     -e SANDBOX_RUNTIME_CONTAINER_IMAGE=securecodeact-runtime:1.6.0-lite \
+#     -e SANDBOX_LOCAL_RUNTIME_URL=http://localhost:8000 \
+#     -e ENABLE_BROWSER=false \
+#     -e LLM_MODEL=gpt-4.1-mini \
+#     -e LLM_API_KEY=<your-key> \
+#     -v /var/run/docker.sock:/var/run/docker.sock \
+#     -v ~/.openhands:/.openhands \
+#     ghcr.io/openhands/openhands:1.6.0
+
+FROM ghcr.io/openhands/runtime:1.13.1-nikolaik
+
+# 安装安全分析工具
+# 注意：Debian trixie 中包名可能有所不同，根据实际情况调整
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    cppcheck \
+    clang \
+    clang-tools \
+    gcc \
+    g++ \
+    make \
+    git \
+    curl \
+    wget \
+    python3-pip \
+    && rm -rf /var/lib/apt/lists/*
+
+# 安装 Python 安全分析工具
+RUN pip3 install --no-cache-dir \
+    bandit \
+    semgrep \
+    || true
+
+# 创建工作目录
+RUN mkdir -p /workspace && chmod 777 /workspace
+
+# 设置环境变量
+ENV ENABLE_BROWSER=false
+ENV DISABLE_VSCODE_PLUGIN=true
+
+WORKDIR /workspace

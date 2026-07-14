@@ -1,0 +1,43 @@
+============================================================
+TC-SCA-023 G1: poc_gate.py 单元测试
+============================================================
+
+[TEST] test_whitelist_allow
+  PASS: 白名单 CVE + 安全代码 → WARN（允许执行）
+
+[TEST] test_whitelist_allow_case_insensitive
+  PASS: CVE ID 小写 → WARN（大小写不敏感）
+
+[TEST] test_unknown_cve_blocked
+  PASS: 未知 CVE → BLOCKED
+  reason: CVE CVE-9999-99999 不在白名单中，拒绝执行
+
+[TEST] test_blacklist_rm_rf
+  PASS: rm -rf / → BLOCKED
+  matched: ['危险：尝试删除根目录']
+
+[TEST] test_blacklist_curl_pipe_bash
+  PASS: curl | bash → BLOCKED
+
+[TEST] test_blacklist_reverse_shell
+  PASS: bash 反弹 shell → BLOCKED
+
+[TEST] test_blacklist_privileged_docker
+  PASS: docker --privileged → BLOCKED
+
+[TEST] test_safe_poc_allow
+  PASS: 安全 SQL 注入测试代码 → WARN（允许执行）
+
+[TEST] test_whitelist_contents
+  PASS: 白名单包含 10 个 CVE
+
+[TEST] test_gate_result_is_allowed
+  PASS: is_allowed() 方法正确
+
+[TEST] test_gate_result_to_dict
+  PASS: to_dict() 包含所有必要字段: ['decision', 'cve_id', 'reason', 'matched_patterns', 'sandbox_available', 'warnings']
+
+============================================================
+结果：11 通过，0 失败（共 11 个测试）
+============================================================
+✅ 所有测试通过（G1 PASS）

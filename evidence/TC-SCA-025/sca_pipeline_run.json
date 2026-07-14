@@ -1,0 +1,152 @@
+{
+  "schema": "SCA_PIPELINE_RUN_V1",
+  "pipelineId": "TC-SCA-025",
+  "runId": "sca-20260507-143912",
+  "cveId": "CVE-2024-22120",
+  "sourceFile": "samples/cve-2024-22120/audit.c",
+  "outputDir": "reports/TC-SCA-025",
+  "overallStatus": "PIPELINE_WARN",
+  "startedAt": "2026-05-07T14:39:12Z",
+  "endedAt": "2026-05-07T14:39:17Z",
+  "durationMs": 4431,
+  "steps": [
+    {
+      "stepId": "cve_consistency",
+      "name": "CVE 数据一致性检查",
+      "status": "PASS",
+      "startedAt": "2026-05-07T14:39:12Z",
+      "endedAt": "2026-05-07T14:39:12Z",
+      "durationMs": 25,
+      "command": "python3 scripts/root_cause_analysis.py /home/ubuntu/securecodeact/samples/cve-2024-22120/audit.c",
+      "artifacts": [],
+      "summary": "Step completed successfully. stdout: [SCA-008 RCA] 根因分析开始\n[SCA-008 RCA] 目标文件: /home/ubuntu/securecodeact/samples/cve-2024-22120/audit.c\n[SCA-008 RCA] 时间: 2026-05-07T10:39:12.702101\n========================================================",
+      "error": "",
+      "returncode": 0
+    },
+    {
+      "stepId": "cpg_analysis",
+      "name": "Joern CPG 分析",
+      "status": "WARN",
+      "startedAt": "2026-05-07T14:39:12Z",
+      "endedAt": "2026-05-07T14:39:16Z",
+      "durationMs": 3897,
+      "command": "bash scripts/joern_cpg_smoke.sh /home/ubuntu/securecodeact/samples/cve-2024-22120/audit.c",
+      "artifacts": [
+        "/home/ubuntu/securecodeact/reports/TC-SCA-025/cpg/joern-cpg.json"
+      ],
+      "summary": "Step completed successfully. stdout: [SCA-019] ==============================================\n[SCA-019] TC-SCA-019 Joern CPG Smoke Test\n[SCA-019] 源码文件: /home/ubuntu/securecodeact/samples/cve-2024-22120/audit.c\n[SCA-019] 工作目录: /tmp/sca-01 Missing artifacts: ['/home/ubuntu/securecodeact/reports/TC-SCA-025/cpg/joern-cpg.json']",
+      "error": "",
+      "returncode": 0
+    },
+    {
+      "stepId": "poc_gate",
+      "name": "PoC 安全闸门",
+      "status": "WARN",
+      "startedAt": "2026-05-07T14:39:16Z",
+      "endedAt": "2026-05-07T14:39:16Z",
+      "durationMs": 121,
+      "command": "python3 scripts/poc_gate.py CVE-2024-22120 /home/ubuntu/securecodeact/reports/TC-SCA-025/poc/sample_poc.py --no-require-sandbox --output /home/ubuntu/securecodeact/reports/TC-SCA-025/poc",
+      "artifacts": [
+        "/home/ubuntu/securecodeact/reports/TC-SCA-025/poc/poc_audit.jsonl"
+      ],
+      "summary": "Step completed with warnings. stdout: {\n  \"decision\": \"WARN\",\n  \"cve_id\": \"CVE-2024-22120\",\n  \"reason\": \"沙箱不可用，降级为本地执行（WARN 模式）\",\n  \"matched_patterns\": [],\n  \"sandbox_available\": false,\n  \"warnings\": [\n    \"Docker 沙箱不可用，将在本地环境执行（降级模式）\"\n  ",
+      "error": "",
+      "returncode": 0
+    },
+    {
+      "stepId": "patch_generate",
+      "name": "Patch 生成",
+      "status": "PASS",
+      "startedAt": "2026-05-07T14:39:16Z",
+      "endedAt": "2026-05-07T14:39:16Z",
+      "durationMs": 42,
+      "command": "python3 scripts/gen_fix_patch.py /home/ubuntu/securecodeact/samples/cve-2024-22120/audit.c --cve CVE-2024-22120 --output /home/ubuntu/securecodeact/reports/TC-SCA-025/patch/patch.diff",
+      "artifacts": [
+        "/home/ubuntu/securecodeact/reports/TC-SCA-025/patch/patch.diff"
+      ],
+      "summary": "Step completed successfully. stdout: [SCA-014 FIX] 修复 Patch 生成开始（增强版）\n[SCA-014 FIX] 目标文件: /home/ubuntu/securecodeact/samples/cve-2024-22120/audit.c\n[SCA-014 FIX] 时间: 2026-05-07T10:39:16.751842\n============================================",
+      "error": "",
+      "returncode": 0
+    },
+    {
+      "stepId": "patch_guard",
+      "name": "Patch 安全检查",
+      "status": "PASS",
+      "startedAt": "2026-05-07T14:39:16Z",
+      "endedAt": "2026-05-07T14:39:16Z",
+      "durationMs": 90,
+      "command": "python3 scripts/patch_guard.py /home/ubuntu/securecodeact/reports/TC-SCA-025/patch/patch.diff --policy configs/patch_policy.yaml --output /home/ubuntu/securecodeact/reports/TC-SCA-025/patch/patch-guard.json",
+      "artifacts": [
+        "/home/ubuntu/securecodeact/reports/TC-SCA-025/patch/patch-guard.json"
+      ],
+      "summary": "Step completed successfully. stdout: [TC-SCA-024/G2] 补丁安全检查开始\n[TC-SCA-024/G2] diff 文件: /home/ubuntu/securecodeact/reports/TC-SCA-025/patch/patch.diff\n[TC-SCA-024/G2] 策略文件: configs/patch_policy.yaml\n=======================================",
+      "error": "",
+      "returncode": 0
+    },
+    {
+      "stepId": "patch_apply_check",
+      "name": "Patch 预检查",
+      "status": "PASS",
+      "startedAt": "2026-05-07T14:39:16Z",
+      "endedAt": "2026-05-07T14:39:16Z",
+      "durationMs": 64,
+      "command": "python3 scripts/patch_apply.py /home/ubuntu/securecodeact/samples/cve-2024-22120/audit.c --diff /home/ubuntu/securecodeact/reports/TC-SCA-025/patch/patch.diff --check --output-dir /home/ubuntu/securecodeact/reports/TC-SCA-025/patch",
+      "artifacts": [
+        "/home/ubuntu/securecodeact/reports/TC-SCA-025/patch/patch-apply-result.json"
+      ],
+      "summary": "Step completed successfully. stdout: [TC-SCA-024/G3-G4] 补丁应用器启动\n[TC-SCA-024/G3-G4] 源文件: /home/ubuntu/securecodeact/samples/cve-2024-22120/audit.c\n[TC-SCA-024/G3-G4] diff 文件: /home/ubuntu/securecodeact/reports/TC-SCA-025/patch/patch.diff\n",
+      "error": "",
+      "returncode": 0
+    },
+    {
+      "stepId": "patch_apply",
+      "name": "Patch 临时工作区应用",
+      "status": "PASS",
+      "startedAt": "2026-05-07T14:39:16Z",
+      "endedAt": "2026-05-07T14:39:16Z",
+      "durationMs": 72,
+      "command": "python3 scripts/patch_apply.py /home/ubuntu/securecodeact/samples/cve-2024-22120/audit.c --diff /home/ubuntu/securecodeact/reports/TC-SCA-025/patch/patch.diff --apply --workdir /home/ubuntu/securecodeact/reports/TC-SCA-025/patch/workdir --output-dir /home/ubuntu/securecodeact/reports/TC-SCA-025/patch",
+      "artifacts": [],
+      "summary": "Step completed successfully. stdout: [TC-SCA-024/G3-G4] 补丁应用器启动\n[TC-SCA-024/G3-G4] 源文件: /home/ubuntu/securecodeact/samples/cve-2024-22120/audit.c\n[TC-SCA-024/G3-G4] diff 文件: /home/ubuntu/securecodeact/reports/TC-SCA-025/patch/patch.diff\n",
+      "error": "",
+      "returncode": 0
+    },
+    {
+      "stepId": "regression",
+      "name": "回归验证",
+      "status": "PASS",
+      "startedAt": "2026-05-07T14:39:16Z",
+      "endedAt": "2026-05-07T14:39:17Z",
+      "durationMs": 78,
+      "command": "python3 scripts/regression_runner.py /home/ubuntu/securecodeact/samples/cve-2024-22120/audit.c --diff /home/ubuntu/securecodeact/reports/TC-SCA-025/patch/patch.diff --cve CVE-2024-22120 --output-dir /home/ubuntu/securecodeact/reports/TC-SCA-025/patch",
+      "artifacts": [
+        "/home/ubuntu/securecodeact/reports/TC-SCA-025/patch/regression-result.json"
+      ],
+      "summary": "Step completed successfully. stdout: [TC-SCA-024/G5] 回归验证运行器启动\n[TC-SCA-024/G5] 源文件: /home/ubuntu/securecodeact/samples/cve-2024-22120/audit.c\n[TC-SCA-024/G5] diff 文件: /home/ubuntu/securecodeact/reports/TC-SCA-025/patch/patch.diff\n[TC-SCA",
+      "error": "",
+      "returncode": 0
+    },
+    {
+      "stepId": "patch_report",
+      "name": "修复报告生成",
+      "status": "PASS",
+      "startedAt": "2026-05-07T14:39:17Z",
+      "endedAt": "2026-05-07T14:39:17Z",
+      "durationMs": 36,
+      "command": "python3 scripts/patch_report.py --output-dir /home/ubuntu/securecodeact/reports/TC-SCA-025/patch --cve CVE-2024-22120",
+      "artifacts": [
+        "/home/ubuntu/securecodeact/reports/TC-SCA-025/patch/patch_run.json"
+      ],
+      "summary": "Step completed successfully. stdout: [TC-SCA-024/G6] 补丁运行报告生成器启动\n[TC-SCA-024/G6] 证据目录: /home/ubuntu/securecodeact/reports/TC-SCA-025/patch\n[TC-SCA-024/G6] CVE ID: CVE-2024-22120\n===========================================================",
+      "error": "",
+      "returncode": 0
+    }
+  ],
+  "metrics": {
+    "stepsTotal": 9,
+    "stepsPassed": 7,
+    "stepsWarned": 2,
+    "stepsFailed": 0,
+    "stepsSkipped": 0
+  }
+}

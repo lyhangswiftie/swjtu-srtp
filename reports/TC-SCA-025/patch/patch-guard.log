@@ -1,0 +1,16 @@
+[TC-SCA-024/G2] 补丁安全检查开始
+[TC-SCA-024/G2] diff 文件: reports/TC-SCA-025/patch/patch.diff
+[TC-SCA-024/G2] 策略文件: configs/patch_policy.yaml
+============================================================
+[TC-SCA-024/G2] 检查结果: ✅ PASS
+
+检查项详情：
+  ✅ target_whitelist: PASS
+  ✅ sensitive_path: PASS
+  ✅ deleted_lines_limit: PASS
+  ✅ added_lines_limit: PASS
+  ✅ dangerous_patterns: PASS
+
+Diff 统计：目标文件=['audit.c'], 新增=2 行, 删除=2 行
+
+SCA_GUARD_JSON:{"decision": "PASS", "reasons": [], "checks": {"target_whitelist": "PASS", "sensitive_path": "PASS", "deleted_lines_limit": "PASS", "added_lines_limit": "PASS", "dangerous_patterns": "PASS"}, "diff_stats": {"target_files": ["audit.c"], "total_added": 2, "total_deleted": 2}, "checkedAt": "2026-05-18T13:51:13Z", "diffFile": "reports/TC-SCA-025/patch/patch.diff", "policyFile": "configs/patch_policy.yaml"}

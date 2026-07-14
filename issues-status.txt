@@ -1,0 +1,58 @@
+======================================================================
+SecureCodeAct 问题状态总览
+2026-05-31
+======================================================================
+
+✅ 已修复
+----------------------------------------------------------------------
+
+1. SANDBOX_LOCAL_RUNTIME_URL 缺少 :8000 端口
+   修复：4 个文件补上了 :8000 端口
+   状态：✅
+
+2. 沙箱启动超时（Sandbox entered error state）
+   修复：SANDBOX_STARTUP_GRACE_SECONDS=60
+   状态：✅
+
+3. git/changes 已做修复（CORS 代理路由已建），但仍有残留 404
+   根因：V1 conversation 的 REST API 调用（git/changes、list-files）
+        走到了 V0 路由 /api/conversations/{cid}/...，但 V0 路由不认识 V1 的 conversation
+
+   已完成的修复：
+   - Docker 环境变量：SANDBOX_LOCAL_RUNTIME_URL=...:8000
+   - 沙箱启动超时：SANDBOX_STARTUP_GRACE_SECONDS=60
+   - 后端新增 V1 代理路由：/api/v1/app-conversations/{id}/git/changes
+   - 后端新增 V1 代理路由：/api/v1/app-conversations/{id}/git/diff
+   - 前端 V1GitService 改为走代理路由（解决 CORS）
+   - 前端 DashboardConnected：task- 阶段跳过加载、V1 conversation 走 V1GitService
+
+   残余 404 来源（不是 DashboardConnected）：
+   - use-search-repositories → GitService.getGitChanges() → V0 路由 → 404
+   - use-selected-organization → GitService.getGitChanges() → V0 路由 → 404
+     这两个 Hook 没有做 V1/V0 判断，直接调了 V0 的 GitService
+     需要也改成根据 conversation_version 选择 V1/V0 服务
+
+   影响：浏览器 console 有红色 404，但核心 Agent 对话功能不受影响
+         （DashboardConnected 的 git diff 查看功能已修复）
+
+4. list-files 404（同上，多调用点问题）
+   已修复：DashboardConnected 内部的文件树加载
+   未修复：其他组件直接调 ConversationService.getFiles() 的情况
+
+
+⚠️ 非关键（不影响核心 Agent 功能）
+----------------------------------------------------------------------
+
+5. Neo4j 连接拒绝（:7475）
+   原因：SCA 知识图谱需要本地 Neo4j，当前环境没有
+   影响：KnowledgeGraphTab 自动回退到静态 fallback 数据
+   状态：可以不修
+
+6. IDE TypeScript 类型错误（Dashboard.tsx）
+   项目原有代码问题，不影响 build 和运行
+
+7. React Router hydrateFallback 警告
+   "💿 Hey developer 👋..." — 这是 React Router 的 SSR 提示
+   当前是 SPA 模式（ssr:false），不影响功能
+
+======================================================================

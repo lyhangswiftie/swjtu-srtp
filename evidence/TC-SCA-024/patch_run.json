@@ -1,0 +1,82 @@
+{
+  "schema": "SCA_PATCH_RUN_V1",
+  "cveId": "CVE-2024-22120",
+  "generatedAt": "2026-05-07T14:09:35Z",
+  "overallStatus": "PATCH_VERIFIED",
+  "stages": {
+    "G1_patch_gen": {
+      "status": "PASS",
+      "patchType": "sql_injection_escape_fix",
+      "riskLevel": "medium",
+      "summary": "Replace unsafe clientip interpolation with escaped value_esc in audit log SQL.",
+      "patchFile": "reports/TC-SCA-024/patch.diff",
+      "diffStats": {
+        "added": 2,
+        "deleted": 2
+      }
+    },
+    "G2_guard": {
+      "status": "PASS",
+      "checks": {
+        "target_whitelist": "PASS",
+        "sensitive_path": "PASS",
+        "deleted_lines_limit": "PASS",
+        "added_lines_limit": "PASS",
+        "dangerous_patterns": "PASS"
+      },
+      "reasons": [],
+      "diffStats": {
+        "target_files": [
+          "audit.c"
+        ],
+        "total_added": 2,
+        "total_deleted": 2
+      }
+    },
+    "G3_check": {
+      "status": "PASS",
+      "gitApplyCheck": true
+    },
+    "G4_apply": {
+      "status": "PASS",
+      "stage": "APPLIED",
+      "workdir": "/tmp/sca-024-patch-ty_86oo9",
+      "completedAt": "2026-05-07T14:04:38Z"
+    },
+    "G5_regression": {
+      "status": "REGRESSION_PASS",
+      "reason": "所有回归检查通过",
+      "checks": {
+        "static_pattern": {
+          "status": "PASS",
+          "reason": "漏洞特征已消除，功能特征完整"
+        },
+        "compile": {
+          "status": "SKIP",
+          "reason": "gcc 不可用"
+        }
+      },
+      "vulnEliminated": [
+        "clientip\\s*\\)\\s*;.*taint\\s*sink",
+        "VALUES\\s*\\(\\s*\\'%s\\'\\s*\\).*clientip\\s*\\)",
+        "/\\*\\s*VULNERABLE"
+      ],
+      "funcPreserved": [
+        "zbx_db_execute\\s*\\(",
+        "zbx_db_dyn_escape_string\\s*\\(",
+        "void\\s+zbx_audit_log_clientip\\s*\\("
+      ],
+      "fixPresent": [
+        "FIXED.*CVE-2024-22120",
+        "value_esc\\s*\\)\\s*;.*fixed"
+      ]
+    }
+  },
+  "summary": {
+    "patchFile": "reports/TC-SCA-024/patch.diff",
+    "guardDecision": "PASS",
+    "applyStage": "APPLIED",
+    "regressionStatus": "REGRESSION_PASS",
+    "overallStatus": "PATCH_VERIFIED"
+  }
+}

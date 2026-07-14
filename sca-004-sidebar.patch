@@ -1,0 +1,431 @@
+diff --git a/frontend/src/components/sca-hud/DashboardConnected.tsx b/frontend/src/components/sca-hud/DashboardConnected.tsx
+index 94975c4f3..17f5656cd 100644
+--- a/frontend/src/components/sca-hud/DashboardConnected.tsx
++++ b/frontend/src/components/sca-hud/DashboardConnected.tsx
+@@ -1,17 +1,22 @@
+ /*
+- * DashboardConnected.tsx  v3.0
++ * DashboardConnected.tsx  v4.0
+  *
+- * SeCodeAct HUD 主控制台 —— 动态文件资源管理器集成版本（SCA-003）
++ * SeCodeAct HUD 主控制台 —— 侧边栏功能补全版本（SCA-004）
+  *
+- * v3.0 新增功能（SCA-003）：
+- *  - 文件资源管理器完全动态化：懒加载策略，点击目录时调用
+- *    ConversationService.getFiles(conversationId, path) 获取子目录内容
+- *  - handleSelectFile：点击文件时自动切换到 Diff 视图，
+- *    有 Git 变更时显示 original vs modified，无变更时显示原始文件内容
+- *  - 自动刷新机制：Agent 状态变为 FINISHED/AWAITING_USER_INPUT 时自动刷新
+- *    文件树根节点；同时支持 10 秒定时刷新和手动刷新按钮
+- *  - Git 变更高亮：文件树中 Git 变更文件显示特殊颜色标记和状态前缀
+- *  - 性能与鲁棒性：API 失败时优雅降级，显示错误提示而非崩溃
++ * v4.0 新增功能（SCA-004）：
++ *  - 代码仓库对接（Repository）：输入 GitHub URL + Branch，
++ *    通过 useSendMessage 发送 git clone 指令到 Agent，
++ *    克隆完成后自动刷新文件树；支持加载状态和错误提示。
++ *  - 会话控制（Sessions）：
++ *    · 新建空白会话：调用 POST /api/conversations，导航到新会话
++ *    · 终止当前沙箱：调用 POST /api/conversations/{id}/stop
++ *    · 恢复历史会话：输入 conversationId 后导航到对应会话
++ *    · 会话列表：加载并显示最近 5 条历史会话，支持一键切换
++ *
++ * v3.0 功能（保留，SCA-003）：
++ *  - 文件资源管理器完全动态化：懒加载策略
++ *  - handleSelectFile：点击文件时自动切换到 Diff 视图
++ *  - 自动刷新机制、Git 变更高亮
+  *
+  * v2.0 功能（保留）：
+  *  - chatMessages / handleSendMessage → useEventStore + useSendMessage
+@@ -35,7 +40,7 @@ import { useEventStore } from '#/stores/use-event-store';
+ import { useCommandStore } from '#/stores/command-store';
+ import { useAgentStore } from '#/stores/agent-store';
+ import { useSendMessage } from '#/hooks/use-send-message';
+-import { useParams } from 'react-router';
++import { useParams, useNavigate } from 'react-router';
+ import GitService from '#/api/git-service/git-service.api';
+ import ConversationService from '#/api/conversation-service/conversation-service.api';
+ import type { GitChangeDiff } from '#/api/open-hands.types';
+@@ -559,6 +564,21 @@ export default function DashboardConnected() {
+   // 记录上次刷新时间，防止频繁刷新
+   const lastRefreshRef = useRef<number>(0);
+ 
++  // ── 代码仓库对接状态（v4.0：SCA-004） ─────────────────────────────────────────
++  const [repoUrl, setRepoUrl] = useState<string>('https://github.com/example/core-system-v2');
++  const [repoBranch, setRepoBranch] = useState<string>('main');
++  const [repoLoading, setRepoLoading] = useState<boolean>(false);
++  const [repoStatus, setRepoStatus] = useState<'idle' | 'cloning' | 'success' | 'error'>('idle');
++  const [repoError, setRepoError] = useState<string | null>(null);
++  const [repoMessage, setRepoMessage] = useState<string | null>(null);
++
++  // ── 会话控制状态（v4.0：SCA-004） ─────────────────────────────────────────────
++  const [sessionList, setSessionList] = useState<Array<{id: string; title: string; status: string; created_at: string}>>([]);
++  const [sessionListLoading, setSessionListLoading] = useState<boolean>(false);
++  const [restoreToken, setRestoreToken] = useState<string>('');
++  const [sessionActionStatus, setSessionActionStatus] = useState<string | null>(null);
++  const [sessionActionLoading, setSessionActionLoading] = useState<boolean>(false);
++
+   // ── 真实数据 Hook ────────────────────────────────────────────────────────────
+ 
+   // 1. Chat：从 EventStore 读取事件流，转换为 Chat 消息格式
+@@ -587,8 +607,9 @@ export default function DashboardConnected() {
+   // 4. Agent 状态：用于触发文件树自动刷新
+   const curAgentState = useAgentStore((state) => state.curAgentState);
+ 
+-  // 5. 会话 ID
++  // 5. 会话 ID 和路由导航
+   const { conversationId } = useParams<{ conversationId: string }>();
++  const navigate = useNavigate();
+ 
+   // ── Git 变更数据加载 ─────────────────────────────────────────────────────────
+ 
+@@ -870,6 +891,150 @@ export default function DashboardConnected() {
+     setVulnList((current) => applyVulnKeywordRules(allText, current));
+   }, [uiEvents, commands]);
+ 
++  // ── 代码仓库对接处理函数（v4.0：SCA-004） ───────────────────────────────────────
++
++  /**
++   * 加载仓库到沙箱工作区。
++   *
++   * 流程：
++   * 1. 验证 URL 格式（必须以 github.com 开头）
++   * 2. 从 URL 提取仓库名称（最后一段）
++   * 3. 通过 useSendMessage 发送 git clone 指令到 Agent
++   * 4. 等待 Agent 完成后（通过 curAgentState 监听）自动刷新文件树
++   */
++  const handleLoadRepo = useCallback(() => {
++    const trimmedUrl = repoUrl.trim();
++    const trimmedBranch = repoBranch.trim() || 'main';
++
++    // 验证 URL
++    if (!trimmedUrl) {
++      setRepoError('请输入 GitHub 仓库 URL');
++      return;
++    }
++    if (!trimmedUrl.includes('github.com') && !trimmedUrl.includes('gitlab.com') && !trimmedUrl.includes('.git')) {
++      setRepoError('请输入有效的 Git 仓库 URL（支持 GitHub / GitLab）');
++      return;
++    }
++
++    // 提取仓库名称
++    const repoName = trimmedUrl
++      .replace(/\.git$/, '')
++      .split('/')
++      .pop() || 'repo';
++
++    // 构建克隆指令
++    const cloneCmd = `git clone ${trimmedUrl} -b ${trimmedBranch} /workspace/${repoName} && echo "[SCA] 克隆完成: /workspace/${repoName}"`;
++
++    setRepoLoading(true);
++    setRepoStatus('cloning');
++    setRepoError(null);
++    setRepoMessage(`正在克隆 ${repoName}...`);
++
++    // 发送指令到 Agent
++    send({
++      action: 'message',
++      args: { content: cloneCmd },
++    });
++
++    // 切换到文件树侧边栏以便观察刷新结果
++    setTimeout(() => {
++      setActiveSidebar('files');
++      setRepoStatus('success');
++      setRepoMessage(`指令已发送！Agent 正在克隆 ${repoName}，完成后文件树将自动刷新。`);
++      setRepoLoading(false);
++    }, 1500);
++  }, [repoUrl, repoBranch, send, setActiveSidebar]);
++
++  // ── 会话控制处理函数（v4.0：SCA-004） ─────────────────────────────────────────────
++
++  /**
++   * 加载历史会话列表。
++   * 调用 GET /api/conversations 获取最近 5 条会话。
++   */
++  const loadSessionList = useCallback(async () => {
++    setSessionListLoading(true);
++    try {
++      const data = await ConversationService.getUserConversations(5);
++      setSessionList(
++        data.results.slice(0, 5).map((c) => ({
++          id: c.conversation_id,
++          title: c.title || `会话 ${c.conversation_id.slice(0, 8)}`,
++          status: c.status || 'UNKNOWN',
++          created_at: c.created_at ? new Date(c.created_at).toLocaleString('zh-CN', { month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' }) : '',
++        }))
++      );
++    } catch {
++      // 静默失败
++    } finally {
++      setSessionListLoading(false);
++    }
++  }, []);
++
++  // 打开会话控制面板时自动加载历史会话
++  useEffect(() => {
++    if (activeSidebar === 'sessions') {
++      loadSessionList();
++    }
++  }, [activeSidebar, loadSessionList]);
++
++  /**
++   * 新建空白会话：调用 POST /api/conversations，导航到新会话页面。
++   */
++  const handleNewSession = useCallback(async () => {
++    setSessionActionLoading(true);
++    setSessionActionStatus('正在创建新会话...');
++    try {
++      const conv = await ConversationService.createConversation();
++      const newId = conv.conversation_id;
++      if (newId) {
++        setSessionActionStatus(`新会话创建成功！ID: ${newId.slice(0, 8)}...，正在跳转...`);
++        setTimeout(() => navigate(`/conversations/${newId}`), 1200);
++      } else {
++        setSessionActionStatus('创建成功，请刷新页面');
++      }
++    } catch (err: unknown) {
++      const msg = err instanceof Error ? err.message : '未知错误';
++      setSessionActionStatus(`创建失败：${msg}`);
++    } finally {
++      setSessionActionLoading(false);
++    }
++  }, [navigate]);
++
++  /**
++   * 终止当前沙箱：调用 POST /api/conversations/{id}/stop。
++   */
++  const handleStopSession = useCallback(async () => {
++    if (!conversationId) {
++      setSessionActionStatus('无法获取当前会话 ID');
++      return;
++    }
++    setSessionActionLoading(true);
++    setSessionActionStatus('正在终止沙箱...');
++    try {
++      await ConversationService.stopConversation(conversationId);
++      setSessionActionStatus('沙箱已终止！Agent 已停止运行。');
++      loadSessionList();
++    } catch (err: unknown) {
++      const msg = err instanceof Error ? err.message : '未知错误';
++      setSessionActionStatus(`终止失败：${msg}`);
++    } finally {
++      setSessionActionLoading(false);
++    }
++  }, [conversationId, loadSessionList]);
++
++  /**
++   * 恢复历史会话：通过 conversationId 导航到对应会话页面。
++   */
++  const handleRestoreSession = useCallback((targetId: string) => {
++    const id = targetId.trim();
++    if (!id) {
++      setSessionActionStatus('请输入会话 ID');
++      return;
++    }
++    setSessionActionStatus(`正在跳转到会话 ${id.slice(0, 8)}...`);
++    setTimeout(() => navigate(`/conversations/${id}`), 500);
++  }, [navigate]);
++
+   // ── 工具函数：将 GitChangeDiff 转换为 DiffLine[] ─────────────────────────────
+ 
+   function parseFileDiff(diff: GitChangeDiff, file: string): DiffData | null {
+@@ -1017,23 +1182,71 @@ export default function DashboardConnected() {
+             <span className="text-xs font-bold text-slate-200">代码仓库 (Repository)</span>
+           </div>
+           <div className="p-4 flex flex-col gap-4">
++            {/* GitHub URL 输入 */}
+             <div className="flex flex-col gap-2">
+               <label className="text-slate-400 text-[10px] font-bold">GitHub Repository URL</label>
+               <div className="flex items-center bg-[#0b1120] border border-slate-700 rounded-sm px-2 py-1.5">
+-                <Github size={14} className="text-slate-500 mr-2" />
+-                <input type="text" defaultValue="https://github.com/example/core-system-v2" className="bg-transparent border-none outline-none text-[10px] w-full text-slate-300" />
++                <Github size={14} className="text-slate-500 mr-2 shrink-0" />
++                <input
++                  type="text"
++                  value={repoUrl}
++                  onChange={(e) => { setRepoUrl(e.target.value); setRepoError(null); }}
++                  placeholder="https://github.com/owner/repo"
++                  className="bg-transparent border-none outline-none text-[10px] w-full text-slate-300 placeholder-slate-600"
++                />
+               </div>
+             </div>
++            {/* Branch 输入 */}
+             <div className="flex flex-col gap-2">
+               <label className="text-slate-400 text-[10px] font-bold">Branch / Commit</label>
+               <div className="flex items-center bg-[#0b1120] border border-slate-700 rounded-sm px-2 py-1.5">
+-                <GitBranch size={14} className="text-slate-500 mr-2" />
+-                <input type="text" defaultValue="main" className="bg-transparent border-none outline-none text-[10px] w-full text-slate-300" />
++                <GitBranch size={14} className="text-slate-500 mr-2 shrink-0" />
++                <input
++                  type="text"
++                  value={repoBranch}
++                  onChange={(e) => setRepoBranch(e.target.value)}
++                  placeholder="main"
++                  className="bg-transparent border-none outline-none text-[10px] w-full text-slate-300 placeholder-slate-600"
++                />
+               </div>
+             </div>
+-            <button className="w-full bg-[#00FF9F]/20 text-[#00FF9F] border border-[#00FF9F]/50 py-2 rounded-sm hover:bg-[#00FF9F]/30 transition-colors font-bold mt-2">
+-              加载仓库到沙箱
++            {/* 加载按钮 */}
++            <button
++              className={`w-full py-2 rounded-sm font-bold mt-2 flex items-center justify-center gap-2 transition-colors
++                ${repoLoading
++                  ? 'bg-slate-700 text-slate-400 cursor-not-allowed'
++                  : 'bg-[#00FF9F]/20 text-[#00FF9F] border border-[#00FF9F]/50 hover:bg-[#00FF9F]/30'}`}
++              onClick={handleLoadRepo}
++              disabled={repoLoading}
++            >
++              {repoLoading
++                ? <><Loader2 size={14} className="animate-spin" /> 克隆中...</>
++                : <><Github size={14} /> 加载仓库到沙箱</>}
+             </button>
++            {/* 状态提示 */}
++            {repoError && (
++              <div className="text-red-400 text-[10px] bg-red-400/10 border border-red-400/30 p-2 rounded-sm">
++                ⚠️ {repoError}
++              </div>
++            )}
++            {repoMessage && !repoError && (
++              <div className={`text-[10px] p-2 rounded-sm border ${
++                repoStatus === 'success'
++                  ? 'text-[#00FF9F] bg-[#00FF9F]/10 border-[#00FF9F]/30'
++                  : 'text-amber-400 bg-amber-400/10 border-amber-400/30'
++              }`}>
++                {repoStatus === 'success' ? '✅' : '⏳'} {repoMessage}
++              </div>
++            )}
++            {/* 快捷说明 */}
++            <div className="text-slate-600 text-[9px] leading-relaxed border-t border-slate-800 pt-3">
++              <p className="font-bold text-slate-500 mb-1">使用说明</p>
++              <p>点击后 Agent 将执行：</p>
++              <code className="text-slate-400 text-[9px] block mt-1 bg-[#0b1120] p-1 rounded-sm">
++                git clone &lt;url&gt; -b &lt;branch&gt; /workspace/&lt;repo&gt;
++              </code>
++              <p className="mt-1">克隆完成后文件树将自动刷新。</p>
++            </div>
+           </div>
+         </div>
+       )}
+@@ -1044,20 +1257,112 @@ export default function DashboardConnected() {
+           <div className="p-3 border-b border-[#00FF9F]/30 flex justify-between items-center">
+             <span className="text-xs font-bold text-slate-200">会话控制 (Sessions)</span>
+           </div>
+-          <div className="p-4 flex flex-col gap-4">
++          <div className="p-3 flex flex-col gap-3 overflow-y-auto flex-1">
++            {/* 当前会话信息 */}
+             <div className="bg-[#0b1120] border border-[#00FF9F]/30 p-3 rounded-sm">
+-              <div className="text-[#00FF9F] font-bold mb-1 flex items-center gap-2"><Activity size={14} /> 当前活跃会话</div>
+-              <div className="text-slate-400 text-[9px] break-all">ID: {conversationId || 'N/A'}</div>
+-              <div className="text-slate-500 text-[9px] mt-1">Agent: {curAgentState}</div>
++              <div className="text-[#00FF9F] font-bold mb-1.5 flex items-center gap-2">
++                <Activity size={13} /> 当前活跃会话
++              </div>
++              <div className="text-slate-400 text-[9px] break-all font-mono">ID: {conversationId ? conversationId.slice(0, 16) + '...' : 'N/A'}</div>
++              <div className="flex items-center gap-1.5 mt-1">
++                <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${
++                  AGENT_DONE_STATES.has(curAgentState) ? 'bg-[#00FF9F]' : 'bg-amber-400 animate-pulse'
++                }`} />
++                <span className="text-slate-500 text-[9px]">Agent: {curAgentState}</span>
++              </div>
+             </div>
+-            <div className="flex flex-col gap-2 mt-2">
+-              <button className="w-full bg-blue-500/20 text-blue-400 border border-blue-500/50 py-2 rounded-sm hover:bg-blue-500/30 transition-colors font-bold flex items-center justify-center gap-2">
+-                <Plus size={14} /> 新建空白会话
++
++            {/* 操作按钮 */}
++            <div className="flex flex-col gap-2">
++              <button
++                className={`w-full py-1.5 rounded-sm font-bold flex items-center justify-center gap-2 text-[11px] transition-colors
++                  ${sessionActionLoading ? 'bg-slate-700 text-slate-400 cursor-not-allowed' : 'bg-blue-500/20 text-blue-400 border border-blue-500/50 hover:bg-blue-500/30'}`}
++                onClick={handleNewSession}
++                disabled={sessionActionLoading}
++              >
++                {sessionActionLoading ? <Loader2 size={13} className="animate-spin" /> : <Plus size={13} />}
++                新建空白会话
+               </button>
+-              <button className="w-full bg-red-500/20 text-red-400 border border-red-500/50 py-2 rounded-sm hover:bg-red-500/30 transition-colors font-bold flex items-center justify-center gap-2">
+-                <X size={14} /> 终止当前沙箱
++              <button
++                className={`w-full py-1.5 rounded-sm font-bold flex items-center justify-center gap-2 text-[11px] transition-colors
++                  ${sessionActionLoading ? 'bg-slate-700 text-slate-400 cursor-not-allowed' : 'bg-red-500/20 text-red-400 border border-red-500/50 hover:bg-red-500/30'}`}
++                onClick={handleStopSession}
++                disabled={sessionActionLoading}
++              >
++                {sessionActionLoading ? <Loader2 size={13} className="animate-spin" /> : <X size={13} />}
++                终止当前沙箱
+               </button>
+             </div>
++
++            {/* 操作状态提示 */}
++            {sessionActionStatus && (
++              <div className="text-[9px] text-amber-400 bg-amber-400/10 border border-amber-400/30 p-2 rounded-sm">
++                {sessionActionStatus}
++              </div>
++            )}
++
++            {/* 恢复历史会话 */}
++            <div className="flex flex-col gap-2 border-t border-slate-800 pt-3">
++              <label className="text-slate-400 text-[10px] font-bold">恢复历史会话</label>
++              <div className="flex gap-1">
++                <input
++                  type="text"
++                  value={restoreToken}
++                  onChange={(e) => setRestoreToken(e.target.value)}
++                  placeholder="输入 Conversation ID"
++                  className="flex-1 bg-[#0b1120] border border-slate-700 rounded-sm px-2 py-1 text-[10px] text-slate-300 placeholder-slate-600 outline-none"
++                  onKeyDown={(e) => e.key === 'Enter' && handleRestoreSession(restoreToken)}
++                />
++                <button
++                  className="px-2 py-1 bg-[#00FF9F]/20 text-[#00FF9F] border border-[#00FF9F]/40 rounded-sm hover:bg-[#00FF9F]/30 transition-colors text-[10px] font-bold shrink-0"
++                  onClick={() => handleRestoreSession(restoreToken)}
++                >
++                  跳转
++                </button>
++              </div>
++            </div>
++
++            {/* 历史会话列表 */}
++            <div className="flex flex-col gap-1 border-t border-slate-800 pt-3">
++              <div className="flex items-center justify-between mb-1">
++                <label className="text-slate-400 text-[10px] font-bold">最近会话</label>
++                <button
++                  className="text-[9px] text-slate-500 hover:text-[#00FF9F] transition-colors"
++                  onClick={loadSessionList}
++                >
++                  {sessionListLoading ? <Loader2 size={11} className="animate-spin" /> : '刷新'}
++                </button>
++              </div>
++              {sessionListLoading && sessionList.length === 0 && (
++                <div className="text-slate-600 text-[9px] text-center py-2">加载中...</div>
++              )}
++              {!sessionListLoading && sessionList.length === 0 && (
++                <div className="text-slate-600 text-[9px] text-center py-2">暂无历史会话</div>
++              )}
++              {sessionList.map((s) => (
++                <div
++                  key={s.id}
++                  className={`p-2 rounded-sm border cursor-pointer transition-colors ${
++                    s.id === conversationId
++                      ? 'border-[#00FF9F]/50 bg-[#00FF9F]/10'
++                      : 'border-slate-700 bg-[#0b1120] hover:border-slate-600'
++                  }`}
++                  onClick={() => handleRestoreSession(s.id)}
++                >
++                  <div className="text-[10px] text-slate-300 truncate font-medium">{s.title}</div>
++                  <div className="flex items-center justify-between mt-0.5">
++                    <span className="text-[8px] text-slate-600 font-mono">{s.id.slice(0, 8)}...</span>
++                    <span className={`text-[8px] font-bold ${
++                      s.status === 'RUNNING' ? 'text-amber-400' :
++                      s.status === 'STOPPED' ? 'text-red-400' : 'text-slate-500'
++                    }`}>{s.status}</span>
++                  </div>
++                  {s.created_at && (
++                    <div className="text-[8px] text-slate-600 mt-0.5">{s.created_at}</div>
++                  )}
++                </div>
++              ))}
++            </div>
+           </div>
+         </div>
+       )}

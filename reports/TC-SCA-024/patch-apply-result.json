@@ -1,0 +1,22 @@
+{
+  "cveId": "CVE-2024-22120",
+  "sourceFile": "samples/cve-2024-22120/audit.c",
+  "diffFile": "reports/TC-SCA-024/patch.diff",
+  "workdir": "/tmp/sca-024-patch-ty_86oo9",
+  "startedAt": "2026-05-07T14:04:38Z",
+  "stage": "APPLIED",
+  "check_result": {
+    "returncode": 0,
+    "stdout": "",
+    "stderr": "",
+    "command": "git apply --check /tmp/sca-024-patch-ty_86oo9/adjusted.diff"
+  },
+  "apply_result": {
+    "returncode": 0,
+    "stdout": "",
+    "stderr": "",
+    "command": "git apply /tmp/sca-024-patch-ty_86oo9/adjusted.diff"
+  },
+  "patchedFile": "/tmp/sca-024-patch-ty_86oo9/audit.c",
+  "completedAt": "2026-05-07T14:04:38Z"
+}

@@ -1,0 +1,18 @@
+============================= test session starts ==============================
+platform linux -- Python 3.11.0rc1, pytest-9.0.3, pluggy-1.6.0 -- /usr/bin/python3
+cachedir: .pytest_cache
+rootdir: /home/ubuntu/securecodeact
+configfile: pytest.ini
+plugins: anyio-4.11.0
+collecting ... collected 8 items
+
+tests/unit/test_patch_apply.py::TestCopyToWorkdir::test_copy_creates_file PASSED [ 12%]
+tests/unit/test_patch_apply.py::TestCopyToWorkdir::test_copy_preserves_content PASSED [ 25%]
+tests/unit/test_patch_apply.py::TestAdjustDiff::test_adjust_replaces_path PASSED [ 37%]
+tests/unit/test_patch_apply.py::TestApplyPatch::test_apply_creates_patched_file PASSED [ 50%]
+tests/unit/test_patch_apply.py::TestApplyPatch::test_apply_modifies_content PASSED [ 62%]
+tests/unit/test_patch_apply.py::TestApplyPatch::test_apply_valid_patch_succeeds PASSED [ 75%]
+tests/unit/test_patch_apply.py::TestApplyPatch::test_check_passes_before_apply PASSED [ 87%]
+tests/unit/test_patch_apply.py::TestApplyPatch::test_invalid_diff_fails PASSED [100%]
+
+============================== 8 passed in 0.17s ===============================

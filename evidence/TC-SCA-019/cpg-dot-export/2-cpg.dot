@@ -1,0 +1,17 @@
+digraph "zbx_db_dyn_escape_string" {  
+node [shape="rect"];  
+"107374182402" [label = <METHOD, 23<BR/>zbx_db_dyn_escape_string> ]
+"111669149698" [label = <PARAM, 23<BR/>const char *s> ]
+"25769803777" [label = <BLOCK, 23<BR/>{ return strdup(s); }> ]
+"141733920768" [label = <RETURN, 24<BR/>return strdup(s);> ]
+"30064771073" [label = <strdup, 24<BR/>strdup(s)> ]
+"68719476738" [label = <IDENTIFIER, 24<BR/>s<BR/>strdup(s)> ]
+"124554051585" [label = <METHOD_RETURN, 23<BR/>char*> ]
+  "107374182402" -> "111669149698"  [ label = "AST: "] 
+  "107374182402" -> "25769803777"  [ label = "AST: "] 
+  "107374182402" -> "124554051585"  [ label = "AST: "] 
+  "25769803777" -> "141733920768"  [ label = "AST: "] 
+  "141733920768" -> "30064771073"  [ label = "AST: "] 
+  "30064771073" -> "68719476738"  [ label = "AST: "] 
+  "107374182402" -> "111669149698"  [ label = "DDG: "] 
+}

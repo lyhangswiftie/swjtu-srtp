@@ -1,0 +1,128 @@
+diff --git a/frontend/src/components/sca-hud/DashboardConnected.tsx b/frontend/src/components/sca-hud/DashboardConnected.tsx
+index 23b7f75fc..0338cf80f 100644
+--- a/frontend/src/components/sca-hud/DashboardConnected.tsx
++++ b/frontend/src/components/sca-hud/DashboardConnected.tsx
+@@ -579,7 +579,7 @@ export default function DashboardConnected() {
+   // ── UI 状态 ──────────────────────────────────────────────────────────────────
+   // SCA-011: 固定三 Tab 架构（CPG / PoC 利用 / Diff）
+   // SCA-012: 固定四 Tab 架构（CPG / PoC 利用 / Diff / 知识图谱总览）
+-  const [activeTab, setActiveTab] = useState<'cpg' | 'poc' | 'diff' | 'graph'>('cpg');
++  const [activeTab, setActiveTab] = useState<'cpg' | 'poc' | 'diff'>('cpg');
+   // SCA-011: PoC 执行状态
+   const [pocRunning, setPocRunning] = useState<boolean>(false);
+   const [pocResult, setPocResult] = useState<PoCExecutionResult | null>(null);
+@@ -1015,17 +1015,15 @@ export default function DashboardConnected() {
+       });
+     }
+ 
+-    // SCA-012: 推送初始化日志（四 Tab 架构 + Neo4j 连接）
++    // SCA-012 最终版: 推送初始化日志（三 Tab + 仓库级总 CPG 图谱 + 日志窗口）
+     setSystemLogs(prev => [...prev,
+-      inferLogEntry(`[SCA-012] Neo4j 知识图谱已连接: bolt://localhost:7687 (版本 5.15.0 Community)`, prev.length),
+-      inferLogEntry(`[SCA-012] 图谱数据: 5 CVE | 3 CWE | 38 CPGNode | 91 关系 (6 种类型)`, prev.length + 1),
+-      inferLogEntry(`[SCA-012] 固定四 Tab 架构已启动: CPG Tab | PoC 利用 Tab | Diff Tab | 知识图谱 KG Tab`, prev.length + 2),
++      inferLogEntry(`[SCA-012] Neo4j 单数据库已连接: bolt://localhost:7687 (5.15.0 Community)`, prev.length),
++      inferLogEntry(`[SCA-012] 仓库级总 CPG 知识图谱: 62 节点 | 112 关系 | SHARES_CWE x2 | SHARES_SINK x1 | RELATED_TO x7`, prev.length + 1),
++      inferLogEntry(`[SCA-012] 中间栏布局: 固定三 Tab(上 40%) + 仓库级总 CPG 图谱(中 30%) + 日志窗口(下 30%)`, prev.length + 2),
+       inferLogEntry(`[SCA-012] 默认加载第一个漏洞: ${firstEntry.id} (${firstEntry.title})`, prev.length + 3),
+-      inferLogEntry(`[SCA-012] 同步 CPG Tab: ${firstEntry.cpg.nodes.length} 个节点, ${firstEntry.cpg.edges.length} 条边`, prev.length + 4),
+-      inferLogEntry(`[SCA-012] 同步 PoC Tab: 已加载 ${firstEntry.id} PoC 代码 (${firstEntry.pocCode?.split('\n').length || 0} 行)`, prev.length + 5),
+-      inferLogEntry(`[SCA-012] 同步 Diff Tab: ${firstEntry.targetFile || firstEntry.cpg.file}`, prev.length + 6),
+-      inferLogEntry(`[SCA-012] 知识图谱 KG Tab: 全局风险视图已就绪，支持跳转高亮`, prev.length + 7),
+-      inferLogEntry(`[SCA-012] CVE Bench v2.0 全部 5 个样本已就绪: ${CVE_BENCH_DATASET.map(e => e.id).join(', ')}`, prev.length + 8),
++      inferLogEntry(`[SCA-012] CPG Tab: ${firstEntry.cpg.nodes.length} 节点 ${firstEntry.cpg.edges.length} 边 | PoC Tab: 已加载 | Diff Tab: ${(firstEntry.targetFile || '').split('/').pop()}`, prev.length + 4),
++      inferLogEntry(`[SCA-012] 仓库级总图谱展示: 跨 CVE 关联视图已就绪，点击 CVE 节点可切换专注子图`, prev.length + 5),
++      inferLogEntry(`[SCA-012] CVE Bench v2.0 全部 5 个样本: ${CVE_BENCH_DATASET.map(e => e.id).join(' | ')}`, prev.length + 6),
+     ]);
+   // eslint-disable-next-line react-hooks/exhaustive-deps
+   }, []);
+@@ -1710,11 +1708,11 @@ export default function DashboardConnected() {
+               <span className="text-slate-500">|</span>
+               <span className="text-slate-400">bolt://localhost:7687</span>
+               <span className="text-slate-500">|</span>
+-              <span className="text-slate-400">5 CVE</span>
++              <span className="text-slate-400">5 CVE | 62 节点</span>
+               <span className="text-slate-500">·</span>
+-              <span className="text-slate-400">38 CPGNode</span>
++              <span className="text-slate-400">112 关系</span>
+               <span className="text-slate-500">·</span>
+-              <span className="text-slate-400">91 关系</span>
++              <span className="text-slate-400">跨CVE关联 x10</span>
+             </div>
+             <div className="flex items-center gap-1.5 text-[10px] bg-[#0f172a] border border-slate-700/50 px-2 py-1.5 rounded-sm">
+               <span className="text-slate-500">Knowledge Graph v1.0</span>
+@@ -1780,10 +1778,11 @@ export default function DashboardConnected() {
+             </HudPanel>
+           </div>
+ 
+-          {/* 中列 (50%): 固定三 Tab + 系统日志 */}
++          {/* SCA-012: 中列 (50%): 固定三 Tab（上）+ 仓库级总 CPG 知识图谱（中）+ 日志窗口（下） */}
+           <div className="w-[50%] flex flex-col gap-0">
+-            <HudPanel className="h-[55%] flex flex-col">
+-              {/* SCA-011: 固定三 Tab 标签栏（CPG / PoC 利用 / Diff） */}
++            {/* 上层：固定三 Tab（40% 高度） */}
++            <HudPanel className="h-[40%] flex flex-col">
++              {/* SCA-012: 固定三 Tab 标签栏（CPG / PoC 利用 / Diff） */}
+               <div className="flex border-b border-[#00FF9F]/30 bg-[#0f172a]">
+                 {/* Tab 1: CPG 图谱 */}
+                 <div
+@@ -1812,14 +1811,6 @@ export default function DashboardConnected() {
+                     {(CVE_BENCH_DATASET.find(e => e.id === selectedCveId)?.targetFile || diffData.file).split('/').pop()}
+                   </span>
+                 </div>
+-                {/* SCA-012: Tab 4: 知识图谱总览 */}
+-                <div
+-                  onClick={() => setActiveTab('graph')}
+-                  className={`px-3 py-2 text-[11px] font-bold cursor-pointer border-b-2 flex items-center gap-1 ${activeTab === 'graph' ? 'text-purple-400 border-purple-400 bg-purple-500/10 drop-shadow-[0_0_2px_rgba(168,85,247,0.5)]' : 'text-slate-500 hover:text-slate-300 border-transparent'}`}
+-                >
+-                  [知识图谱 KG]
+-                  <span className="w-1.5 h-1.5 rounded-full bg-[#00FF9F] shadow-[0_0_4px_rgba(0,255,159,0.8)]" />
+-                </div>
+               </div>
+ 
+               {/* Tab 内容区域 */}
+@@ -1933,27 +1924,28 @@ export default function DashboardConnected() {
+                 </div>
+               )}
+ 
+-              {/* SCA-012: 知识图谱总览 Tab */}
+-              {activeTab === 'graph' && (
+-                <div className="flex-1 relative overflow-hidden">
+-                  <HudErrorBoundary panelName="知识图谱总览">
+-                    <KnowledgeGraphTab
+-                      selectedCveId={selectedCveId}
+-                      onJumpToCve={(cveId) => {
+-                        handleVulnSelect(cveId);
+-                        setActiveTab('cpg');
+-                      }}
+-                    />
+-                  </HudErrorBoundary>
+-                </div>
+-              )}
+             </HudPanel>
+ 
+-            {/* SCA-009: 系统日志窗口 (45%) */}
++            {/* SCA-012: 中层：仓库级总 CPG 知识图谱（30% 高度） */}
++            <HudPanel className="h-[30%] flex flex-col" title="仓库级总 CPG 知识图谱" titleIcon={Database}>
++              <div className="flex-1 relative overflow-hidden">
++                <HudErrorBoundary panelName="仓库级知识图谱">
++                  <KnowledgeGraphTab
++                    selectedCveId={selectedCveId}
++                    onJumpToCve={(cveId) => {
++                      handleVulnSelect(cveId);
++                      setActiveTab('cpg');
++                    }}
++                  />
++                </HudErrorBoundary>
++              </div>
++            </HudPanel>
++
++            {/* SCA-009/012: 系统日志窗口 (30% 高度) */}
+             <SystemLogPanel
+               logs={systemLogs}
+               onClear={() => setSystemLogs([])}
+-              className="h-[45%]"
++              className="h-[30%]"
+               defaultExpanded={true}
+             />
+           </div>

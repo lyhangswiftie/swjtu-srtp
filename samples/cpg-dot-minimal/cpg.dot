@@ -1,0 +1,26 @@
+digraph cpg {
+  /* Minimal CPG DOT fixture for TC-SCA-019 G1 offline test */
+  /* Represents CVE-2024-22120 audit.c taint path */
+
+  n1 [label="METHOD_PARAMETER_IN\nclientip\nLINE_NUMBER: 33\nCODE: const char *clientip"]
+  n2 [label="IDENTIFIER\nvalue_esc\nLINE_NUMBER: 35\nCODE: value_esc = zbx_db_dyn_escape_string(clientip)"]
+  n3 [label="CALL\nzbx_db_dyn_escape_string\nLINE_NUMBER: 35\nCODE: zbx_db_dyn_escape_string(clientip)"]
+  n4 [label="IDENTIFIER\nclientip\nLINE_NUMBER: 39\nCODE: clientip"]
+  n5 [label="CALL\nsnprintf\nLINE_NUMBER: 37\nCODE: snprintf(sql, sizeof(sql), \"...\", clientip)"]
+  n6 [label="IDENTIFIER\nsql\nLINE_NUMBER: 34\nCODE: char sql[1024]"]
+  n7 [label="CALL\nzbx_db_execute\nLINE_NUMBER: 42\nCODE: zbx_db_execute(\"%s\", sql)"]
+  n8 [label="METHOD\nzbx_audit_log_clientip\nLINE_NUMBER: 33\nCODE: void zbx_audit_log_clientip(const char *clientip)"]
+  n9 [label="CALL\nfree\nLINE_NUMBER: 43\nCODE: free(value_esc)"]
+  n10 [label="METHOD_PARAMETER_IN\nargv\nLINE_NUMBER: 46\nCODE: char **argv"]
+
+  n1 -> n3 [label="REACHING_DEF"]
+  n1 -> n4 [label="REACHING_DEF"]
+  n3 -> n2 [label="REACHING_DEF"]
+  n4 -> n5 [label="REACHING_DEF"]
+  n5 -> n6 [label="REACHING_DEF"]
+  n6 -> n7 [label="REACHING_DEF"]
+  n8 -> n1 [label="CFG"]
+  n8 -> n7 [label="CFG"]
+  n10 -> n1 [label="CALL"]
+  n2 -> n9 [label="REACHING_DEF"]
+}

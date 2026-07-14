@@ -1,0 +1,2011 @@
+{
+  "cveId": "CVE-2024-22120",
+  "file": "samples/cve-2024-22120/audit.c",
+  "generatedAt": "2026-05-07T11:26:42.625642Z",
+  "nodes": [
+    {
+      "id": "node_0",
+      "type": "sink",
+      "label": "zbx_db_execute",
+      "subLabel": "METHOD",
+      "file": "audit.c",
+      "line": 18,
+      "code": "zbx_db_execute"
+    },
+    {
+      "id": "node_1",
+      "type": "source",
+      "label": "const char *fmt",
+      "subLabel": "PARAM",
+      "file": "audit.c",
+      "line": 18,
+      "code": "const char *fmt"
+    },
+    {
+      "id": "node_2",
+      "type": "source",
+      "label": "const char *sql",
+      "subLabel": "PARAM",
+      "file": "audit.c",
+      "line": 18,
+      "code": "const char *sql"
+    },
+    {
+      "id": "node_3",
+      "type": "cfg",
+      "label": "{ printf(fmt, sql); }",
+      "subLabel": "BLOCK",
+      "file": "audit.c",
+      "line": 18,
+      "code": "{ printf(fmt, sql); }"
+    },
+    {
+      "id": "node_4",
+      "type": "call",
+      "label": "printf(fmt, sql)",
+      "subLabel": "printf",
+      "file": "audit.c",
+      "line": 19,
+      "code": "printf(fmt, sql)"
+    },
+    {
+      "id": "node_5",
+      "type": "taint",
+      "label": "fmt",
+      "subLabel": "IDENTIFIER",
+      "file": "audit.c",
+      "line": 19,
+      "code": "printf(fmt, sql)"
+    },
+    {
+      "id": "node_6",
+      "type": "taint",
+      "label": "sql",
+      "subLabel": "IDENTIFIER",
+      "file": "audit.c",
+      "line": 19,
+      "code": "printf(fmt, sql)"
+    },
+    {
+      "id": "node_7",
+      "type": "cfg",
+      "label": "void",
+      "subLabel": "METHOD_RETURN",
+      "file": "audit.c",
+      "line": 18,
+      "code": "void"
+    },
+    {
+      "id": "node_8",
+      "type": "cfg",
+      "label": "&lt;global&gt;",
+      "subLabel": "METHOD",
+      "file": "audit.c",
+      "line": 1,
+      "code": "&lt;global&gt;"
+    },
+    {
+      "id": "node_9",
+      "type": "sink",
+      "label": "zbx_db_execute",
+      "subLabel": "METHOD",
+      "file": "audit.c",
+      "line": 18,
+      "code": "zbx_db_execute"
+    },
+    {
+      "id": "node_10",
+      "type": "source",
+      "label": "const char *fmt",
+      "subLabel": "PARAM",
+      "file": "audit.c",
+      "line": 18,
+      "code": "const char *fmt"
+    },
+    {
+      "id": "node_11",
+      "type": "source",
+      "label": "const char *sql",
+      "subLabel": "PARAM",
+      "file": "audit.c",
+      "line": 18,
+      "code": "const char *sql"
+    },
+    {
+      "id": "node_12",
+      "type": "cfg",
+      "label": "{ printf(fmt, sql); }",
+      "subLabel": "BLOCK",
+      "file": "audit.c",
+      "line": 18,
+      "code": "{ printf(fmt, sql); }"
+    },
+    {
+      "id": "node_13",
+      "type": "call",
+      "label": "printf(fmt, sql)",
+      "subLabel": "printf",
+      "file": "audit.c",
+      "line": 19,
+      "code": "printf(fmt, sql)"
+    },
+    {
+      "id": "node_14",
+      "type": "taint",
+      "label": "fmt",
+      "subLabel": "IDENTIFIER",
+      "file": "audit.c",
+      "line": 19,
+      "code": "printf(fmt, sql)"
+    },
+    {
+      "id": "node_15",
+      "type": "taint",
+      "label": "sql",
+      "subLabel": "IDENTIFIER",
+      "file": "audit.c",
+      "line": 19,
+      "code": "printf(fmt, sql)"
+    },
+    {
+      "id": "node_16",
+      "type": "cfg",
+      "label": "void",
+      "subLabel": "METHOD_RETURN",
+      "file": "audit.c",
+      "line": 18,
+      "code": "void"
+    },
+    {
+      "id": "node_17",
+      "type": "cfg",
+      "label": "zbx_db_dyn_escape_string",
+      "subLabel": "METHOD",
+      "file": "audit.c",
+      "line": 23,
+      "code": "zbx_db_dyn_escape_string"
+    },
+    {
+      "id": "node_18",
+      "type": "source",
+      "label": "const char *s",
+      "subLabel": "PARAM",
+      "file": "audit.c",
+      "line": 23,
+      "code": "const char *s"
+    },
+    {
+      "id": "node_19",
+      "type": "cfg",
+      "label": "{ return strdup(s); }",
+      "subLabel": "BLOCK",
+      "file": "audit.c",
+      "line": 23,
+      "code": "{ return strdup(s); }"
+    },
+    {
+      "id": "node_20",
+      "type": "ast",
+      "label": "return strdup(s);",
+      "subLabel": "RETURN",
+      "file": "audit.c",
+      "line": 24,
+      "code": "return strdup(s);"
+    },
+    {
+      "id": "node_21",
+      "type": "call",
+      "label": "strdup(s)",
+      "subLabel": "strdup",
+      "file": "audit.c",
+      "line": 24,
+      "code": "strdup(s)"
+    },
+    {
+      "id": "node_22",
+      "type": "taint",
+      "label": "s",
+      "subLabel": "IDENTIFIER",
+      "file": "audit.c",
+      "line": 24,
+      "code": "strdup(s)"
+    },
+    {
+      "id": "node_23",
+      "type": "cfg",
+      "label": "char*",
+      "subLabel": "METHOD_RETURN",
+      "file": "audit.c",
+      "line": 23,
+      "code": "char*"
+    },
+    {
+      "id": "node_24",
+      "type": "cfg",
+      "label": "zbx_audit_log_clientip",
+      "subLabel": "METHOD",
+      "file": "audit.c",
+      "line": 35,
+      "code": "zbx_audit_log_clientip"
+    },
+    {
+      "id": "node_25",
+      "type": "source",
+      "label": "const char *clientip",
+      "subLabel": "PARAM",
+      "file": "audit.c",
+      "line": 35,
+      "code": "const char *clientip"
+    },
+    {
+      "id": "node_26",
+      "type": "cfg",
+      "label": "{ char sql[1024]; char *value_esc = zbx...",
+      "subLabel": "BLOCK",
+      "file": "audit.c",
+      "line": 35,
+      "code": "{ char sql[1024]; char *value_esc = zbx..."
+    },
+    {
+      "id": "node_27",
+      "type": "taint",
+      "label": "char sql[1024]: char[1024]",
+      "subLabel": "LOCAL",
+      "file": "audit.c",
+      "line": 36,
+      "code": "char sql[1024]: char[1024]"
+    },
+    {
+      "id": "node_28",
+      "type": "call",
+      "label": "sql[1024]",
+      "subLabel": "&lt;operator&gt;.assignment",
+      "file": "audit.c",
+      "line": 36,
+      "code": "sql[1024]"
+    },
+    {
+      "id": "node_29",
+      "type": "taint",
+      "label": "sql",
+      "subLabel": "IDENTIFIER",
+      "file": "audit.c",
+      "line": 36,
+      "code": "sql[1024]"
+    },
+    {
+      "id": "node_30",
+      "type": "call",
+      "label": "sql[1024]",
+      "subLabel": "&lt;operator&gt;.alloc",
+      "file": "audit.c",
+      "line": 36,
+      "code": "sql[1024]"
+    },
+    {
+      "id": "node_31",
+      "type": "taint",
+      "label": "char[1024]",
+      "subLabel": "IDENTIFIER",
+      "file": "audit.c",
+      "line": 36,
+      "code": "sql[1024]"
+    },
+    {
+      "id": "node_32",
+      "type": "ast",
+      "label": "1024",
+      "subLabel": "LITERAL",
+      "file": "audit.c",
+      "line": 36,
+      "code": "sql[1024]"
+    },
+    {
+      "id": "node_33",
+      "type": "taint",
+      "label": "char *value_esc: char*",
+      "subLabel": "LOCAL",
+      "file": "audit.c",
+      "line": 37,
+      "code": "char *value_esc: char*"
+    },
+    {
+      "id": "node_34",
+      "type": "call",
+      "label": "*value_esc = zbx_db_dyn_escape_string(clientip)",
+      "subLabel": "&lt;operator&gt;.assignment",
+      "file": "audit.c",
+      "line": 37,
+      "code": "*value_esc = zbx_db_dyn_escape_string(clientip)"
+    },
+    {
+      "id": "node_35",
+      "type": "taint",
+      "label": "value_esc",
+      "subLabel": "IDENTIFIER",
+      "file": "audit.c",
+      "line": 37,
+      "code": "*value_esc = zbx_db_dyn_escape_string(clientip)"
+    },
+    {
+      "id": "node_36",
+      "type": "call",
+      "label": "zbx_db_dyn_escape_string(clientip)",
+      "subLabel": "zbx_db_dyn_escape_string",
+      "file": "audit.c",
+      "line": 37,
+      "code": "zbx_db_dyn_escape_string(clientip)"
+    },
+    {
+      "id": "node_37",
+      "type": "taint",
+      "label": "clientip",
+      "subLabel": "IDENTIFIER",
+      "file": "audit.c",
+      "line": 37,
+      "code": "zbx_db_dyn_escape_string(clientip)"
+    },
+    {
+      "id": "node_38",
+      "type": "sink",
+      "label": "snprintf(sql, sizeof(sql), &quot;INSERT...",
+      "subLabel": "snprintf",
+      "file": "audit.c",
+      "line": 40,
+      "code": "snprintf(sql, sizeof(sql), &quot;INSERT..."
+    },
+    {
+      "id": "node_39",
+      "type": "sink",
+      "label": "sql",
+      "subLabel": "IDENTIFIER",
+      "file": "audit.c",
+      "line": 40,
+      "code": "snprintf(sql, sizeof(sql), &quot;INSERT..."
+    },
+    {
+      "id": "node_40",
+      "type": "call",
+      "label": "sizeof(sql)",
+      "subLabel": "&lt;operator&gt;.sizeOf",
+      "file": "audit.c",
+      "line": 40,
+      "code": "sizeof(sql)"
+    },
+    {
+      "id": "node_41",
+      "type": "taint",
+      "label": "sql",
+      "subLabel": "IDENTIFIER",
+      "file": "audit.c",
+      "line": 40,
+      "code": "sizeof(sql)"
+    },
+    {
+      "id": "node_42",
+      "type": "sink",
+      "label": "&quot;INSERT INTO auditlog(clientip) VALUES('%s')&quot;",
+      "subLabel": "LITERAL",
+      "file": "audit.c",
+      "line": 41,
+      "code": "snprintf(sql, sizeof(sql), &quot;INSERT..."
+    },
+    {
+      "id": "node_43",
+      "type": "sink",
+      "label": "clientip",
+      "subLabel": "IDENTIFIER",
+      "file": "audit.c",
+      "line": 42,
+      "code": "snprintf(sql, sizeof(sql), &quot;INSERT..."
+    },
+    {
+      "id": "node_44",
+      "type": "sink",
+      "label": "zbx_db_execute(&quot;%s&quot;, sql)",
+      "subLabel": "zbx_db_execute",
+      "file": "audit.c",
+      "line": 44,
+      "code": "zbx_db_execute(&quot;%s&quot;, sql)"
+    },
+    {
+      "id": "node_45",
+      "type": "sink",
+      "label": "&quot;%s&quot;",
+      "subLabel": "LITERAL",
+      "file": "audit.c",
+      "line": 44,
+      "code": "zbx_db_execute(&quot;%s&quot;, sql)"
+    },
+    {
+      "id": "node_46",
+      "type": "sink",
+      "label": "sql",
+      "subLabel": "IDENTIFIER",
+      "file": "audit.c",
+      "line": 44,
+      "code": "zbx_db_execute(&quot;%s&quot;, sql)"
+    },
+    {
+      "id": "node_47",
+      "type": "call",
+      "label": "free(value_esc)",
+      "subLabel": "free",
+      "file": "audit.c",
+      "line": 45,
+      "code": "free(value_esc)"
+    },
+    {
+      "id": "node_48",
+      "type": "taint",
+      "label": "value_esc",
+      "subLabel": "IDENTIFIER",
+      "file": "audit.c",
+      "line": 45,
+      "code": "free(value_esc)"
+    },
+    {
+      "id": "node_49",
+      "type": "cfg",
+      "label": "void",
+      "subLabel": "METHOD_RETURN",
+      "file": "audit.c",
+      "line": 35,
+      "code": "void"
+    },
+    {
+      "id": "node_50",
+      "type": "cfg",
+      "label": "main",
+      "subLabel": "METHOD",
+      "file": "audit.c",
+      "line": 48,
+      "code": "main"
+    },
+    {
+      "id": "node_51",
+      "type": "source",
+      "label": "int argc",
+      "subLabel": "PARAM",
+      "file": "audit.c",
+      "line": 48,
+      "code": "int argc"
+    },
+    {
+      "id": "node_52",
+      "type": "source",
+      "label": "char **argv",
+      "subLabel": "PARAM",
+      "file": "audit.c",
+      "line": 48,
+      "code": "char **argv"
+    },
+    {
+      "id": "node_53",
+      "type": "cfg",
+      "label": "{ if (argc &gt; 1) { /* source: argv[1...",
+      "subLabel": "BLOCK",
+      "file": "audit.c",
+      "line": 48,
+      "code": "{ if (argc &gt; 1) { /* source: argv[1..."
+    },
+    {
+      "id": "node_54",
+      "type": "cfg",
+      "label": "IF",
+      "subLabel": "CONTROL_STRUCTURE",
+      "file": "audit.c",
+      "line": 49,
+      "code": "if (argc &gt; 1) { /* source: argv[1] is u..."
+    },
+    {
+      "id": "node_55",
+      "type": "call",
+      "label": "argc &gt; 1",
+      "subLabel": "&lt;operator&gt;.greaterThan",
+      "file": "audit.c",
+      "line": 49,
+      "code": "argc &gt; 1"
+    },
+    {
+      "id": "node_56",
+      "type": "taint",
+      "label": "argc",
+      "subLabel": "IDENTIFIER",
+      "file": "audit.c",
+      "line": 49,
+      "code": "argc &gt; 1"
+    },
+    {
+      "id": "node_57",
+      "type": "ast",
+      "label": "1",
+      "subLabel": "LITERAL",
+      "file": "audit.c",
+      "line": 49,
+      "code": "argc &gt; 1"
+    },
+    {
+      "id": "node_58",
+      "type": "cfg",
+      "label": "{ /* source: argv[1] is user-controlled...",
+      "subLabel": "BLOCK",
+      "file": "audit.c",
+      "line": 49,
+      "code": "{ /* source: argv[1] is user-controlled..."
+    },
+    {
+      "id": "node_59",
+      "type": "call",
+      "label": "zbx_audit_log_clientip(argv[1])",
+      "subLabel": "zbx_audit_log_clientip",
+      "file": "audit.c",
+      "line": 51,
+      "code": "zbx_audit_log_clientip(argv[1])"
+    },
+    {
+      "id": "node_60",
+      "type": "call",
+      "label": "argv[1]",
+      "subLabel": "&lt;operator&gt;.indirectIndexAccess",
+      "file": "audit.c",
+      "line": 51,
+      "code": "argv[1]"
+    },
+    {
+      "id": "node_61",
+      "type": "taint",
+      "label": "argv",
+      "subLabel": "IDENTIFIER",
+      "file": "audit.c",
+      "line": 51,
+      "code": "zbx_audit_log_clientip(argv[1])"
+    },
+    {
+      "id": "node_62",
+      "type": "ast",
+      "label": "1",
+      "subLabel": "LITERAL",
+      "file": "audit.c",
+      "line": 51,
+      "code": "zbx_audit_log_clientip(argv[1])"
+    },
+    {
+      "id": "node_63",
+      "type": "ast",
+      "label": "return 0;",
+      "subLabel": "RETURN",
+      "file": "audit.c",
+      "line": 53,
+      "code": "return 0;"
+    },
+    {
+      "id": "node_64",
+      "type": "ast",
+      "label": "0",
+      "subLabel": "LITERAL",
+      "file": "audit.c",
+      "line": 53,
+      "code": "return 0;"
+    },
+    {
+      "id": "node_65",
+      "type": "cfg",
+      "label": "int",
+      "subLabel": "METHOD_RETURN",
+      "file": "audit.c",
+      "line": 48,
+      "code": "int"
+    },
+    {
+      "id": "node_66",
+      "type": "cfg",
+      "label": "&lt;empty&gt;",
+      "subLabel": "BLOCK",
+      "file": "audit.c",
+      "line": 1,
+      "code": "&lt;empty&gt;"
+    },
+    {
+      "id": "node_67",
+      "type": "call",
+      "label": "zbx_db_execute",
+      "subLabel": "METHOD_REF",
+      "file": "audit.c",
+      "line": 18,
+      "code": "&lt;empty&gt;"
+    },
+    {
+      "id": "node_68",
+      "type": "call",
+      "label": "zbx_db_dyn_escape_string",
+      "subLabel": "METHOD_REF",
+      "file": "audit.c",
+      "line": 23,
+      "code": "&lt;empty&gt;"
+    },
+    {
+      "id": "node_69",
+      "type": "call",
+      "label": "zbx_audit_log_clientip",
+      "subLabel": "METHOD_REF",
+      "file": "audit.c",
+      "line": 35,
+      "code": "&lt;empty&gt;"
+    },
+    {
+      "id": "node_70",
+      "type": "call",
+      "label": "main",
+      "subLabel": "METHOD_REF",
+      "file": "audit.c",
+      "line": 48,
+      "code": "&lt;empty&gt;"
+    },
+    {
+      "id": "node_71",
+      "type": "cfg",
+      "label": "ANY",
+      "subLabel": "METHOD_RETURN",
+      "file": "audit.c",
+      "line": 1,
+      "code": "ANY"
+    },
+    {
+      "id": "node_72",
+      "type": "cfg",
+      "label": "zbx_db_dyn_escape_string",
+      "subLabel": "METHOD",
+      "file": "audit.c",
+      "line": 23,
+      "code": "zbx_db_dyn_escape_string"
+    },
+    {
+      "id": "node_73",
+      "type": "source",
+      "label": "const char *s",
+      "subLabel": "PARAM",
+      "file": "audit.c",
+      "line": 23,
+      "code": "const char *s"
+    },
+    {
+      "id": "node_74",
+      "type": "cfg",
+      "label": "{ return strdup(s); }",
+      "subLabel": "BLOCK",
+      "file": "audit.c",
+      "line": 23,
+      "code": "{ return strdup(s); }"
+    },
+    {
+      "id": "node_75",
+      "type": "ast",
+      "label": "return strdup(s);",
+      "subLabel": "RETURN",
+      "file": "audit.c",
+      "line": 24,
+      "code": "return strdup(s);"
+    },
+    {
+      "id": "node_76",
+      "type": "call",
+      "label": "strdup(s)",
+      "subLabel": "strdup",
+      "file": "audit.c",
+      "line": 24,
+      "code": "strdup(s)"
+    },
+    {
+      "id": "node_77",
+      "type": "taint",
+      "label": "s",
+      "subLabel": "IDENTIFIER",
+      "file": "audit.c",
+      "line": 24,
+      "code": "strdup(s)"
+    },
+    {
+      "id": "node_78",
+      "type": "cfg",
+      "label": "char*",
+      "subLabel": "METHOD_RETURN",
+      "file": "audit.c",
+      "line": 23,
+      "code": "char*"
+    },
+    {
+      "id": "node_79",
+      "type": "cfg",
+      "label": "zbx_audit_log_clientip",
+      "subLabel": "METHOD",
+      "file": "audit.c",
+      "line": 35,
+      "code": "zbx_audit_log_clientip"
+    },
+    {
+      "id": "node_80",
+      "type": "source",
+      "label": "const char *clientip",
+      "subLabel": "PARAM",
+      "file": "audit.c",
+      "line": 35,
+      "code": "const char *clientip"
+    },
+    {
+      "id": "node_81",
+      "type": "cfg",
+      "label": "{ char sql[1024]; char *value_esc = zbx...",
+      "subLabel": "BLOCK",
+      "file": "audit.c",
+      "line": 35,
+      "code": "{ char sql[1024]; char *value_esc = zbx..."
+    },
+    {
+      "id": "node_82",
+      "type": "taint",
+      "label": "char sql[1024]: char[1024]",
+      "subLabel": "LOCAL",
+      "file": "audit.c",
+      "line": 36,
+      "code": "char sql[1024]: char[1024]"
+    },
+    {
+      "id": "node_83",
+      "type": "call",
+      "label": "sql[1024]",
+      "subLabel": "&lt;operator&gt;.assignment",
+      "file": "audit.c",
+      "line": 36,
+      "code": "sql[1024]"
+    },
+    {
+      "id": "node_84",
+      "type": "taint",
+      "label": "sql",
+      "subLabel": "IDENTIFIER",
+      "file": "audit.c",
+      "line": 36,
+      "code": "sql[1024]"
+    },
+    {
+      "id": "node_85",
+      "type": "call",
+      "label": "sql[1024]",
+      "subLabel": "&lt;operator&gt;.alloc",
+      "file": "audit.c",
+      "line": 36,
+      "code": "sql[1024]"
+    },
+    {
+      "id": "node_86",
+      "type": "taint",
+      "label": "char[1024]",
+      "subLabel": "IDENTIFIER",
+      "file": "audit.c",
+      "line": 36,
+      "code": "sql[1024]"
+    },
+    {
+      "id": "node_87",
+      "type": "ast",
+      "label": "1024",
+      "subLabel": "LITERAL",
+      "file": "audit.c",
+      "line": 36,
+      "code": "sql[1024]"
+    },
+    {
+      "id": "node_88",
+      "type": "taint",
+      "label": "char *value_esc: char*",
+      "subLabel": "LOCAL",
+      "file": "audit.c",
+      "line": 37,
+      "code": "char *value_esc: char*"
+    },
+    {
+      "id": "node_89",
+      "type": "call",
+      "label": "*value_esc = zbx_db_dyn_escape_string(clientip)",
+      "subLabel": "&lt;operator&gt;.assignment",
+      "file": "audit.c",
+      "line": 37,
+      "code": "*value_esc = zbx_db_dyn_escape_string(clientip)"
+    },
+    {
+      "id": "node_90",
+      "type": "taint",
+      "label": "value_esc",
+      "subLabel": "IDENTIFIER",
+      "file": "audit.c",
+      "line": 37,
+      "code": "*value_esc = zbx_db_dyn_escape_string(clientip)"
+    },
+    {
+      "id": "node_91",
+      "type": "call",
+      "label": "zbx_db_dyn_escape_string(clientip)",
+      "subLabel": "zbx_db_dyn_escape_string",
+      "file": "audit.c",
+      "line": 37,
+      "code": "zbx_db_dyn_escape_string(clientip)"
+    },
+    {
+      "id": "node_92",
+      "type": "taint",
+      "label": "clientip",
+      "subLabel": "IDENTIFIER",
+      "file": "audit.c",
+      "line": 37,
+      "code": "zbx_db_dyn_escape_string(clientip)"
+    },
+    {
+      "id": "node_93",
+      "type": "sink",
+      "label": "snprintf(sql, sizeof(sql), &quot;INSERT...",
+      "subLabel": "snprintf",
+      "file": "audit.c",
+      "line": 40,
+      "code": "snprintf(sql, sizeof(sql), &quot;INSERT..."
+    },
+    {
+      "id": "node_94",
+      "type": "sink",
+      "label": "sql",
+      "subLabel": "IDENTIFIER",
+      "file": "audit.c",
+      "line": 40,
+      "code": "snprintf(sql, sizeof(sql), &quot;INSERT..."
+    },
+    {
+      "id": "node_95",
+      "type": "call",
+      "label": "sizeof(sql)",
+      "subLabel": "&lt;operator&gt;.sizeOf",
+      "file": "audit.c",
+      "line": 40,
+      "code": "sizeof(sql)"
+    },
+    {
+      "id": "node_96",
+      "type": "taint",
+      "label": "sql",
+      "subLabel": "IDENTIFIER",
+      "file": "audit.c",
+      "line": 40,
+      "code": "sizeof(sql)"
+    },
+    {
+      "id": "node_97",
+      "type": "sink",
+      "label": "&quot;INSERT INTO auditlog(clientip) VALUES('%s')&quot;",
+      "subLabel": "LITERAL",
+      "file": "audit.c",
+      "line": 41,
+      "code": "snprintf(sql, sizeof(sql), &quot;INSERT..."
+    },
+    {
+      "id": "node_98",
+      "type": "sink",
+      "label": "clientip",
+      "subLabel": "IDENTIFIER",
+      "file": "audit.c",
+      "line": 42,
+      "code": "snprintf(sql, sizeof(sql), &quot;INSERT..."
+    },
+    {
+      "id": "node_99",
+      "type": "sink",
+      "label": "zbx_db_execute(&quot;%s&quot;, sql)",
+      "subLabel": "zbx_db_execute",
+      "file": "audit.c",
+      "line": 44,
+      "code": "zbx_db_execute(&quot;%s&quot;, sql)"
+    },
+    {
+      "id": "node_100",
+      "type": "sink",
+      "label": "&quot;%s&quot;",
+      "subLabel": "LITERAL",
+      "file": "audit.c",
+      "line": 44,
+      "code": "zbx_db_execute(&quot;%s&quot;, sql)"
+    },
+    {
+      "id": "node_101",
+      "type": "sink",
+      "label": "sql",
+      "subLabel": "IDENTIFIER",
+      "file": "audit.c",
+      "line": 44,
+      "code": "zbx_db_execute(&quot;%s&quot;, sql)"
+    },
+    {
+      "id": "node_102",
+      "type": "call",
+      "label": "free(value_esc)",
+      "subLabel": "free",
+      "file": "audit.c",
+      "line": 45,
+      "code": "free(value_esc)"
+    },
+    {
+      "id": "node_103",
+      "type": "taint",
+      "label": "value_esc",
+      "subLabel": "IDENTIFIER",
+      "file": "audit.c",
+      "line": 45,
+      "code": "free(value_esc)"
+    },
+    {
+      "id": "node_104",
+      "type": "cfg",
+      "label": "void",
+      "subLabel": "METHOD_RETURN",
+      "file": "audit.c",
+      "line": 35,
+      "code": "void"
+    },
+    {
+      "id": "node_105",
+      "type": "cfg",
+      "label": "main",
+      "subLabel": "METHOD",
+      "file": "audit.c",
+      "line": 48,
+      "code": "main"
+    },
+    {
+      "id": "node_106",
+      "type": "source",
+      "label": "int argc",
+      "subLabel": "PARAM",
+      "file": "audit.c",
+      "line": 48,
+      "code": "int argc"
+    },
+    {
+      "id": "node_107",
+      "type": "source",
+      "label": "char **argv",
+      "subLabel": "PARAM",
+      "file": "audit.c",
+      "line": 48,
+      "code": "char **argv"
+    },
+    {
+      "id": "node_108",
+      "type": "cfg",
+      "label": "{ if (argc &gt; 1) { /* source: argv[1...",
+      "subLabel": "BLOCK",
+      "file": "audit.c",
+      "line": 48,
+      "code": "{ if (argc &gt; 1) { /* source: argv[1..."
+    },
+    {
+      "id": "node_109",
+      "type": "cfg",
+      "label": "IF",
+      "subLabel": "CONTROL_STRUCTURE",
+      "file": "audit.c",
+      "line": 49,
+      "code": "if (argc &gt; 1) { /* source: argv[1] is u..."
+    },
+    {
+      "id": "node_110",
+      "type": "call",
+      "label": "argc &gt; 1",
+      "subLabel": "&lt;operator&gt;.greaterThan",
+      "file": "audit.c",
+      "line": 49,
+      "code": "argc &gt; 1"
+    },
+    {
+      "id": "node_111",
+      "type": "taint",
+      "label": "argc",
+      "subLabel": "IDENTIFIER",
+      "file": "audit.c",
+      "line": 49,
+      "code": "argc &gt; 1"
+    },
+    {
+      "id": "node_112",
+      "type": "ast",
+      "label": "1",
+      "subLabel": "LITERAL",
+      "file": "audit.c",
+      "line": 49,
+      "code": "argc &gt; 1"
+    },
+    {
+      "id": "node_113",
+      "type": "cfg",
+      "label": "{ /* source: argv[1] is user-controlled...",
+      "subLabel": "BLOCK",
+      "file": "audit.c",
+      "line": 49,
+      "code": "{ /* source: argv[1] is user-controlled..."
+    },
+    {
+      "id": "node_114",
+      "type": "call",
+      "label": "zbx_audit_log_clientip(argv[1])",
+      "subLabel": "zbx_audit_log_clientip",
+      "file": "audit.c",
+      "line": 51,
+      "code": "zbx_audit_log_clientip(argv[1])"
+    },
+    {
+      "id": "node_115",
+      "type": "call",
+      "label": "argv[1]",
+      "subLabel": "&lt;operator&gt;.indirectIndexAccess",
+      "file": "audit.c",
+      "line": 51,
+      "code": "argv[1]"
+    },
+    {
+      "id": "node_116",
+      "type": "taint",
+      "label": "argv",
+      "subLabel": "IDENTIFIER",
+      "file": "audit.c",
+      "line": 51,
+      "code": "zbx_audit_log_clientip(argv[1])"
+    },
+    {
+      "id": "node_117",
+      "type": "ast",
+      "label": "1",
+      "subLabel": "LITERAL",
+      "file": "audit.c",
+      "line": 51,
+      "code": "zbx_audit_log_clientip(argv[1])"
+    },
+    {
+      "id": "node_118",
+      "type": "ast",
+      "label": "return 0;",
+      "subLabel": "RETURN",
+      "file": "audit.c",
+      "line": 53,
+      "code": "return 0;"
+    },
+    {
+      "id": "node_119",
+      "type": "ast",
+      "label": "0",
+      "subLabel": "LITERAL",
+      "file": "audit.c",
+      "line": 53,
+      "code": "return 0;"
+    },
+    {
+      "id": "node_120",
+      "type": "cfg",
+      "label": "int",
+      "subLabel": "METHOD_RETURN",
+      "file": "audit.c",
+      "line": 48,
+      "code": "int"
+    },
+    {
+      "id": "node_121",
+      "type": "cfg",
+      "label": "&lt;global&gt;",
+      "subLabel": "METHOD",
+      "file": "audit.c",
+      "line": 1,
+      "code": "&lt;global&gt;"
+    },
+    {
+      "id": "node_122",
+      "type": "ast",
+      "label": "",
+      "subLabel": "UNKNOWN",
+      "file": "audit.c",
+      "line": 0,
+      "code": ""
+    },
+    {
+      "id": "node_123",
+      "type": "cfg",
+      "label": "ANY",
+      "subLabel": "METHOD_RETURN",
+      "file": "audit.c",
+      "line": 1,
+      "code": "ANY"
+    }
+  ],
+  "edges": [
+    {
+      "id": "edge_0",
+      "source": "node_0",
+      "target": "node_1",
+      "type": "taintprop",
+      "label": "AST:"
+    },
+    {
+      "id": "edge_1",
+      "source": "node_0",
+      "target": "node_2",
+      "type": "taintprop",
+      "label": "AST:"
+    },
+    {
+      "id": "edge_2",
+      "source": "node_0",
+      "target": "node_3",
+      "type": "taintprop",
+      "label": "AST:"
+    },
+    {
+      "id": "edge_3",
+      "source": "node_0",
+      "target": "node_7",
+      "type": "taintprop",
+      "label": "AST:"
+    },
+    {
+      "id": "edge_4",
+      "source": "node_3",
+      "target": "node_4",
+      "type": "taintprop",
+      "label": "AST:"
+    },
+    {
+      "id": "edge_5",
+      "source": "node_4",
+      "target": "node_5",
+      "type": "taintprop",
+      "label": "AST:"
+    },
+    {
+      "id": "edge_6",
+      "source": "node_4",
+      "target": "node_6",
+      "type": "taintprop",
+      "label": "AST:"
+    },
+    {
+      "id": "edge_7",
+      "source": "node_0",
+      "target": "node_1",
+      "type": "dataflow",
+      "label": "DDG:"
+    },
+    {
+      "id": "edge_8",
+      "source": "node_0",
+      "target": "node_2",
+      "type": "dataflow",
+      "label": "DDG:"
+    },
+    {
+      "id": "edge_9",
+      "source": "node_8",
+      "target": "node_9",
+      "type": "taintprop",
+      "label": "AST:"
+    },
+    {
+      "id": "edge_10",
+      "source": "node_8",
+      "target": "node_17",
+      "type": "taintprop",
+      "label": "AST:"
+    },
+    {
+      "id": "edge_11",
+      "source": "node_8",
+      "target": "node_24",
+      "type": "taintprop",
+      "label": "AST:"
+    },
+    {
+      "id": "edge_12",
+      "source": "node_8",
+      "target": "node_50",
+      "type": "taintprop",
+      "label": "AST:"
+    },
+    {
+      "id": "edge_13",
+      "source": "node_8",
+      "target": "node_66",
+      "type": "taintprop",
+      "label": "AST:"
+    },
+    {
+      "id": "edge_14",
+      "source": "node_8",
+      "target": "node_71",
+      "type": "taintprop",
+      "label": "AST:"
+    },
+    {
+      "id": "edge_15",
+      "source": "node_9",
+      "target": "node_10",
+      "type": "taintprop",
+      "label": "AST:"
+    },
+    {
+      "id": "edge_16",
+      "source": "node_9",
+      "target": "node_11",
+      "type": "taintprop",
+      "label": "AST:"
+    },
+    {
+      "id": "edge_17",
+      "source": "node_9",
+      "target": "node_12",
+      "type": "taintprop",
+      "label": "AST:"
+    },
+    {
+      "id": "edge_18",
+      "source": "node_9",
+      "target": "node_16",
+      "type": "taintprop",
+      "label": "AST:"
+    },
+    {
+      "id": "edge_19",
+      "source": "node_12",
+      "target": "node_13",
+      "type": "taintprop",
+      "label": "AST:"
+    },
+    {
+      "id": "edge_20",
+      "source": "node_13",
+      "target": "node_14",
+      "type": "taintprop",
+      "label": "AST:"
+    },
+    {
+      "id": "edge_21",
+      "source": "node_13",
+      "target": "node_15",
+      "type": "taintprop",
+      "label": "AST:"
+    },
+    {
+      "id": "edge_22",
+      "source": "node_17",
+      "target": "node_18",
+      "type": "taintprop",
+      "label": "AST:"
+    },
+    {
+      "id": "edge_23",
+      "source": "node_17",
+      "target": "node_19",
+      "type": "taintprop",
+      "label": "AST:"
+    },
+    {
+      "id": "edge_24",
+      "source": "node_17",
+      "target": "node_23",
+      "type": "taintprop",
+      "label": "AST:"
+    },
+    {
+      "id": "edge_25",
+      "source": "node_19",
+      "target": "node_20",
+      "type": "taintprop",
+      "label": "AST:"
+    },
+    {
+      "id": "edge_26",
+      "source": "node_20",
+      "target": "node_21",
+      "type": "taintprop",
+      "label": "AST:"
+    },
+    {
+      "id": "edge_27",
+      "source": "node_21",
+      "target": "node_22",
+      "type": "taintprop",
+      "label": "AST:"
+    },
+    {
+      "id": "edge_28",
+      "source": "node_24",
+      "target": "node_25",
+      "type": "taintprop",
+      "label": "AST:"
+    },
+    {
+      "id": "edge_29",
+      "source": "node_24",
+      "target": "node_26",
+      "type": "taintprop",
+      "label": "AST:"
+    },
+    {
+      "id": "edge_30",
+      "source": "node_24",
+      "target": "node_49",
+      "type": "taintprop",
+      "label": "AST:"
+    },
+    {
+      "id": "edge_31",
+      "source": "node_26",
+      "target": "node_27",
+      "type": "taintprop",
+      "label": "AST:"
+    },
+    {
+      "id": "edge_32",
+      "source": "node_26",
+      "target": "node_28",
+      "type": "taintprop",
+      "label": "AST:"
+    },
+    {
+      "id": "edge_33",
+      "source": "node_26",
+      "target": "node_33",
+      "type": "taintprop",
+      "label": "AST:"
+    },
+    {
+      "id": "edge_34",
+      "source": "node_26",
+      "target": "node_34",
+      "type": "taintprop",
+      "label": "AST:"
+    },
+    {
+      "id": "edge_35",
+      "source": "node_26",
+      "target": "node_38",
+      "type": "taintprop",
+      "label": "AST:"
+    },
+    {
+      "id": "edge_36",
+      "source": "node_26",
+      "target": "node_44",
+      "type": "taintprop",
+      "label": "AST:"
+    },
+    {
+      "id": "edge_37",
+      "source": "node_26",
+      "target": "node_47",
+      "type": "taintprop",
+      "label": "AST:"
+    },
+    {
+      "id": "edge_38",
+      "source": "node_28",
+      "target": "node_29",
+      "type": "taintprop",
+      "label": "AST:"
+    },
+    {
+      "id": "edge_39",
+      "source": "node_28",
+      "target": "node_30",
+      "type": "taintprop",
+      "label": "AST:"
+    },
+    {
+      "id": "edge_40",
+      "source": "node_30",
+      "target": "node_31",
+      "type": "taintprop",
+      "label": "AST:"
+    },
+    {
+      "id": "edge_41",
+      "source": "node_30",
+      "target": "node_32",
+      "type": "taintprop",
+      "label": "AST:"
+    },
+    {
+      "id": "edge_42",
+      "source": "node_34",
+      "target": "node_35",
+      "type": "taintprop",
+      "label": "AST:"
+    },
+    {
+      "id": "edge_43",
+      "source": "node_34",
+      "target": "node_36",
+      "type": "taintprop",
+      "label": "AST:"
+    },
+    {
+      "id": "edge_44",
+      "source": "node_36",
+      "target": "node_37",
+      "type": "taintprop",
+      "label": "AST:"
+    },
+    {
+      "id": "edge_45",
+      "source": "node_38",
+      "target": "node_39",
+      "type": "taintprop",
+      "label": "AST:"
+    },
+    {
+      "id": "edge_46",
+      "source": "node_38",
+      "target": "node_40",
+      "type": "taintprop",
+      "label": "AST:"
+    },
+    {
+      "id": "edge_47",
+      "source": "node_38",
+      "target": "node_42",
+      "type": "taintprop",
+      "label": "AST:"
+    },
+    {
+      "id": "edge_48",
+      "source": "node_38",
+      "target": "node_43",
+      "type": "taintprop",
+      "label": "AST:"
+    },
+    {
+      "id": "edge_49",
+      "source": "node_40",
+      "target": "node_41",
+      "type": "taintprop",
+      "label": "AST:"
+    },
+    {
+      "id": "edge_50",
+      "source": "node_44",
+      "target": "node_45",
+      "type": "taintprop",
+      "label": "AST:"
+    },
+    {
+      "id": "edge_51",
+      "source": "node_44",
+      "target": "node_46",
+      "type": "taintprop",
+      "label": "AST:"
+    },
+    {
+      "id": "edge_52",
+      "source": "node_47",
+      "target": "node_48",
+      "type": "taintprop",
+      "label": "AST:"
+    },
+    {
+      "id": "edge_53",
+      "source": "node_50",
+      "target": "node_51",
+      "type": "taintprop",
+      "label": "AST:"
+    },
+    {
+      "id": "edge_54",
+      "source": "node_50",
+      "target": "node_52",
+      "type": "taintprop",
+      "label": "AST:"
+    },
+    {
+      "id": "edge_55",
+      "source": "node_50",
+      "target": "node_53",
+      "type": "taintprop",
+      "label": "AST:"
+    },
+    {
+      "id": "edge_56",
+      "source": "node_50",
+      "target": "node_65",
+      "type": "taintprop",
+      "label": "AST:"
+    },
+    {
+      "id": "edge_57",
+      "source": "node_53",
+      "target": "node_54",
+      "type": "taintprop",
+      "label": "AST:"
+    },
+    {
+      "id": "edge_58",
+      "source": "node_53",
+      "target": "node_63",
+      "type": "taintprop",
+      "label": "AST:"
+    },
+    {
+      "id": "edge_59",
+      "source": "node_54",
+      "target": "node_55",
+      "type": "taintprop",
+      "label": "AST:"
+    },
+    {
+      "id": "edge_60",
+      "source": "node_54",
+      "target": "node_58",
+      "type": "taintprop",
+      "label": "AST:"
+    },
+    {
+      "id": "edge_61",
+      "source": "node_55",
+      "target": "node_56",
+      "type": "taintprop",
+      "label": "AST:"
+    },
+    {
+      "id": "edge_62",
+      "source": "node_55",
+      "target": "node_57",
+      "type": "taintprop",
+      "label": "AST:"
+    },
+    {
+      "id": "edge_63",
+      "source": "node_58",
+      "target": "node_59",
+      "type": "taintprop",
+      "label": "AST:"
+    },
+    {
+      "id": "edge_64",
+      "source": "node_59",
+      "target": "node_60",
+      "type": "taintprop",
+      "label": "AST:"
+    },
+    {
+      "id": "edge_65",
+      "source": "node_60",
+      "target": "node_61",
+      "type": "taintprop",
+      "label": "AST:"
+    },
+    {
+      "id": "edge_66",
+      "source": "node_60",
+      "target": "node_62",
+      "type": "taintprop",
+      "label": "AST:"
+    },
+    {
+      "id": "edge_67",
+      "source": "node_63",
+      "target": "node_64",
+      "type": "taintprop",
+      "label": "AST:"
+    },
+    {
+      "id": "edge_68",
+      "source": "node_66",
+      "target": "node_67",
+      "type": "taintprop",
+      "label": "AST:"
+    },
+    {
+      "id": "edge_69",
+      "source": "node_66",
+      "target": "node_68",
+      "type": "taintprop",
+      "label": "AST:"
+    },
+    {
+      "id": "edge_70",
+      "source": "node_66",
+      "target": "node_69",
+      "type": "taintprop",
+      "label": "AST:"
+    },
+    {
+      "id": "edge_71",
+      "source": "node_66",
+      "target": "node_70",
+      "type": "taintprop",
+      "label": "AST:"
+    },
+    {
+      "id": "edge_72",
+      "source": "node_72",
+      "target": "node_73",
+      "type": "taintprop",
+      "label": "AST:"
+    },
+    {
+      "id": "edge_73",
+      "source": "node_72",
+      "target": "node_74",
+      "type": "taintprop",
+      "label": "AST:"
+    },
+    {
+      "id": "edge_74",
+      "source": "node_72",
+      "target": "node_78",
+      "type": "taintprop",
+      "label": "AST:"
+    },
+    {
+      "id": "edge_75",
+      "source": "node_74",
+      "target": "node_75",
+      "type": "taintprop",
+      "label": "AST:"
+    },
+    {
+      "id": "edge_76",
+      "source": "node_75",
+      "target": "node_76",
+      "type": "taintprop",
+      "label": "AST:"
+    },
+    {
+      "id": "edge_77",
+      "source": "node_76",
+      "target": "node_77",
+      "type": "taintprop",
+      "label": "AST:"
+    },
+    {
+      "id": "edge_78",
+      "source": "node_72",
+      "target": "node_73",
+      "type": "dataflow",
+      "label": "DDG:"
+    },
+    {
+      "id": "edge_79",
+      "source": "node_79",
+      "target": "node_80",
+      "type": "taintprop",
+      "label": "AST:"
+    },
+    {
+      "id": "edge_80",
+      "source": "node_79",
+      "target": "node_81",
+      "type": "taintprop",
+      "label": "AST:"
+    },
+    {
+      "id": "edge_81",
+      "source": "node_79",
+      "target": "node_104",
+      "type": "taintprop",
+      "label": "AST:"
+    },
+    {
+      "id": "edge_82",
+      "source": "node_81",
+      "target": "node_82",
+      "type": "taintprop",
+      "label": "AST:"
+    },
+    {
+      "id": "edge_83",
+      "source": "node_81",
+      "target": "node_83",
+      "type": "taintprop",
+      "label": "AST:"
+    },
+    {
+      "id": "edge_84",
+      "source": "node_81",
+      "target": "node_88",
+      "type": "taintprop",
+      "label": "AST:"
+    },
+    {
+      "id": "edge_85",
+      "source": "node_81",
+      "target": "node_89",
+      "type": "taintprop",
+      "label": "AST:"
+    },
+    {
+      "id": "edge_86",
+      "source": "node_81",
+      "target": "node_93",
+      "type": "taintprop",
+      "label": "AST:"
+    },
+    {
+      "id": "edge_87",
+      "source": "node_81",
+      "target": "node_99",
+      "type": "taintprop",
+      "label": "AST:"
+    },
+    {
+      "id": "edge_88",
+      "source": "node_81",
+      "target": "node_102",
+      "type": "taintprop",
+      "label": "AST:"
+    },
+    {
+      "id": "edge_89",
+      "source": "node_83",
+      "target": "node_84",
+      "type": "taintprop",
+      "label": "AST:"
+    },
+    {
+      "id": "edge_90",
+      "source": "node_83",
+      "target": "node_85",
+      "type": "taintprop",
+      "label": "AST:"
+    },
+    {
+      "id": "edge_91",
+      "source": "node_85",
+      "target": "node_86",
+      "type": "taintprop",
+      "label": "AST:"
+    },
+    {
+      "id": "edge_92",
+      "source": "node_85",
+      "target": "node_87",
+      "type": "taintprop",
+      "label": "AST:"
+    },
+    {
+      "id": "edge_93",
+      "source": "node_89",
+      "target": "node_90",
+      "type": "taintprop",
+      "label": "AST:"
+    },
+    {
+      "id": "edge_94",
+      "source": "node_89",
+      "target": "node_91",
+      "type": "taintprop",
+      "label": "AST:"
+    },
+    {
+      "id": "edge_95",
+      "source": "node_91",
+      "target": "node_92",
+      "type": "taintprop",
+      "label": "AST:"
+    },
+    {
+      "id": "edge_96",
+      "source": "node_93",
+      "target": "node_94",
+      "type": "taintprop",
+      "label": "AST:"
+    },
+    {
+      "id": "edge_97",
+      "source": "node_93",
+      "target": "node_95",
+      "type": "taintprop",
+      "label": "AST:"
+    },
+    {
+      "id": "edge_98",
+      "source": "node_93",
+      "target": "node_97",
+      "type": "taintprop",
+      "label": "AST:"
+    },
+    {
+      "id": "edge_99",
+      "source": "node_93",
+      "target": "node_98",
+      "type": "taintprop",
+      "label": "AST:"
+    },
+    {
+      "id": "edge_100",
+      "source": "node_95",
+      "target": "node_96",
+      "type": "taintprop",
+      "label": "AST:"
+    },
+    {
+      "id": "edge_101",
+      "source": "node_99",
+      "target": "node_100",
+      "type": "taintprop",
+      "label": "AST:"
+    },
+    {
+      "id": "edge_102",
+      "source": "node_99",
+      "target": "node_101",
+      "type": "taintprop",
+      "label": "AST:"
+    },
+    {
+      "id": "edge_103",
+      "source": "node_102",
+      "target": "node_103",
+      "type": "taintprop",
+      "label": "AST:"
+    },
+    {
+      "id": "edge_104",
+      "source": "node_79",
+      "target": "node_80",
+      "type": "dataflow",
+      "label": "DDG:"
+    },
+    {
+      "id": "edge_105",
+      "source": "node_105",
+      "target": "node_106",
+      "type": "taintprop",
+      "label": "AST:"
+    },
+    {
+      "id": "edge_106",
+      "source": "node_105",
+      "target": "node_107",
+      "type": "taintprop",
+      "label": "AST:"
+    },
+    {
+      "id": "edge_107",
+      "source": "node_105",
+      "target": "node_108",
+      "type": "taintprop",
+      "label": "AST:"
+    },
+    {
+      "id": "edge_108",
+      "source": "node_105",
+      "target": "node_120",
+      "type": "taintprop",
+      "label": "AST:"
+    },
+    {
+      "id": "edge_109",
+      "source": "node_108",
+      "target": "node_109",
+      "type": "taintprop",
+      "label": "AST:"
+    },
+    {
+      "id": "edge_110",
+      "source": "node_108",
+      "target": "node_118",
+      "type": "taintprop",
+      "label": "AST:"
+    },
+    {
+      "id": "edge_111",
+      "source": "node_109",
+      "target": "node_110",
+      "type": "taintprop",
+      "label": "AST:"
+    },
+    {
+      "id": "edge_112",
+      "source": "node_109",
+      "target": "node_113",
+      "type": "taintprop",
+      "label": "AST:"
+    },
+    {
+      "id": "edge_113",
+      "source": "node_110",
+      "target": "node_111",
+      "type": "taintprop",
+      "label": "AST:"
+    },
+    {
+      "id": "edge_114",
+      "source": "node_110",
+      "target": "node_112",
+      "type": "taintprop",
+      "label": "AST:"
+    },
+    {
+      "id": "edge_115",
+      "source": "node_113",
+      "target": "node_114",
+      "type": "taintprop",
+      "label": "AST:"
+    },
+    {
+      "id": "edge_116",
+      "source": "node_114",
+      "target": "node_115",
+      "type": "taintprop",
+      "label": "AST:"
+    },
+    {
+      "id": "edge_117",
+      "source": "node_115",
+      "target": "node_116",
+      "type": "taintprop",
+      "label": "AST:"
+    },
+    {
+      "id": "edge_118",
+      "source": "node_115",
+      "target": "node_117",
+      "type": "taintprop",
+      "label": "AST:"
+    },
+    {
+      "id": "edge_119",
+      "source": "node_118",
+      "target": "node_119",
+      "type": "taintprop",
+      "label": "AST:"
+    },
+    {
+      "id": "edge_120",
+      "source": "node_105",
+      "target": "node_106",
+      "type": "dataflow",
+      "label": "DDG:"
+    },
+    {
+      "id": "edge_121",
+      "source": "node_105",
+      "target": "node_107",
+      "type": "dataflow",
+      "label": "DDG:"
+    },
+    {
+      "id": "edge_122",
+      "source": "node_121",
+      "target": "node_122",
+      "type": "taintprop",
+      "label": "AST:"
+    },
+    {
+      "id": "edge_123",
+      "source": "node_121",
+      "target": "node_123",
+      "type": "taintprop",
+      "label": "AST:"
+    }
+  ],
+  "meta": {
+    "tool": "joern",
+    "format": "dot",
+    "nodeCount": 124,
+    "edgeCount": 124,
+    "sourceTypes": [
+      "taint",
+      "source",
+      "call",
+      "cfg",
+      "ast",
+      "sink"
+    ],
+    "edgeTypes": [
+      "taintprop",
+      "dataflow"
+    ]
+  }
+}

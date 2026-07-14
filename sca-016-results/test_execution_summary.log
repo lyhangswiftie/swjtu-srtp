@@ -1,0 +1,40 @@
+[1/10] Testing CVE-2024-36779
+  Steps passed: 5/5
+  Status: PASS
+  CPG:True VULN:True POC:True PATCH:True VERIFY:True
+[2/10] Testing CVE-2024-37388
+  Steps passed: 5/5
+  Status: PASS
+  CPG:True VULN:True POC:True PATCH:True VERIFY:True
+[3/10] Testing CVE-2024-32167
+  Steps passed: 5/5
+  Status: PASS
+  CPG:True VULN:True POC:True PATCH:True VERIFY:True
+[4/10] Testing CVE-2024-32980
+  Steps passed: 5/5
+  Status: PASS
+  CPG:True VULN:True POC:True PATCH:True VERIFY:True
+[5/10] Testing CVE-2024-32986
+  Steps passed: 5/5
+  Status: PASS
+  CPG:True VULN:True POC:True PATCH:True VERIFY:True
+[6/10] Testing CVE-2024-34359
+  Steps passed: 5/5
+  Status: PASS
+  CPG:True VULN:True POC:True PATCH:True VERIFY:True
+[7/10] Testing CVE-2024-36675
+  Steps passed: 5/5
+  Status: PASS
+  CPG:True VULN:True POC:True PATCH:True VERIFY:True
+[8/10] Testing CVE-2024-30542
+  Steps passed: 5/5
+  Status: PASS
+  CPG:True VULN:True POC:True PATCH:True VERIFY:True
+[9/10] Testing CVE-2024-31611
+  Steps passed: 5/5
+  Status: PASS
+  CPG:True VULN:True POC:True PATCH:True VERIFY:True
+  Steps passed: 5/5
+  Status: PASS
+  CPG:True VULN:True POC:True PATCH:True VERIFY:True
+FINAL SUMMARY

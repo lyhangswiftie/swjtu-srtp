@@ -1,0 +1,118 @@
+{
+  "schema": "sca-evidence-index-v1",
+  "cveId": "CVE-2024-22120",
+  "outputDir": "reports/TC-SCA-025",
+  "generatedAt": "2026-05-07T15:22:01Z",
+  "stats": {
+    "totalFiles": 17,
+    "totalSizeBytes": 94618,
+    "byCategory": {
+      "pipeline": 6,
+      "cpg": 1,
+      "poc": 2,
+      "patch": 5,
+      "reports": 0,
+      "screenshots": 0,
+      "other": 3
+    }
+  },
+  "evidence": {
+    "pipeline": [
+      {
+        "path": "pipeline-dry-run.log",
+        "size": 1460,
+        "modifiedAt": "2026-05-07T15:21:25Z"
+      },
+      {
+        "path": "pipeline-plan.json",
+        "size": 4049,
+        "modifiedAt": "2026-05-07T15:21:25Z"
+      },
+      {
+        "path": "pipeline.log",
+        "size": 1987,
+        "modifiedAt": "2026-05-07T15:21:25Z"
+      },
+      {
+        "path": "sca_pipeline_report.md",
+        "size": 5254,
+        "modifiedAt": "2026-05-07T15:21:31Z"
+      },
+      {
+        "path": "sca_pipeline_run.json",
+        "size": 8185,
+        "modifiedAt": "2026-05-07T15:21:25Z"
+      },
+      {
+        "path": "sca_pipeline_summary.json",
+        "size": 1834,
+        "modifiedAt": "2026-05-07T15:21:31Z"
+      }
+    ],
+    "cpg": [
+      {
+        "path": "cpg/joern-cpg.json",
+        "size": 42952,
+        "modifiedAt": "2026-05-07T15:19:30Z"
+      }
+    ],
+    "poc": [
+      {
+        "path": "poc/poc_audit.jsonl",
+        "size": 1428,
+        "modifiedAt": "2026-05-07T15:21:25Z"
+      },
+      {
+        "path": "poc/sample_poc.py",
+        "size": 687,
+        "modifiedAt": "2026-05-07T15:21:25Z"
+      }
+    ],
+    "patch": [
+      {
+        "path": "patch/patch-apply-result.json",
+        "size": 828,
+        "modifiedAt": "2026-05-07T15:21:25Z"
+      },
+      {
+        "path": "patch/patch-guard.json",
+        "size": 500,
+        "modifiedAt": "2026-05-07T15:21:25Z"
+      },
+      {
+        "path": "patch/patch.diff",
+        "size": 557,
+        "modifiedAt": "2026-05-07T15:21:25Z"
+      },
+      {
+        "path": "patch/patch_run.json",
+        "size": 2181,
+        "modifiedAt": "2026-05-07T15:21:25Z"
+      },
+      {
+        "path": "patch/regression-result.json",
+        "size": 1206,
+        "modifiedAt": "2026-05-07T15:21:25Z"
+      }
+    ],
+    "reports": [],
+    "screenshots": [],
+    "other": [
+      {
+        "path": ".gitkeep",
+        "size": 0,
+        "modifiedAt": "2026-05-07T15:21:09Z"
+      },
+      {
+        "path": "build-025.log",
+        "size": 15022,
+        "modifiedAt": "2026-05-07T15:21:09Z"
+      },
+      {
+        "path": "sca_evidence_index.json",
+        "size": 6488,
+        "modifiedAt": "2026-05-07T15:21:25Z"
+      }
+    ]
+  }
+}

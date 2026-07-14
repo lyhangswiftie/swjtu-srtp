@@ -1,0 +1,703 @@
+diff --git a/.github/workflows/ghcr-build.yml b/.github/workflows/ghcr-build.yml
+index e503fe9cf..da8762eea 100644
+--- a/.github/workflows/ghcr-build.yml
++++ b/.github/workflows/ghcr-build.yml
+@@ -69,7 +69,7 @@ jobs:
+         with:
+           ref: ${{ github.event.pull_request.head.sha }}
+       - name: Set up QEMU
+-        uses: docker/setup-qemu-action@v3.7.0
++        uses: docker/setup-qemu-action@v4.0.0
+         with:
+           image: tonistiigi/binfmt:latest
+       - name: Login to GHCR
+@@ -80,7 +80,7 @@ jobs:
+           password: ${{ secrets.GITHUB_TOKEN }}
+       - name: Set up Docker Buildx
+         id: buildx
+-        uses: docker/setup-buildx-action@v3
++        uses: docker/setup-buildx-action@v4
+       - name: Lowercase Repository Owner
+         run: |
+           echo REPO_OWNER=$(echo ${{ github.repository_owner }} | tr '[:upper:]' '[:lower:]') >> $GITHUB_ENV
+@@ -107,7 +107,7 @@ jobs:
+         with:
+           ref: ${{ github.event.pull_request.head.sha }}
+       - name: Set up QEMU
+-        uses: docker/setup-qemu-action@v3.7.0
++        uses: docker/setup-qemu-action@v4.0.0
+         with:
+           image: tonistiigi/binfmt:latest
+       - name: Login to GHCR
+@@ -118,7 +118,7 @@ jobs:
+           password: ${{ secrets.GITHUB_TOKEN }}
+       - name: Set up Docker Buildx
+         id: buildx
+-        uses: docker/setup-buildx-action@v3
++        uses: docker/setup-buildx-action@v4
+       - name: Install poetry via pipx
+         run: pipx install poetry
+       - name: Set up Python
+@@ -149,7 +149,7 @@ jobs:
+           echo "DOCKER_BUILD_ARGS=$(echo "$DOCKER_BUILD_JSON" | jq -r '.build_args | join(",")')" >> $GITHUB_ENV
+       - name: Build and push runtime image ${{ matrix.base_image.image }}
+         if: github.event.pull_request.head.repo.fork != true
+-        uses: useblacksmith/build-push-action@v1
++        uses: useblacksmith/build-push-action@v2
+         with:
+           push: true
+           tags: ${{ env.DOCKER_TAGS }}
+@@ -163,7 +163,7 @@ jobs:
+       # Forked repos can't push to GHCR, so we just build in order to populate the cache for rebuilding
+       - name: Build runtime image ${{ matrix.base_image.image }} for fork
+         if: github.event.pull_request.head.repo.fork
+-        uses: useblacksmith/build-push-action@v1
++        uses: useblacksmith/build-push-action@v2
+         with:
+           tags: ghcr.io/${{ env.REPO_OWNER }}/runtime:${{ env.RELEVANT_SHA }}-${{ matrix.base_image.tag }}
+           context: containers/runtime
+@@ -191,7 +191,7 @@ jobs:
+ 
+       # Set up Docker Buildx for better performance
+       - name: Set up Docker Buildx
+-        uses: docker/setup-buildx-action@v3
++        uses: docker/setup-buildx-action@v4
+         with:
+           driver-opts: network=host
+ 
+@@ -229,7 +229,7 @@ jobs:
+           # rather than a mutable branch tag like "main" which can serve stale cached layers.
+           echo "OPENHANDS_DOCKER_TAG=${RELEVANT_SHA}" >> $GITHUB_ENV
+       - name: Build and push Docker image
+-        uses: useblacksmith/build-push-action@v1
++        uses: useblacksmith/build-push-action@v2
+         with:
+           context: .
+           file: enterprise/Dockerfile
+diff --git a/.github/workflows/openhands-resolver.yml b/.github/workflows/openhands-resolver.yml
+index b96b10f47..86c693582 100644
+--- a/.github/workflows/openhands-resolver.yml
++++ b/.github/workflows/openhands-resolver.yml
+@@ -192,7 +192,7 @@ jobs:
+           echo "TARGET_BRANCH=${{ inputs.target_branch || 'main' }}" >> $GITHUB_ENV
+ 
+       - name: Comment on issue with start message
+-        uses: actions/github-script@v7
++        uses: actions/github-script@v8
+         with:
+           github-token: ${{ secrets.PAT_TOKEN || github.token }}
+           script: |
+@@ -206,7 +206,7 @@ jobs:
+ 
+       - name: Install OpenHands
+         id: install_openhands
+-        uses: actions/github-script@v7
++        uses: actions/github-script@v8
+         env:
+           COMMENT_BODY: ${{ github.event.comment.body || '' }}
+           REVIEW_BODY: ${{ github.event.review.body || '' }}
+@@ -305,7 +305,7 @@ jobs:
+ 
+       # Step leaves comment for when agent is invoked on PR
+       - name: Analyze Push Logs (Updated PR or No Changes) # Skip comment if PR update was successful OR leave comment if the agent made no code changes
+-        uses: actions/github-script@v7
++        uses: actions/github-script@v8
+         if: always()
+         env:
+           AGENT_RESPONDED: ${{ env.AGENT_RESPONDED || 'false' }}
+@@ -341,7 +341,7 @@ jobs:
+ 
+       # Step leaves comment for when agent is invoked on issue
+       - name: Comment on issue # Comment link to either PR or branch created by agent
+-        uses: actions/github-script@v7
++        uses: actions/github-script@v8
+         if: always() # Comment on issue even if the previous steps fail
+         env:
+           AGENT_RESPONDED: ${{ env.AGENT_RESPONDED || 'false' }}
+@@ -416,7 +416,7 @@ jobs:
+ 
+       # Leave error comment when both PR/Issue comment handling fail
+       - name: Fallback Error Comment
+-        uses: actions/github-script@v7
++        uses: actions/github-script@v8
+         if: ${{ env.AGENT_RESPONDED == 'false' }} # Only run if no conditions were met in previous steps
+         env:
+           ISSUE_NUMBER: ${{ env.ISSUE_NUMBER }}
+diff --git a/.github/workflows/pr-artifacts.yml b/.github/workflows/pr-artifacts.yml
+index ef656c111..49d3c118c 100644
+--- a/.github/workflows/pr-artifacts.yml
++++ b/.github/workflows/pr-artifacts.yml
+@@ -59,7 +59,7 @@ jobs:
+ 
+             - name: Update PR comment after cleanup
+               if: steps.check-fork.outputs.is_fork == 'false' && steps.remove.outputs.removed == 'true'
+-              uses: actions/github-script@v7
++              uses: actions/github-script@v8
+               with:
+                   script: |
+                       const marker = '<!-- pr-artifacts-notice -->';
+@@ -107,7 +107,7 @@ jobs:
+ 
+             - name: Post or update PR comment
+               if: steps.check.outputs.exists == 'true'
+-              uses: actions/github-script@v7
++              uses: actions/github-script@v8
+               with:
+                   script: |
+                       const marker = '<!-- pr-artifacts-notice -->';
+diff --git a/.github/workflows/pr-review-evaluation.yml b/.github/workflows/pr-review-evaluation.yml
+index 002d10722..877e230a1 100644
+--- a/.github/workflows/pr-review-evaluation.yml
++++ b/.github/workflows/pr-review-evaluation.yml
+@@ -28,7 +28,7 @@ jobs:
+         steps:
+             - name: Download review trace artifact
+               id: download-trace
+-              uses: dawidd6/action-download-artifact@v15
++              uses: dawidd6/action-download-artifact@v20
+               continue-on-error: true
+               with:
+                   workflow: pr-review-by-openhands.yml
+diff --git a/.github/workflows/py-tests.yml b/.github/workflows/py-tests.yml
+index b45b6e8bc..b401f9772 100644
+--- a/.github/workflows/py-tests.yml
++++ b/.github/workflows/py-tests.yml
+@@ -33,7 +33,7 @@ jobs:
+       - uses: actions/checkout@v6
+       - name: Set up Docker Buildx
+         id: buildx
+-        uses: docker/setup-buildx-action@v3
++        uses: docker/setup-buildx-action@v4
+       - name: Install tmux
+         run: sudo apt-get update && sudo apt-get install -y tmux
+       - name: Setup Node.js
+diff --git a/.github/workflows/welcome-good-first-issue.yml b/.github/workflows/welcome-good-first-issue.yml
+index 4bedc4a48..fd258a791 100644
+--- a/.github/workflows/welcome-good-first-issue.yml
++++ b/.github/workflows/welcome-good-first-issue.yml
+@@ -14,7 +14,7 @@ jobs:
+     steps:
+       - name: Check if welcome comment already exists
+         id: check_comment
+-        uses: actions/github-script@v7
++        uses: actions/github-script@v8
+         with:
+           result-encoding: string
+           script: |
+@@ -33,7 +33,7 @@ jobs:
+ 
+       - name: Leave welcome comment
+         if: steps.check_comment.outputs.result == 'false'
+-        uses: actions/github-script@v7
++        uses: actions/github-script@v8
+         with:
+           script: |
+             const repoUrl = `https://github.com/${context.repo.owner}/${context.repo.repo}`;
+diff --git a/README.md b/README.md
+index 1add45134..ac23c2a9b 100644
+--- a/README.md
++++ b/README.md
+@@ -95,6 +95,34 @@ sudo docker cp frontend/build/. openhands-sca:/app/frontend/build/
+ 
+ > **注意**：必须使用 `--network host` 模式启动，否则容器内沙箱会因 iptables raw 表权限不足而无法创建子容器。
+ 
++### WSL2 (Windows 11) 专项说明
++
++在 WSL2 环境下运行时，可能遇到 `500: Sandbox entered error state` 错误（见 [Issue #17](https://github.com/SWJTU-AI-Lab/securecodeact/issues/17)）。`install.sh` 已内置 WSL2 自动检测并应用以下修复：
++
++| 修复项 | 说明 |
++|--------|------|
++| `--cap-add NET_ADMIN` | 允许容器修改网络配置（iptables/路由表），解决 WSL2 内核限制 |
++| `--cap-add NET_RAW` | 允许容器使用 RAW socket（iptables raw 表权限），解决沙箱子容器网络命名空间创建失败 |
++| `AGENT_SERVER_USE_HOST_NETWORK=true` | OpenHands 1.6.0 沙箱子容器读取此变量（旧版 `SANDBOX_USE_HOST_NETWORK` 仅对主容器生效） |
++| `LLM_MODEL=gpt-4.1-mini` | 修正废弃的 `gpt-4.5-preview` 模型名称 |
++| Docker 服务自动启动 | WSL2 不自动启动 systemd，脚本自动执行 `sudo service docker start` |
++
++**WSL2 前置条件检查：**
++
++```powershell
++# 在 Windows PowerShell 中确认 WSL2 版本
++wsl --status
++
++# 确认 Docker Desktop 已启用 WSL2 集成
++# Docker Desktop > Settings > Resources > WSL Integration > 启用对应发行版
++```
++
++若 `install.sh` 执行后仍报错，请执行：
++
++```bash
++sudo docker logs openhands-sca --tail 50
++```
++
+ ---
+ 
+ ## UI 界面说明
+diff --git a/containers/Dockerfile-lite b/containers/Dockerfile-lite
+index 1adc30d98..326db6d33 100644
+--- a/containers/Dockerfile-lite
++++ b/containers/Dockerfile-lite
+@@ -16,7 +16,7 @@
+ #     -v ~/.openhands:/.openhands \
+ #     ghcr.io/openhands/openhands:1.6.0
+ 
+-FROM ghcr.io/openhands/runtime:1.6.0-nikolaik
++FROM ghcr.io/openhands/runtime:1.13.1-nikolaik
+ 
+ # 安装安全分析工具
+ # 注意：Debian trixie 中包名可能有所不同，根据实际情况调整
+diff --git a/containers/app/Dockerfile b/containers/app/Dockerfile
+index 75b8eb4b2..2984202d2 100644
+--- a/containers/app/Dockerfile
++++ b/containers/app/Dockerfile
+@@ -1,5 +1,5 @@
+ ARG OPENHANDS_BUILD_VERSION=dev
+-FROM node:25.8-trixie-slim AS frontend-builder
++FROM node:25.9-trixie-slim AS frontend-builder
+ 
+ WORKDIR /app
+ 
+@@ -9,7 +9,7 @@ RUN npm ci
+ COPY frontend ./
+ RUN npm run build
+ 
+-FROM python:3.13.7-slim-trixie AS base
++FROM python:3.14.0-slim-trixie AS base
+ FROM base AS backend-builder
+ 
+ WORKDIR /app
+diff --git a/containers/dev/Dockerfile b/containers/dev/Dockerfile
+index b4b95209a..4f9f85898 100644
+--- a/containers/dev/Dockerfile
++++ b/containers/dev/Dockerfile
+@@ -1,7 +1,7 @@
+ # syntax=docker/dockerfile:1
+ 
+ ###
+-FROM ubuntu:22.04 AS dind
++FROM ubuntu:24.04 AS dind
+ 
+ # https://docs.docker.com/engine/install/ubuntu/
+ RUN apt-get update && apt-get install -y \
+diff --git a/frontend/package.json b/frontend/package.json
+index 39824e8b2..a0a122584 100644
+--- a/frontend/package.json
++++ b/frontend/package.json
+@@ -7,37 +7,37 @@
+     "node": ">=22.12.0"
+   },
+   "dependencies": {
+-    "@heroui/react": "2.8.7",
+-    "@microlink/react-json-view": "^1.27.1",
++    "@heroui/react": "3.0.2",
++    "@microlink/react-json-view": "^1.31.18",
+     "@monaco-editor/react": "^4.7.0-rc.0",
+-    "@react-router/node": "^7.12.0",
+-    "@react-router/serve": "^7.12.0",
+-    "@tailwindcss/vite": "^4.1.18",
+-    "@tanstack/react-query": "^5.90.19",
++    "@react-router/node": "^7.14.1",
++    "@react-router/serve": "^7.14.1",
++    "@tailwindcss/vite": "^4.2.2",
++    "@tanstack/react-query": "^5.99.0",
+     "@uidotdev/usehooks": "^2.4.1",
+     "@xterm/addon-fit": "^0.11.0",
+     "@xterm/xterm": "^6.0.0",
+     "@xyflow/react": "^12.10.2",
+-    "axios": "1.13.5",
++    "axios": "1.15.0",
+     "class-variance-authority": "^0.7.1",
+     "clsx": "^2.1.1",
+-    "downshift": "^9.0.13",
++    "downshift": "^9.3.2",
+     "eslint-config-airbnb-typescript": "^18.0.0",
+-    "framer-motion": "^12.28.1",
+-    "i18next": "^25.8.0",
+-    "i18next-browser-languagedetector": "^8.2.0",
+-    "i18next-http-backend": "^3.0.2",
+-    "isbot": "^5.1.33",
+-    "lucide-react": "^0.562.0",
++    "framer-motion": "^12.38.0",
++    "i18next": "^26.0.4",
++    "i18next-browser-languagedetector": "^8.2.1",
++    "i18next-http-backend": "^3.0.4",
++    "isbot": "^5.1.38",
++    "lucide-react": "^1.8.0",
+     "monaco-editor": "^0.55.1",
+-    "posthog-js": "^1.333.0",
+-    "react": "^19.2.3",
+-    "react-dom": "^19.2.3",
++    "posthog-js": "^1.368.2",
++    "react": "^19.2.5",
++    "react-dom": "^19.2.5",
+     "react-hot-toast": "^2.6.0",
+-    "react-i18next": "^16.5.3",
++    "react-i18next": "^17.0.2",
+     "react-icons": "^5.5.0",
+     "react-markdown": "^10.1.0",
+-    "react-router": "^7.12.0",
++    "react-router": "^7.14.1",
+     "react-syntax-highlighter": "^16.1.0",
+     "recharts": "^3.8.1",
+     "remark-breaks": "^4.0.0",
+@@ -84,32 +84,32 @@
+   "devDependencies": {
+     "@mswjs/socket.io-binding": "^0.2.0",
+     "@playwright/test": "^1.57.0",
+-    "@react-router/dev": "^7.12.0",
++    "@react-router/dev": "^7.14.1",
+     "@tailwindcss/typography": "^0.5.19",
+-    "@tanstack/eslint-plugin-query": "^5.91.3",
++    "@tanstack/eslint-plugin-query": "^5.99.0",
+     "@testing-library/dom": "^10.4.1",
+     "@testing-library/jest-dom": "^6.9.1",
+     "@testing-library/react": "^16.3.2",
+     "@testing-library/user-event": "^14.6.1",
+     "@types/node": "^25.0.9",
+-    "@types/react": "^19.2.9",
++    "@types/react": "^19.2.14",
+     "@types/react-dom": "^19.2.3",
+     "@types/react-syntax-highlighter": "^15.5.13",
+-    "@typescript-eslint/eslint-plugin": "^7.18.0",
+-    "@typescript-eslint/parser": "^7.18.0",
++    "@typescript-eslint/eslint-plugin": "^8.58.2",
++    "@typescript-eslint/parser": "^8.58.2",
+     "@vitest/coverage-v8": "^4.0.17",
+     "cross-env": "^10.1.0",
+-    "eslint": "^8.57.0",
++    "eslint": "^10.2.0",
+     "eslint-config-airbnb": "^19.0.4",
+     "eslint-config-airbnb-typescript": "^18.0.0",
+     "eslint-config-prettier": "^10.1.8",
+-    "eslint-plugin-i18next": "^6.1.3",
++    "eslint-plugin-i18next": "^6.1.4",
+     "eslint-plugin-import": "^2.32.0",
+     "eslint-plugin-jsx-a11y": "^6.10.2",
+     "eslint-plugin-prettier": "^5.5.5",
+     "eslint-plugin-react": "^7.37.5",
+-    "eslint-plugin-react-hooks": "^4.6.2",
+-    "eslint-plugin-unused-imports": "^4.2.0",
++    "eslint-plugin-react-hooks": "^7.0.1",
++    "eslint-plugin-unused-imports": "^4.4.1",
+     "husky": "^9.1.7",
+     "jsdom": "^27.4.0",
+     "lint-staged": "^16.2.7",
+diff --git a/install.sh b/install.sh
+old mode 100644
+new mode 100755
+index a63c50f5a..70d196102
+--- a/install.sh
++++ b/install.sh
+@@ -1,6 +1,15 @@
+ #!/bin/bash
+-# SCA-016 SecureCodeAct 一键安装与启动脚本
+-# 用于快速部署包含 SCA-HUD 前端的 OpenHands 环境
++# SecureCodeAct (SCA) 一键安装与启动脚本
++# 修复 Issue #17: WSL2 环境下沙箱启动失败（500: Sandbox entered error state）
++#
++# 修复内容：
++#   1. 新增 WSL2 环境自动检测，针对性添加 NET_ADMIN/NET_RAW 权限
++#   2. 同时传入 SANDBOX_USE_HOST_NETWORK 和 AGENT_SERVER_USE_HOST_NETWORK
++#      （OpenHands 1.6.0 沙箱子容器读取后者，主容器读取前者）
++#   3. 修正 LLM_MODEL 默认值（gpt-4.5-preview 已废弃，改为 gpt-4.1-mini）
++#   4. 新增 LLM_API_KEY 传递（部分版本需要显式传入）
++#   5. 新增容器启动健康检查，替代固定 sleep 15
++#   6. WSL2 下自动启动 Docker 服务（WSL2 不自动启动 systemd）
+ 
+ set -e
+ 
+@@ -8,71 +17,161 @@ echo "============================================================"
+ echo "      SecureCodeAct (SCA) 一键安装与启动脚本"
+ echo "============================================================"
+ 
+-# 1. 检查 Docker
++# ─── 环境检测 ────────────────────────────────────────────────
++IS_WSL=false
++if grep -qEi "(microsoft|wsl)" /proc/version 2>/dev/null; then
++    IS_WSL=true
++    echo "[*] 检测到 WSL2 环境，将启用 WSL2 专项配置"
++fi
++
++# ─── 1. 检查并安装 Docker ────────────────────────────────────
+ if ! command -v docker &> /dev/null; then
+     echo "[*] 未检测到 Docker，正在安装..."
+     curl -fsSL https://get.docker.com | sudo sh
+-    sudo systemctl start docker
+-    sudo systemctl enable docker
++    sudo systemctl start docker 2>/dev/null || sudo service docker start
++    sudo systemctl enable docker 2>/dev/null || true
++    sudo usermod -aG docker "$USER" 2>/dev/null || true
++    echo "[!] 已将当前用户加入 docker 组，建议重新登录后再运行本脚本"
+ else
+     echo "[*] Docker 已安装: $(docker --version)"
+ fi
+ 
+-# 2. 检查 Node.js
++# WSL2 专项：WSL2 不自动启动 systemd，需手动启动 Docker 服务
++if [ "$IS_WSL" = true ]; then
++    if ! sudo service docker status &>/dev/null; then
++        echo "[*] WSL2 环境：启动 Docker 服务..."
++        sudo service docker start
++        sleep 3
++    fi
++fi
++
++# ─── 2. 检查并安装 Node.js ───────────────────────────────────
+ if ! command -v npm &> /dev/null; then
+-    echo "[*] 未检测到 npm，正在安装 Node.js..."
++    echo "[*] 未检测到 npm，正在安装 Node.js 22.x..."
+     curl -fsSL https://deb.nodesource.com/setup_22.x | sudo -E bash -
+     sudo apt-get install -y nodejs
+ else
+     echo "[*] Node.js 已安装: $(node -v)"
+ fi
+ 
+-# 3. 检查环境变量
++# ─── 3. 检查 OPENAI_API_KEY ──────────────────────────────────
+ if [ -z "$OPENAI_API_KEY" ]; then
+     echo "[!] 警告: 未设置 OPENAI_API_KEY 环境变量。"
+     echo "    请在运行此脚本前执行: export OPENAI_API_KEY='your_key'"
+-    read -p "    是否继续? [y/N] " response
++    read -p "    是否继续（仅用于界面测试）? [y/N] " response
+     if [[ ! "$response" =~ ^[yY]$ ]]; then
+         exit 1
+     fi
+ fi
+ 
+-# 4. 拉取 OpenHands 镜像
+-echo "[*] 正在拉取 OpenHands 1.6.0 镜像..."
++# ─── 4. 拉取 OpenHands 镜像 ──────────────────────────────────
++echo "[*] 正在拉取 OpenHands 1.6.0 镜像（约 2GB，请耐心等待）..."
+ sudo docker pull ghcr.io/openhands/openhands:1.6.0
+ 
+-# 5. 构建 SCA-HUD 前端
++# ─── 5. 构建 SCA-HUD 前端 ────────────────────────────────────
+ echo "[*] 正在构建 SCA-HUD 前端..."
+-cd frontend
+-npm install
++SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
++cd "$SCRIPT_DIR/frontend"
++npm install --legacy-peer-deps
+ VITE_BACKEND_URL=http://localhost:3000 npm run build
+-cd ..
++cd "$SCRIPT_DIR"
+ 
+-# 6. 启动容器
+-echo "[*] 正在启动 OpenHands 容器 (Host Network 模式)..."
++# ─── 6. 启动 OpenHands 容器 ──────────────────────────────────
++echo "[*] 清理旧容器（如存在）..."
++sudo docker rm -f openhands-sca 2>/dev/null || true
+ mkdir -p ~/.openhands
+ 
+-# 清理可能存在的旧容器
+-sudo docker rm -f openhands-sca 2>/dev/null || true
++# 允许用户通过环境变量覆盖 LLM 模型，默认 gpt-4.1-mini
++LLM_MODEL_NAME="${LLM_MODEL:-gpt-4.1-mini}"
++echo "[*] 使用 LLM 模型: ${LLM_MODEL_NAME}"
+ 
+-sudo docker run -d \
+-    --name openhands-sca \
+-    --network host \
+-    -e SANDBOX_USE_HOST_NETWORK=true \
+-    -e OPENAI_API_KEY="${OPENAI_API_KEY}" \
+-    -e LLM_MODEL="gpt-4.5-preview" \
+-    -v /var/run/docker.sock:/var/run/docker.sock \
+-    -v ~/.openhands:/.openhands \
+-    ghcr.io/openhands/openhands:1.6.0
++if [ "$IS_WSL" = true ]; then
++    # ── WSL2 专项启动参数 ─────────────────────────────────────
++    # 问题根因：WSL2 内核对 iptables raw 表有限制，
++    # 沙箱子容器在创建网络命名空间时会因权限不足而失败。
++    # 解决方案：
++    #   - --cap-add NET_ADMIN: 允许容器修改网络配置（iptables/路由表）
++    #   - --cap-add NET_RAW:   允许容器使用 RAW socket（iptables raw 表）
++    #   - AGENT_SERVER_USE_HOST_NETWORK=true: 沙箱子容器使用宿主机网络
++    #   - SANDBOX_USE_HOST_NETWORK=true: 主容器网络配置兼容旧版
++    echo "[*] WSL2 模式：添加 NET_ADMIN/NET_RAW 权限"
++    sudo docker run -d \
++        --name openhands-sca \
++        --network host \
++        --cap-add NET_ADMIN \
++        --cap-add NET_RAW \
++        -e SANDBOX_USE_HOST_NETWORK=true \
++        -e AGENT_SERVER_USE_HOST_NETWORK=true \
++        -e OPENAI_API_KEY="${OPENAI_API_KEY}" \
++        -e LLM_MODEL="${LLM_MODEL_NAME}" \
++        -e LLM_API_KEY="${OPENAI_API_KEY}" \
++        -v /var/run/docker.sock:/var/run/docker.sock \
++        -v ~/.openhands:/.openhands \
++        ghcr.io/openhands/openhands:1.6.0
++else
++    # ── 标准 Linux 启动参数 ───────────────────────────────────
++    echo "[*] 标准 Linux 模式：Host Network + 双网络变量"
++    sudo docker run -d \
++        --name openhands-sca \
++        --network host \
++        -e SANDBOX_USE_HOST_NETWORK=true \
++        -e AGENT_SERVER_USE_HOST_NETWORK=true \
++        -e OPENAI_API_KEY="${OPENAI_API_KEY}" \
++        -e LLM_MODEL="${LLM_MODEL_NAME}" \
++        -e LLM_API_KEY="${OPENAI_API_KEY}" \
++        -v /var/run/docker.sock:/var/run/docker.sock \
++        -v ~/.openhands:/.openhands \
++        ghcr.io/openhands/openhands:1.6.0
++fi
++
++# ─── 7. 等待容器就绪（健康检查替代固定 sleep）───────────────
++echo "[*] 等待 OpenHands 容器就绪（最多 60 秒）..."
++READY=false
++for i in $(seq 1 60); do
++    HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" \
++        http://localhost:3000/api/options/config 2>/dev/null || echo "000")
++    if [ "$HTTP_CODE" = "200" ]; then
++        echo "[✓] 容器已就绪（${i}秒，HTTP 200）"
++        READY=true
++        break
++    fi
++    printf "."
++    sleep 1
++done
++echo ""
+ 
+-# 7. 注入 SCA-HUD 前端
+-echo "[*] 等待容器启动 (15秒)..."
+-sleep 15
++if [ "$READY" = false ]; then
++    echo "[!] 容器启动超时，尝试继续注入前端..."
++fi
+ 
++# ─── 8. 注入 SCA-HUD 前端 ────────────────────────────────────
+ echo "[*] 正在注入 SCA-HUD 前端至容器..."
+-sudo docker cp frontend/build/. openhands-sca:/app/frontend/build/
++sudo docker cp "$SCRIPT_DIR/frontend/build/." openhands-sca:/app/frontend/build/
++echo "[✓] SCA-HUD 前端注入完成"
+ 
++# ─── 9. 最终健康检查 ─────────────────────────────────────────
++sleep 2
++HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" \
++    http://localhost:3000/api/options/config 2>/dev/null || echo "000")
++
++echo ""
+ echo "============================================================"
+-echo "✅ 安装与部署完成！"
++if [ "$HTTP_CODE" = "200" ]; then
++    echo "✅ 安装与部署完成！API 健康检查通过（HTTP 200）"
++else
++    echo "⚠️  安装完成，但 API 尚未响应（HTTP ${HTTP_CODE}）"
++    echo "   请稍等片刻后访问，或执行以下命令查看日志："
++    echo "   sudo docker logs openhands-sca --tail 50"
++fi
++echo ""
+ echo "🌐 SCA-HUD 访问地址: http://localhost:3000"
++echo ""
++echo "📋 WSL2 用户注意事项："
++echo "   1. 确认 Docker Desktop 已启用 'Use WSL 2 based engine'"
++echo "   2. 若仍报 500 错误，执行: sudo docker logs openhands-sca --tail 50"
++echo "   3. 确认 Windows 防火墙未拦截 3000 端口"
++echo "   4. 若使用 Docker Desktop，请在 Settings > Resources > WSL Integration 中"
++echo "      启用对应的 WSL2 发行版"
++echo "   5. 如需使用其他 LLM 模型，执行前设置:"
++echo "      export LLM_MODEL='gpt-4.1-mini'  # 或 gemini-2.5-flash 等"
+ echo "============================================================"
+diff --git a/pyproject.toml b/pyproject.toml
+index f5db4b99d..40beee4b1 100644
+--- a/pyproject.toml
++++ b/pyproject.toml
+@@ -24,7 +24,7 @@ dependencies = [
+   "aiohttp>=3.13.3",
+   "anthropic[vertex]",
+   "anyio==4.9",
+-  "asyncpg>=0.30",
++  "asyncpg>=0.31.0",
+   "authlib>=1.6.9",
+   "bashlex>=0.18",
+   "boto3",
+@@ -48,7 +48,7 @@ dependencies = [
+   "json-repair",
+   "jupyter-kernel-gateway",
+   "jwcrypto>=1.5.6",
+-  "kubernetes>=33.1",
++  "kubernetes>=35.0.0",
+   "libtmux>=0.46.2",
+   "litellm!=1.64.4,!=1.67.*,>=1.74.3",
+   "lmnr>=0.7.20",
+@@ -63,7 +63,7 @@ dependencies = [
+   "opentelemetry-api>=1.33.1",
+   "opentelemetry-exporter-otlp-proto-grpc>=1.33.1",
+   "orjson>=3.11.6",
+-  "pathspec>=0.12.1",
++  "pathspec>=1.0.4",
+   "pexpect",
+   "pg8000>=1.31.5",
+   "pillow>=12.1.1",
+@@ -80,7 +80,7 @@ dependencies = [
+   "python-docx",
+   "python-dotenv",
+   "python-frontmatter>=1.1",
+-  "python-json-logger>=3.2.1",
++  "python-json-logger>=4.1.0",
+   "python-multipart>=0.0.22",
+   "python-pptx",
+   "python-socketio==5.14",
+@@ -94,7 +94,7 @@ dependencies = [
+   "shellingham>=1.5.4",
+   "sqlalchemy[asyncio]>=2.0.40",
+   "sse-starlette>=3.0.2",
+-  "starlette>=0.49.1",
++  "starlette>=1.0.0",
+   "tenacity>=8.5,<10",
+   "termcolor",
+   "toml",
+@@ -120,7 +120,7 @@ dev = [
+   "build",
+   "mypy==1.17",
+   "pre-commit==4.2",
+-  "pytest>=8.4",
++  "pytest>=9.0.2",
+   "pytest-asyncio>=1.3",
+   "ruff==0.12.5",
+   "types-setuptools",
+@@ -189,7 +189,7 @@ jinja2 = "^3.1.6"
+ python-multipart = ">=0.0.22"
+ tenacity = ">=8.5,<10.0"
+ zope-interface = "7.2"
+-pathspec = "^0.12.1"
++pathspec = "^1.0.4"
+ pyjwt = "^2.12.0"
+ dirhash = "*"
+ tornado = ">=6.5"
+@@ -207,7 +207,7 @@ openhands-aci = "0.3.3"
+ python-socketio = "5.14.0"
+ sse-starlette = "^3.0.2"
+ psutil = "*"
+-python-json-logger = "^3.2.1"
++python-json-logger = "^4.1.0"
+ prompt-toolkit = "^3.0.50"
+ poetry = "^2.1.2"
+ anyio = "4.9.0"
+@@ -226,7 +226,7 @@ bashlex = "^0.18"
+ # Explicitly pinned packages for latest versions
+ pypdf = "^6.9.2"
+ pillow = "^12.1.1"
+-starlette = "^0.49.1"
++starlette = "^1.0.0"
+ urllib3 = "^2.6.3"
+ requests = "^2.32.5"
+ setuptools = ">=78.1.1"
+@@ -237,7 +237,7 @@ redis = ">=5.2,<7.0"
+ google-cloud-aiplatform = "*"
+ anthropic = { extras = [ "vertex" ], version = "*" }
+ boto3 = "*"
+-kubernetes = "^33.1.0"
++kubernetes = "^35.0.0"
+ pyyaml = "^6.0.2"
+ memory-profiler = "^0.61.0"
+ jupyter_kernel_gateway = "*"
+@@ -257,7 +257,7 @@ openhands-tools = "1.16.1"
+ jwcrypto = ">=1.5.6"
+ sqlalchemy = { extras = [ "asyncio" ], version = "^2.0.40" }
+ pg8000 = "^1.31.5"
+-asyncpg = "^0.30.0"
++asyncpg = "^0.31.0"
+ deprecation = "^2.1.0"
+ lmnr = "^0.7.20"
+ 

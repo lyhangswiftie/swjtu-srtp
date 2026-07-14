@@ -1,0 +1,20 @@
+digraph "zbx_db_execute" {  
+node [shape="rect"];  
+"107374182400" [label = <METHOD, 18<BR/>zbx_db_execute> ]
+"111669149696" [label = <PARAM, 18<BR/>const char *fmt> ]
+"111669149697" [label = <PARAM, 18<BR/>const char *sql> ]
+"25769803776" [label = <BLOCK, 18<BR/>{ printf(fmt, sql); }> ]
+"30064771072" [label = <printf, 19<BR/>printf(fmt, sql)> ]
+"68719476736" [label = <IDENTIFIER, 19<BR/>fmt<BR/>printf(fmt, sql)> ]
+"68719476737" [label = <IDENTIFIER, 19<BR/>sql<BR/>printf(fmt, sql)> ]
+"124554051584" [label = <METHOD_RETURN, 18<BR/>void> ]
+  "107374182400" -> "111669149696"  [ label = "AST: "] 
+  "107374182400" -> "111669149697"  [ label = "AST: "] 
+  "107374182400" -> "25769803776"  [ label = "AST: "] 
+  "107374182400" -> "124554051584"  [ label = "AST: "] 
+  "25769803776" -> "30064771072"  [ label = "AST: "] 
+  "30064771072" -> "68719476736"  [ label = "AST: "] 
+  "30064771072" -> "68719476737"  [ label = "AST: "] 
+  "107374182400" -> "111669149696"  [ label = "DDG: "] 
+  "107374182400" -> "111669149697"  [ label = "DDG: "] 
+}

@@ -1,0 +1,1616 @@
+{
+  "nodes": [
+    {
+      "id": "30064771118",
+      "label": "temp_path = tmp3 = os.path os.path.join(UPLOAD_...",
+      "nodeType": "sink",
+      "file": "",
+      "line": 20,
+      "properties": {
+        "nodeType": "sink",
+        "joernType": "<operator>.assignment",
+        "file": "",
+        "line": 20,
+        "code": "temp_path = tmp3 = os.path os.path.join(UPLOAD_...",
+        "cve": "CVE-2024-37388",
+        "focused": true
+      }
+    },
+    {
+      "id": "55834574853",
+      "label": "filename",
+      "nodeType": "taint",
+      "file": "",
+      "line": 20,
+      "properties": {
+        "nodeType": "taint",
+        "joernType": "FIELD_IDENTIFIER",
+        "file": "",
+        "line": 20,
+        "code": "filename",
+        "cve": "CVE-2024-37388",
+        "focused": true
+      }
+    },
+    {
+      "id": "30064771099",
+      "label": "request.files",
+      "nodeType": "source",
+      "file": "",
+      "line": 15,
+      "properties": {
+        "nodeType": "source",
+        "joernType": "<operator>.fieldAccess",
+        "file": "",
+        "line": 15,
+        "code": "request.files",
+        "cve": "CVE-2024-37388",
+        "focused": true
+      }
+    },
+    {
+      "id": "94489280535",
+      "label": "tmp3: os.py:<module>.<member>(path)",
+      "nodeType": "taint",
+      "file": "",
+      "line": 20,
+      "properties": {
+        "nodeType": "taint",
+        "joernType": "LOCAL",
+        "file": "",
+        "line": 20,
+        "code": "tmp3: os.py:<module>.<member>(path)",
+        "cve": "CVE-2024-37388",
+        "focused": true
+      }
+    },
+    {
+      "id": "55834574863",
+      "label": "path",
+      "nodeType": "taint",
+      "file": "",
+      "line": 43,
+      "properties": {
+        "nodeType": "taint",
+        "joernType": "FIELD_IDENTIFIER",
+        "file": "",
+        "line": 43,
+        "code": "path",
+        "cve": "CVE-2024-37388",
+        "focused": true
+      }
+    },
+    {
+      "id": "68719476807",
+      "label": "temp_path",
+      "nodeType": "taint",
+      "file": "",
+      "line": 43,
+      "properties": {
+        "nodeType": "taint",
+        "joernType": "IDENTIFIER",
+        "file": "",
+        "line": 43,
+        "code": "temp_path",
+        "cve": "CVE-2024-37388",
+        "focused": true
+      }
+    },
+    {
+      "id": "30064771121",
+      "label": "ebookmeta.get_metadata",
+      "nodeType": "sink",
+      "file": "",
+      "line": 25,
+      "properties": {
+        "nodeType": "sink",
+        "joernType": "<operator>.fieldAccess",
+        "file": "",
+        "line": 25,
+        "code": "ebookmeta.get_metadata",
+        "cve": "CVE-2024-37388",
+        "focused": true
+      }
+    },
+    {
+      "id": "120259084290",
+      "label": "get_metadata",
+      "nodeType": "sink",
+      "file": "",
+      "line": 11,
+      "properties": {
+        "nodeType": "sink",
+        "joernType": "METHOD_REF",
+        "file": "",
+        "line": 11,
+        "code": "get_metadata",
+        "cve": "CVE-2024-37388",
+        "focused": true
+      }
+    },
+    {
+      "id": "30064771115",
+      "label": "tmp3 = os.path",
+      "nodeType": "taint",
+      "file": "",
+      "line": 20,
+      "properties": {
+        "nodeType": "taint",
+        "joernType": "<operator>.assignment",
+        "file": "",
+        "line": 20,
+        "code": "tmp3 = os.path",
+        "cve": "CVE-2024-37388",
+        "focused": true
+      }
+    },
+    {
+      "id": "30064771092",
+      "label": "\"file\" not in request.files",
+      "nodeType": "source",
+      "file": "",
+      "line": 12,
+      "properties": {
+        "nodeType": "source",
+        "joernType": "<operator>.notIn",
+        "file": "",
+        "line": 12,
+        "code": "\"file\" not in request.files",
+        "cve": "CVE-2024-37388",
+        "focused": true
+      }
+    },
+    {
+      "id": "120259084288",
+      "label": "def get_metadata(...)",
+      "nodeType": "sink",
+      "file": "",
+      "line": 11,
+      "properties": {
+        "nodeType": "sink",
+        "joernType": "METHOD_REF",
+        "file": "",
+        "line": 11,
+        "code": "def get_metadata(...)",
+        "cve": "CVE-2024-37388",
+        "focused": true
+      }
+    },
+    {
+      "id": "68719476812",
+      "label": "temp_path",
+      "nodeType": "taint",
+      "file": "",
+      "line": 44,
+      "properties": {
+        "nodeType": "taint",
+        "joernType": "IDENTIFIER",
+        "file": "",
+        "line": 44,
+        "code": "temp_path",
+        "cve": "CVE-2024-37388",
+        "focused": true
+      }
+    },
+    {
+      "id": "68719476782",
+      "label": "temp_path",
+      "nodeType": "taint",
+      "file": "",
+      "line": 25,
+      "properties": {
+        "nodeType": "taint",
+        "joernType": "IDENTIFIER",
+        "file": "",
+        "line": 25,
+        "code": "temp_path",
+        "cve": "CVE-2024-37388",
+        "focused": true
+      }
+    },
+    {
+      "id": "94489280538",
+      "label": "meta: ebookmeta.py:<module>.get_metadata.<returnValue>",
+      "nodeType": "sink",
+      "file": "",
+      "line": 25,
+      "properties": {
+        "nodeType": "sink",
+        "joernType": "LOCAL",
+        "file": "",
+        "line": 25,
+        "code": "meta: ebookmeta.py:<module>.get_metadata.<returnValue>",
+        "cve": "CVE-2024-37388",
+        "focused": true
+      }
+    },
+    {
+      "id": "68719476816",
+      "label": "app",
+      "nodeType": "ast",
+      "file": "",
+      "line": 10,
+      "properties": {
+        "nodeType": "ast",
+        "joernType": "IDENTIFIER",
+        "file": "",
+        "line": 10,
+        "code": "app",
+        "cve": "CVE-2024-37388",
+        "focused": true
+      }
+    },
+    {
+      "id": "30064771142",
+      "label": "jsonify(metadata)",
+      "nodeType": "taint",
+      "file": "",
+      "line": 36,
+      "properties": {
+        "nodeType": "taint",
+        "joernType": "jsonify",
+        "file": "",
+        "line": 36,
+        "code": "jsonify(metadata)",
+        "cve": "CVE-2024-37388",
+        "focused": true
+      }
+    },
+    {
+      "id": "30064771113",
+      "label": "file.filename",
+      "nodeType": "taint",
+      "file": "",
+      "line": 20,
+      "properties": {
+        "nodeType": "taint",
+        "joernType": "<operator>.fieldAccess",
+        "file": "",
+        "line": 20,
+        "code": "file.filename",
+        "cve": "CVE-2024-37388",
+        "focused": true
+      }
+    },
+    {
+      "id": "30064771091",
+      "label": "request.files",
+      "nodeType": "source",
+      "file": "",
+      "line": 12,
+      "properties": {
+        "nodeType": "source",
+        "joernType": "<operator>.fieldAccess",
+        "file": "",
+        "line": 12,
+        "code": "request.files",
+        "cve": "CVE-2024-37388",
+        "focused": true
+      }
+    },
+    {
+      "id": "25769803789",
+      "label": "os.remove(temp_path)",
+      "nodeType": "sink",
+      "file": "",
+      "line": 43,
+      "properties": {
+        "nodeType": "sink",
+        "joernType": "BLOCK",
+        "file": "",
+        "line": 43,
+        "code": "os.remove(temp_path)",
+        "cve": "CVE-2024-37388",
+        "focused": true
+      }
+    },
+    {
+      "id": "30064771100",
+      "label": "request.files[\"file\"]",
+      "nodeType": "source",
+      "file": "",
+      "line": 15,
+      "properties": {
+        "nodeType": "source",
+        "joernType": "<operator>.indexAccess",
+        "file": "",
+        "line": 15,
+        "code": "request.files[\"file\"]",
+        "cve": "CVE-2024-37388",
+        "focused": true
+      }
+    },
+    {
+      "id": "30064771123",
+      "label": "meta = ebookmeta.get_metadata(temp_path)",
+      "nodeType": "sink",
+      "file": "",
+      "line": 25,
+      "properties": {
+        "nodeType": "sink",
+        "joernType": "<operator>.assignment",
+        "file": "",
+        "line": 25,
+        "code": "meta = ebookmeta.get_metadata(temp_path)",
+        "cve": "CVE-2024-37388",
+        "focused": true
+      }
+    },
+    {
+      "id": "55834574866",
+      "label": "route",
+      "nodeType": "ast",
+      "file": "",
+      "line": 10,
+      "properties": {
+        "nodeType": "ast",
+        "joernType": "FIELD_IDENTIFIER",
+        "file": "",
+        "line": 10,
+        "code": "route",
+        "cve": "CVE-2024-37388",
+        "focused": true
+      }
+    },
+    {
+      "id": "107374182401",
+      "label": "get_metadata",
+      "nodeType": "sink",
+      "file": "",
+      "line": 11,
+      "properties": {
+        "nodeType": "sink",
+        "joernType": "METHOD",
+        "file": "",
+        "line": 11,
+        "code": "get_metadata",
+        "cve": "CVE-2024-37388",
+        "focused": true
+      }
+    },
+    {
+      "id": "30064771120",
+      "label": "file.save(temp_path)",
+      "nodeType": "taint",
+      "file": "",
+      "line": 21,
+      "properties": {
+        "nodeType": "taint",
+        "joernType": "save",
+        "file": "",
+        "line": 21,
+        "code": "file.save(temp_path)",
+        "cve": "CVE-2024-37388",
+        "focused": true
+      }
+    },
+    {
+      "id": "94489280517",
+      "label": "get_metadata: app.py:<module>.get_metadata",
+      "nodeType": "sink",
+      "file": "",
+      "line": 11,
+      "properties": {
+        "nodeType": "sink",
+        "joernType": "LOCAL",
+        "file": "",
+        "line": 11,
+        "code": "get_metadata: app.py:<module>.get_metadata",
+        "cve": "CVE-2024-37388",
+        "focused": true
+      }
+    },
+    {
+      "id": "30064771156",
+      "label": "os.remove(temp_path)",
+      "nodeType": "sink",
+      "file": "",
+      "line": 44,
+      "properties": {
+        "nodeType": "sink",
+        "joernType": "remove",
+        "file": "",
+        "line": 44,
+        "code": "os.remove(temp_path)",
+        "cve": "CVE-2024-37388",
+        "focused": true
+      }
+    },
+    {
+      "id": "30064771152",
+      "label": "tmp6 = os.path",
+      "nodeType": "taint",
+      "file": "",
+      "line": 43,
+      "properties": {
+        "nodeType": "taint",
+        "joernType": "<operator>.assignment",
+        "file": "",
+        "line": 43,
+        "code": "tmp6 = os.path",
+        "cve": "CVE-2024-37388",
+        "focused": true
+      }
+    },
+    {
+      "id": "30064771151",
+      "label": "os.path",
+      "nodeType": "taint",
+      "file": "",
+      "line": 43,
+      "properties": {
+        "nodeType": "taint",
+        "joernType": "<operator>.fieldAccess",
+        "file": "",
+        "line": 43,
+        "code": "os.path",
+        "cve": "CVE-2024-37388",
+        "focused": true
+      }
+    },
+    {
+      "id": "25769803790",
+      "label": "meta = ebookmeta.get_metadata(temp_path) metada...",
+      "nodeType": "sink",
+      "file": "",
+      "line": 23,
+      "properties": {
+        "nodeType": "sink",
+        "joernType": "BLOCK",
+        "file": "",
+        "line": 23,
+        "code": "meta = ebookmeta.get_metadata(temp_path) metada...",
+        "cve": "CVE-2024-37388",
+        "focused": true
+      }
+    },
+    {
+      "id": "30064771122",
+      "label": "ebookmeta.get_metadata(temp_path)",
+      "nodeType": "sink",
+      "file": "",
+      "line": 25,
+      "properties": {
+        "nodeType": "sink",
+        "joernType": "get_metadata",
+        "file": "",
+        "line": 25,
+        "code": "ebookmeta.get_metadata(temp_path)",
+        "cve": "CVE-2024-37388",
+        "focused": true
+      }
+    },
+    {
+      "id": "94489280531",
+      "label": "tmp1: __builtin.file<meta>.<member>(filename)",
+      "nodeType": "taint",
+      "file": "",
+      "line": 16,
+      "properties": {
+        "nodeType": "taint",
+        "joernType": "LOCAL",
+        "file": "",
+        "line": 16,
+        "code": "tmp1: __builtin.file<meta>.<member>(filename)",
+        "cve": "CVE-2024-37388",
+        "focused": true
+      }
+    },
+    {
+      "id": "68719476798",
+      "label": "metadata",
+      "nodeType": "taint",
+      "file": "",
+      "line": 28,
+      "properties": {
+        "nodeType": "taint",
+        "joernType": "IDENTIFIER",
+        "file": "",
+        "line": 28,
+        "code": "metadata",
+        "cve": "CVE-2024-37388",
+        "focused": true
+      }
+    },
+    {
+      "id": "30064771155",
+      "label": "os.remove",
+      "nodeType": "sink",
+      "file": "",
+      "line": 44,
+      "properties": {
+        "nodeType": "sink",
+        "joernType": "<operator>.fieldAccess",
+        "file": "",
+        "line": 44,
+        "code": "os.remove",
+        "cve": "CVE-2024-37388",
+        "focused": true
+      }
+    },
+    {
+      "id": "68719476778",
+      "label": "temp_path",
+      "nodeType": "taint",
+      "file": "",
+      "line": 20,
+      "properties": {
+        "nodeType": "taint",
+        "joernType": "IDENTIFIER",
+        "file": "",
+        "line": 20,
+        "code": "temp_path",
+        "cve": "CVE-2024-37388",
+        "focused": true
+      }
+    },
+    {
+      "id": "30064771105",
+      "label": "file.filename.endswith(\".epub\")",
+      "nodeType": "taint",
+      "file": "",
+      "line": 16,
+      "properties": {
+        "nodeType": "taint",
+        "joernType": "endswith",
+        "file": "",
+        "line": 16,
+        "code": "file.filename.endswith(\".epub\")",
+        "cve": "CVE-2024-37388",
+        "focused": true
+      }
+    },
+    {
+      "id": "128849018882",
+      "label": "",
+      "nodeType": "ast",
+      "file": "",
+      "line": 0,
+      "properties": {
+        "nodeType": "ast",
+        "joernType": "",
+        "file": "",
+        "line": 0,
+        "code": "",
+        "cve": "CVE-2024-37388",
+        "focused": true
+      }
+    },
+    {
+      "id": "94489280541",
+      "label": "tmp6: os.py:<module>.<member>(path)",
+      "nodeType": "taint",
+      "file": "",
+      "line": 43,
+      "properties": {
+        "nodeType": "taint",
+        "joernType": "LOCAL",
+        "file": "",
+        "line": 43,
+        "code": "tmp6: os.py:<module>.<member>(path)",
+        "cve": "CVE-2024-37388",
+        "focused": true
+      }
+    },
+    {
+      "id": "30064771160",
+      "label": "app.route(\"/upload\", methods = [\"POST\"])(def ge...",
+      "nodeType": "ast",
+      "file": "",
+      "line": 0,
+      "properties": {
+        "nodeType": "ast",
+        "joernType": ", 10",
+        "file": "",
+        "line": 0,
+        "code": "app.route(\"/upload\", methods = [\"POST\"])(def ge...",
+        "cve": "CVE-2024-37388",
+        "focused": true
+      }
+    },
+    {
+      "id": "30064771159",
+      "label": "app.route(\"/upload\", methods = [\"POST\"])",
+      "nodeType": "ast",
+      "file": "",
+      "line": 10,
+      "properties": {
+        "nodeType": "ast",
+        "joernType": "route",
+        "file": "",
+        "line": 10,
+        "code": "app.route(\"/upload\", methods = [\"POST\"])",
+        "cve": "CVE-2024-37388",
+        "focused": true
+      }
+    },
+    {
+      "id": "167503724545",
+      "label": "get_metadata",
+      "nodeType": "sink",
+      "file": "",
+      "line": 11,
+      "properties": {
+        "nodeType": "sink",
+        "joernType": "TYPE_DECL",
+        "file": "",
+        "line": 11,
+        "code": "get_metadata",
+        "cve": "CVE-2024-37388",
+        "focused": true
+      }
+    },
+    {
+      "id": "68719476756",
+      "label": "get_metadata",
+      "nodeType": "sink",
+      "file": "",
+      "line": 11,
+      "properties": {
+        "nodeType": "sink",
+        "joernType": "IDENTIFIER",
+        "file": "",
+        "line": 11,
+        "code": "get_metadata",
+        "cve": "CVE-2024-37388",
+        "focused": true
+      }
+    },
+    {
+      "id": "30064771103",
+      "label": "tmp1 = file.filename",
+      "nodeType": "taint",
+      "file": "",
+      "line": 16,
+      "properties": {
+        "nodeType": "taint",
+        "joernType": "<operator>.assignment",
+        "file": "",
+        "line": 16,
+        "code": "tmp1 = file.filename",
+        "cve": "CVE-2024-37388",
+        "focused": true
+      }
+    },
+    {
+      "id": "30064771158",
+      "label": "app.route",
+      "nodeType": "ast",
+      "file": "",
+      "line": 10,
+      "properties": {
+        "nodeType": "ast",
+        "joernType": "<operator>.fieldAccess",
+        "file": "",
+        "line": 10,
+        "code": "app.route",
+        "cve": "CVE-2024-37388",
+        "focused": true
+      }
+    },
+    {
+      "id": "30064771157",
+      "label": "[\"POST\"]",
+      "nodeType": "ast",
+      "file": "",
+      "line": 10,
+      "properties": {
+        "nodeType": "ast",
+        "joernType": "<operator>.listLiteral",
+        "file": "",
+        "line": 10,
+        "code": "[\"POST\"]",
+        "cve": "CVE-2024-37388",
+        "focused": true
+      }
+    },
+    {
+      "id": "90194313246",
+      "label": "\"POST\"",
+      "nodeType": "ast",
+      "file": "",
+      "line": 10,
+      "properties": {
+        "nodeType": "ast",
+        "joernType": "LITERAL",
+        "file": "",
+        "line": 10,
+        "code": "\"POST\"",
+        "cve": "CVE-2024-37388",
+        "focused": true
+      }
+    },
+    {
+      "id": "94489280540",
+      "label": "metadata: __builtin.dict",
+      "nodeType": "taint",
+      "file": "",
+      "line": 28,
+      "properties": {
+        "nodeType": "taint",
+        "joernType": "LOCAL",
+        "file": "",
+        "line": 28,
+        "code": "metadata: __builtin.dict",
+        "cve": "CVE-2024-37388",
+        "focused": true
+      }
+    },
+    {
+      "id": "94489280536",
+      "label": "temp_path: os.py:<module>.<member>(path).join",
+      "nodeType": "taint",
+      "file": "",
+      "line": 20,
+      "properties": {
+        "nodeType": "taint",
+        "joernType": "LOCAL",
+        "file": "",
+        "line": 20,
+        "code": "temp_path: os.py:<module>.<member>(path).join",
+        "cve": "CVE-2024-37388",
+        "focused": true
+      }
+    },
+    {
+      "id": "25769803788",
+      "label": "tmp6 = os.path os.path.exists(temp_path)",
+      "nodeType": "taint",
+      "file": "",
+      "line": 43,
+      "properties": {
+        "nodeType": "taint",
+        "joernType": "BLOCK",
+        "file": "",
+        "line": 43,
+        "code": "tmp6 = os.path os.path.exists(temp_path)",
+        "cve": "CVE-2024-37388",
+        "focused": true
+      }
+    },
+    {
+      "id": "25769803784",
+      "label": "tmp3 = os.path os.path.join(UPLOAD_FOLDER, file...",
+      "nodeType": "sink",
+      "file": "",
+      "line": 20,
+      "properties": {
+        "nodeType": "sink",
+        "joernType": "BLOCK",
+        "file": "",
+        "line": 20,
+        "code": "tmp3 = os.path os.path.join(UPLOAD_FOLDER, file...",
+        "cve": "CVE-2024-37388",
+        "focused": true
+      }
+    },
+    {
+      "id": "30064771117",
+      "label": "os.path.join(UPLOAD_FOLDER, file.filename)",
+      "nodeType": "sink",
+      "file": "",
+      "line": 20,
+      "properties": {
+        "nodeType": "sink",
+        "joernType": "join",
+        "file": "",
+        "line": 20,
+        "code": "os.path.join(UPLOAD_FOLDER, file.filename)",
+        "cve": "CVE-2024-37388",
+        "focused": true
+      }
+    },
+    {
+      "id": "30064771161",
+      "label": "get_metadata = app.route(\"/upload\", methods = [...",
+      "nodeType": "sink",
+      "file": "",
+      "line": 11,
+      "properties": {
+        "nodeType": "sink",
+        "joernType": "<operator>.assignment",
+        "file": "",
+        "line": 11,
+        "code": "get_metadata = app.route(\"/upload\", methods = [...",
+        "cve": "CVE-2024-37388",
+        "focused": true
+      }
+    },
+    {
+      "id": "30064771102",
+      "label": "file.filename",
+      "nodeType": "taint",
+      "file": "",
+      "line": 16,
+      "properties": {
+        "nodeType": "taint",
+        "joernType": "<operator>.fieldAccess",
+        "file": "",
+        "line": 16,
+        "code": "file.filename",
+        "cve": "CVE-2024-37388",
+        "focused": true
+      }
+    },
+    {
+      "id": "55834574854",
+      "label": "path",
+      "nodeType": "taint",
+      "file": "",
+      "line": 20,
+      "properties": {
+        "nodeType": "taint",
+        "joernType": "FIELD_IDENTIFIER",
+        "file": "",
+        "line": 20,
+        "code": "path",
+        "cve": "CVE-2024-37388",
+        "focused": true
+      }
+    },
+    {
+      "id": "68719476815",
+      "label": "app",
+      "nodeType": "ast",
+      "file": "",
+      "line": 10,
+      "properties": {
+        "nodeType": "ast",
+        "joernType": "IDENTIFIER",
+        "file": "",
+        "line": 10,
+        "code": "app",
+        "cve": "CVE-2024-37388",
+        "focused": true
+      }
+    },
+    {
+      "id": "30064771101",
+      "label": "file = request.files[\"file\"]",
+      "nodeType": "source",
+      "file": "",
+      "line": 15,
+      "properties": {
+        "nodeType": "source",
+        "joernType": "<operator>.assignment",
+        "file": "",
+        "line": 15,
+        "code": "file = request.files[\"file\"]",
+        "cve": "CVE-2024-37388",
+        "focused": true
+      }
+    },
+    {
+      "id": "25769803781",
+      "label": "tmp1 = file.filename file.filename.endswith(\".e...",
+      "nodeType": "taint",
+      "file": "",
+      "line": 16,
+      "properties": {
+        "nodeType": "taint",
+        "joernType": "BLOCK",
+        "file": "",
+        "line": 16,
+        "code": "tmp1 = file.filename file.filename.endswith(\".e...",
+        "cve": "CVE-2024-37388",
+        "focused": true
+      }
+    },
+    {
+      "id": "30064771114",
+      "label": "os.path",
+      "nodeType": "taint",
+      "file": "",
+      "line": 20,
+      "properties": {
+        "nodeType": "taint",
+        "joernType": "<operator>.fieldAccess",
+        "file": "",
+        "line": 20,
+        "code": "os.path",
+        "cve": "CVE-2024-37388",
+        "focused": true
+      }
+    },
+    {
+      "id": "90194313245",
+      "label": "\"/upload\"",
+      "nodeType": "ast",
+      "file": "",
+      "line": 10,
+      "properties": {
+        "nodeType": "ast",
+        "joernType": "LITERAL",
+        "file": "",
+        "line": 10,
+        "code": "\"/upload\"",
+        "cve": "CVE-2024-37388",
+        "focused": true
+      }
+    },
+    {
+      "id": "55834574851",
+      "label": "filename",
+      "nodeType": "taint",
+      "file": "",
+      "line": 16,
+      "properties": {
+        "nodeType": "taint",
+        "joernType": "FIELD_IDENTIFIER",
+        "file": "",
+        "line": 16,
+        "code": "filename",
+        "cve": "CVE-2024-37388",
+        "focused": true
+      }
+    },
+    {
+      "id": "55834574857",
+      "label": "get_metadata",
+      "nodeType": "sink",
+      "file": "",
+      "line": 25,
+      "properties": {
+        "nodeType": "sink",
+        "joernType": "FIELD_IDENTIFIER",
+        "file": "",
+        "line": 25,
+        "code": "get_metadata",
+        "cve": "CVE-2024-37388",
+        "focused": true
+      }
+    }
+  ],
+  "edges": [
+    {
+      "id": "e-30064771161-68719476756",
+      "source": "30064771161",
+      "target": "68719476756",
+      "edgeType": "data",
+      "label": "AST: "
+    },
+    {
+      "id": "e-30064771161-30064771160",
+      "source": "30064771161",
+      "target": "30064771160",
+      "edgeType": "data",
+      "label": "AST: "
+    },
+    {
+      "id": "e-68719476756-120259084290",
+      "source": "68719476756",
+      "target": "120259084290",
+      "edgeType": "data",
+      "label": "AST: "
+    },
+    {
+      "id": "e-30064771160-30064771159",
+      "source": "30064771160",
+      "target": "30064771159",
+      "edgeType": "data",
+      "label": "AST: "
+    },
+    {
+      "id": "e-30064771160-120259084288",
+      "source": "30064771160",
+      "target": "120259084288",
+      "edgeType": "data",
+      "label": "AST: "
+    },
+    {
+      "id": "e-30064771159-30064771158",
+      "source": "30064771159",
+      "target": "30064771158",
+      "edgeType": "data",
+      "label": "AST: "
+    },
+    {
+      "id": "e-30064771159-68719476816",
+      "source": "30064771159",
+      "target": "68719476816",
+      "edgeType": "data",
+      "label": "AST: "
+    },
+    {
+      "id": "e-30064771159-90194313245",
+      "source": "30064771159",
+      "target": "90194313245",
+      "edgeType": "data",
+      "label": "AST: "
+    },
+    {
+      "id": "e-30064771159-30064771157",
+      "source": "30064771159",
+      "target": "30064771157",
+      "edgeType": "data",
+      "label": "AST: "
+    },
+    {
+      "id": "e-30064771158-68719476815",
+      "source": "30064771158",
+      "target": "68719476815",
+      "edgeType": "data",
+      "label": "AST: "
+    },
+    {
+      "id": "e-30064771158-55834574866",
+      "source": "30064771158",
+      "target": "55834574866",
+      "edgeType": "data",
+      "label": "AST: "
+    },
+    {
+      "id": "e-30064771157-90194313246",
+      "source": "30064771157",
+      "target": "90194313246",
+      "edgeType": "data",
+      "label": "AST: "
+    },
+    {
+      "id": "e-107374182401-128849018882",
+      "source": "107374182401",
+      "target": "128849018882",
+      "edgeType": "data",
+      "label": "AST: "
+    },
+    {
+      "id": "e-30064771092-30064771091",
+      "source": "30064771092",
+      "target": "30064771091",
+      "edgeType": "data",
+      "label": "AST: "
+    },
+    {
+      "id": "e-30064771101-30064771100",
+      "source": "30064771101",
+      "target": "30064771100",
+      "edgeType": "data",
+      "label": "AST: "
+    },
+    {
+      "id": "e-30064771100-30064771099",
+      "source": "30064771100",
+      "target": "30064771099",
+      "edgeType": "data",
+      "label": "AST: "
+    },
+    {
+      "id": "e-25769803781-30064771103",
+      "source": "25769803781",
+      "target": "30064771103",
+      "edgeType": "data",
+      "label": "AST: "
+    },
+    {
+      "id": "e-25769803781-30064771105",
+      "source": "25769803781",
+      "target": "30064771105",
+      "edgeType": "data",
+      "label": "AST: "
+    },
+    {
+      "id": "e-30064771103-30064771102",
+      "source": "30064771103",
+      "target": "30064771102",
+      "edgeType": "data",
+      "label": "AST: "
+    },
+    {
+      "id": "e-30064771102-55834574851",
+      "source": "30064771102",
+      "target": "55834574851",
+      "edgeType": "data",
+      "label": "AST: "
+    },
+    {
+      "id": "e-30064771118-68719476778",
+      "source": "30064771118",
+      "target": "68719476778",
+      "edgeType": "data",
+      "label": "AST: "
+    },
+    {
+      "id": "e-30064771118-25769803784",
+      "source": "30064771118",
+      "target": "25769803784",
+      "edgeType": "data",
+      "label": "AST: "
+    },
+    {
+      "id": "e-25769803784-30064771115",
+      "source": "25769803784",
+      "target": "30064771115",
+      "edgeType": "data",
+      "label": "AST: "
+    },
+    {
+      "id": "e-25769803784-30064771117",
+      "source": "25769803784",
+      "target": "30064771117",
+      "edgeType": "data",
+      "label": "AST: "
+    },
+    {
+      "id": "e-30064771115-30064771114",
+      "source": "30064771115",
+      "target": "30064771114",
+      "edgeType": "data",
+      "label": "AST: "
+    },
+    {
+      "id": "e-30064771114-55834574854",
+      "source": "30064771114",
+      "target": "55834574854",
+      "edgeType": "data",
+      "label": "AST: "
+    },
+    {
+      "id": "e-30064771117-30064771113",
+      "source": "30064771117",
+      "target": "30064771113",
+      "edgeType": "data",
+      "label": "AST: "
+    },
+    {
+      "id": "e-30064771113-55834574853",
+      "source": "30064771113",
+      "target": "55834574853",
+      "edgeType": "data",
+      "label": "AST: "
+    },
+    {
+      "id": "e-25769803790-30064771123",
+      "source": "25769803790",
+      "target": "30064771123",
+      "edgeType": "data",
+      "label": "AST: "
+    },
+    {
+      "id": "e-30064771123-30064771122",
+      "source": "30064771123",
+      "target": "30064771122",
+      "edgeType": "data",
+      "label": "AST: "
+    },
+    {
+      "id": "e-30064771122-30064771121",
+      "source": "30064771122",
+      "target": "30064771121",
+      "edgeType": "data",
+      "label": "AST: "
+    },
+    {
+      "id": "e-30064771122-68719476782",
+      "source": "30064771122",
+      "target": "68719476782",
+      "edgeType": "data",
+      "label": "AST: "
+    },
+    {
+      "id": "e-30064771121-55834574857",
+      "source": "30064771121",
+      "target": "55834574857",
+      "edgeType": "data",
+      "label": "AST: "
+    },
+    {
+      "id": "e-25769803788-30064771152",
+      "source": "25769803788",
+      "target": "30064771152",
+      "edgeType": "data",
+      "label": "AST: "
+    },
+    {
+      "id": "e-30064771152-30064771151",
+      "source": "30064771152",
+      "target": "30064771151",
+      "edgeType": "data",
+      "label": "AST: "
+    },
+    {
+      "id": "e-30064771151-55834574863",
+      "source": "30064771151",
+      "target": "55834574863",
+      "edgeType": "data",
+      "label": "AST: "
+    },
+    {
+      "id": "e-25769803789-30064771156",
+      "source": "25769803789",
+      "target": "30064771156",
+      "edgeType": "data",
+      "label": "AST: "
+    },
+    {
+      "id": "e-30064771156-30064771155",
+      "source": "30064771156",
+      "target": "30064771155",
+      "edgeType": "data",
+      "label": "AST: "
+    },
+    {
+      "id": "e-30064771156-68719476812",
+      "source": "30064771156",
+      "target": "68719476812",
+      "edgeType": "data",
+      "label": "AST: "
+    },
+    {
+      "id": "e-30064771160-30064771161",
+      "source": "30064771160",
+      "target": "30064771161",
+      "edgeType": "control",
+      "label": "CFG: "
+    },
+    {
+      "id": "e-30064771159-120259084288",
+      "source": "30064771159",
+      "target": "120259084288",
+      "edgeType": "control",
+      "label": "CFG: "
+    },
+    {
+      "id": "e-120259084288-30064771160",
+      "source": "120259084288",
+      "target": "30064771160",
+      "edgeType": "control",
+      "label": "CFG: "
+    },
+    {
+      "id": "e-30064771158-30064771157",
+      "source": "30064771158",
+      "target": "30064771157",
+      "edgeType": "control",
+      "label": "CFG: "
+    },
+    {
+      "id": "e-30064771157-30064771159",
+      "source": "30064771157",
+      "target": "30064771159",
+      "edgeType": "control",
+      "label": "CFG: "
+    },
+    {
+      "id": "e-55834574866-30064771158",
+      "source": "55834574866",
+      "target": "30064771158",
+      "edgeType": "control",
+      "label": "CFG: "
+    },
+    {
+      "id": "e-30064771160-30064771161",
+      "source": "30064771160",
+      "target": "30064771161",
+      "edgeType": "taint",
+      "label": "DDG: def get_metadata(...)"
+    },
+    {
+      "id": "e-30064771157-30064771159",
+      "source": "30064771157",
+      "target": "30064771159",
+      "edgeType": "taint",
+      "label": "DDG: &quot;POST&quot;"
+    },
+    {
+      "id": "e-30064771101-55834574851",
+      "source": "30064771101",
+      "target": "55834574851",
+      "edgeType": "control",
+      "label": "CFG: "
+    },
+    {
+      "id": "e-30064771120-55834574857",
+      "source": "30064771120",
+      "target": "55834574857",
+      "edgeType": "control",
+      "label": "CFG: "
+    },
+    {
+      "id": "e-30064771100-30064771101",
+      "source": "30064771100",
+      "target": "30064771101",
+      "edgeType": "control",
+      "label": "CFG: "
+    },
+    {
+      "id": "e-30064771091-30064771092",
+      "source": "30064771091",
+      "target": "30064771092",
+      "edgeType": "control",
+      "label": "CFG: "
+    },
+    {
+      "id": "e-30064771099-30064771100",
+      "source": "30064771099",
+      "target": "30064771100",
+      "edgeType": "control",
+      "label": "CFG: "
+    },
+    {
+      "id": "e-30064771117-30064771118",
+      "source": "30064771117",
+      "target": "30064771118",
+      "edgeType": "control",
+      "label": "CFG: "
+    },
+    {
+      "id": "e-30064771114-30064771115",
+      "source": "30064771114",
+      "target": "30064771115",
+      "edgeType": "control",
+      "label": "CFG: "
+    },
+    {
+      "id": "e-30064771113-30064771117",
+      "source": "30064771113",
+      "target": "30064771117",
+      "edgeType": "control",
+      "label": "CFG: "
+    },
+    {
+      "id": "e-30064771122-30064771123",
+      "source": "30064771122",
+      "target": "30064771123",
+      "edgeType": "control",
+      "label": "CFG: "
+    },
+    {
+      "id": "e-30064771102-30064771103",
+      "source": "30064771102",
+      "target": "30064771103",
+      "edgeType": "control",
+      "label": "CFG: "
+    },
+    {
+      "id": "e-55834574854-30064771114",
+      "source": "55834574854",
+      "target": "30064771114",
+      "edgeType": "control",
+      "label": "CFG: "
+    },
+    {
+      "id": "e-55834574853-30064771113",
+      "source": "55834574853",
+      "target": "30064771113",
+      "edgeType": "control",
+      "label": "CFG: "
+    },
+    {
+      "id": "e-30064771121-30064771122",
+      "source": "30064771121",
+      "target": "30064771122",
+      "edgeType": "control",
+      "label": "CFG: "
+    },
+    {
+      "id": "e-55834574851-30064771102",
+      "source": "55834574851",
+      "target": "30064771102",
+      "edgeType": "control",
+      "label": "CFG: "
+    },
+    {
+      "id": "e-55834574857-30064771121",
+      "source": "55834574857",
+      "target": "30064771121",
+      "edgeType": "control",
+      "label": "CFG: "
+    },
+    {
+      "id": "e-30064771151-30064771152",
+      "source": "30064771151",
+      "target": "30064771152",
+      "edgeType": "control",
+      "label": "CFG: "
+    },
+    {
+      "id": "e-30064771155-30064771156",
+      "source": "30064771155",
+      "target": "30064771156",
+      "edgeType": "control",
+      "label": "CFG: "
+    },
+    {
+      "id": "e-55834574863-30064771151",
+      "source": "55834574863",
+      "target": "30064771151",
+      "edgeType": "control",
+      "label": "CFG: "
+    },
+    {
+      "id": "e-30064771117-30064771118",
+      "source": "30064771117",
+      "target": "30064771118",
+      "edgeType": "taint",
+      "label": "DDG: os.path.join(UPLOAD_FOLDER, file.filename)"
+    },
+    {
+      "id": "e-107374182401-30064771118",
+      "source": "107374182401",
+      "target": "30064771118",
+      "edgeType": "taint",
+      "label": "DDG: "
+    },
+    {
+      "id": "e-30064771101-30064771120",
+      "source": "30064771101",
+      "target": "30064771120",
+      "edgeType": "taint",
+      "label": "DDG: file"
+    },
+    {
+      "id": "e-30064771117-30064771120",
+      "source": "30064771117",
+      "target": "30064771120",
+      "edgeType": "taint",
+      "label": "DDG: file.filename"
+    },
+    {
+      "id": "e-107374182401-30064771120",
+      "source": "107374182401",
+      "target": "30064771120",
+      "edgeType": "taint",
+      "label": "DDG: "
+    },
+    {
+      "id": "e-30064771118-30064771120",
+      "source": "30064771118",
+      "target": "30064771120",
+      "edgeType": "taint",
+      "label": "DDG: temp_path"
+    },
+    {
+      "id": "e-107374182401-30064771092",
+      "source": "107374182401",
+      "target": "30064771092",
+      "edgeType": "taint",
+      "label": "DDG: "
+    },
+    {
+      "id": "e-30064771122-30064771123",
+      "source": "30064771122",
+      "target": "30064771123",
+      "edgeType": "taint",
+      "label": "DDG: ebookmeta"
+    },
+    {
+      "id": "e-30064771122-30064771123",
+      "source": "30064771122",
+      "target": "30064771123",
+      "edgeType": "taint",
+      "label": "DDG: temp_path"
+    },
+    {
+      "id": "e-30064771101-30064771103",
+      "source": "30064771101",
+      "target": "30064771103",
+      "edgeType": "taint",
+      "label": "DDG: file"
+    },
+    {
+      "id": "e-30064771115-30064771117",
+      "source": "30064771115",
+      "target": "30064771117",
+      "edgeType": "taint",
+      "label": "DDG: tmp3"
+    },
+    {
+      "id": "e-107374182401-30064771117",
+      "source": "107374182401",
+      "target": "30064771117",
+      "edgeType": "taint",
+      "label": "DDG: "
+    },
+    {
+      "id": "e-30064771101-30064771117",
+      "source": "30064771101",
+      "target": "30064771117",
+      "edgeType": "taint",
+      "label": "DDG: file"
+    },
+    {
+      "id": "e-30064771103-30064771105",
+      "source": "30064771103",
+      "target": "30064771105",
+      "edgeType": "taint",
+      "label": "DDG: tmp1"
+    },
+    {
+      "id": "e-107374182401-30064771105",
+      "source": "107374182401",
+      "target": "30064771105",
+      "edgeType": "taint",
+      "label": "DDG: "
+    },
+    {
+      "id": "e-107374182401-30064771122",
+      "source": "107374182401",
+      "target": "30064771122",
+      "edgeType": "taint",
+      "label": "DDG: "
+    },
+    {
+      "id": "e-30064771120-30064771122",
+      "source": "30064771120",
+      "target": "30064771122",
+      "edgeType": "taint",
+      "label": "DDG: temp_path"
+    },
+    {
+      "id": "e-107374182401-30064771142",
+      "source": "107374182401",
+      "target": "30064771142",
+      "edgeType": "taint",
+      "label": "DDG: "
+    },
+    {
+      "id": "e-107374182401-30064771156",
+      "source": "107374182401",
+      "target": "30064771156",
+      "edgeType": "taint",
+      "label": "DDG: "
+    },
+    {
+      "id": "e-30064771092-55834574851",
+      "source": "30064771092",
+      "target": "55834574851",
+      "edgeType": "control",
+      "label": "CDG: "
+    },
+    {
+      "id": "e-30064771092-30064771099",
+      "source": "30064771092",
+      "target": "30064771099",
+      "edgeType": "control",
+      "label": "CDG: "
+    },
+    {
+      "id": "e-30064771092-30064771105",
+      "source": "30064771092",
+      "target": "30064771105",
+      "edgeType": "control",
+      "label": "CDG: "
+    },
+    {
+      "id": "e-30064771092-30064771102",
+      "source": "30064771092",
+      "target": "30064771102",
+      "edgeType": "control",
+      "label": "CDG: "
+    },
+    {
+      "id": "e-30064771092-30064771103",
+      "source": "30064771092",
+      "target": "30064771103",
+      "edgeType": "control",
+      "label": "CDG: "
+    },
+    {
+      "id": "e-30064771092-30064771100",
+      "source": "30064771092",
+      "target": "30064771100",
+      "edgeType": "control",
+      "label": "CDG: "
+    },
+    {
+      "id": "e-30064771092-30064771101",
+      "source": "30064771092",
+      "target": "30064771101",
+      "edgeType": "control",
+      "label": "CDG: "
+    }
+  ],
+  "metadata": {
+    "cve": "CVE-2024-37388",
+    "focused": true,
+    "nodeCount": 60,
+    "edgeCount": 91,
+    "typeDistribution": {
+      "sink": 19,
+      "taint": 26,
+      "source": 5,
+      "ast": 10
+    },
+    "generator": "Joern v4.0.516 + cpg_to_json.py (SCA-009)"
+  }
+}

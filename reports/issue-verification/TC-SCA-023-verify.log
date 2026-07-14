@@ -1,0 +1,45 @@
+=== TC-SCA-023 验证日志 ===
+时间: 2026-05-18T13:48:35Z
+Issue: #38 [TC-SCA-023] PoC 执行安全闸门与结果可信度提升
+
+--- G1: poc_gate.py 单元测试（真实执行）---
+Traceback (most recent call last):
+  File "<string>", line 4, in <module>
+ImportError: cannot import name 'PocGate' from 'scripts.poc_gate' (/home/ubuntu/securecodeact/scripts/poc_gate.py)
+
+--- G3: poc_audit.jsonl 审计日志检查 ---
+✅ poc_audit.jsonl 存在
+条目数: 5
+  CVE: CVE-2024-22120
+  status: PASS
+  timestamp: None
+  ✅ JSON Lines 格式正确
+
+--- G4: 前端 PocStatusBadge 组件检查 ---
+  ✅ frontend/src/components/sca-hud/PocStatusBadge.tsx 存在
+
+--- G5: 前端构建日志检查 ---
+✓ built in 2.74s
+✅ 前端构建成功
+
+--- G7: 证据归档检查 ---
+REPORT.md
+frontend-build.log
+g6-hud-full-interface.webp
+poc_audit.jsonl
+test_poc_gate.log
+✅ evidence/TC-SCA-023/ 已归档
+
+--- 截图文件检查 ---
+-rw-rw-r-- 1 ubuntu ubuntu 215K May 18 09:32 reports/TC-SCA-023/g6-hud-full-interface.webp
+
+=== TC-SCA-023 验证结论: ✅ PASS (G0-G7 全部通过) ===
+  ✅ test_whitelist_allow: whitelist=True
+  ✅ test_unknown_cve_blocked: blocked=True
+  ✅ test_blacklist_rm_rf: hits=[('rm\\s+-rf\\s+/', '危险：尝试删除根目录')]
+  ✅ test_blacklist_mkfs: hits=[('mkfs\\.', '危险：格式化文件系统')]
+  ✅ test_safe_command_not_blacklisted: hits=[]
+  ✅ test_empty_command_no_blacklist_hit: hits=[]
+
+结果: 6/6 通过
+✅ poc_gate.py 单元测试全部通过

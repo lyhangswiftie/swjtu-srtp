@@ -1,0 +1,40 @@
+{
+  "cveId": "CVE-2024-22120",
+  "sourceFile": "samples/cve-2024-22120/audit.c",
+  "diffFile": "reports/TC-SCA-024/patch.diff",
+  "workdir": "/tmp/sca-024-regression-t58dwccc",
+  "startedAt": "2026-05-07T14:08:08Z",
+  "checks": {
+    "static_pattern": {
+      "status": "PASS",
+      "reason": "漏洞特征已消除，功能特征完整",
+      "details": {
+        "vuln_eliminated": [
+          "clientip\\s*\\)\\s*;.*taint\\s*sink",
+          "VALUES\\s*\\(\\s*\\'%s\\'\\s*\\).*clientip\\s*\\)",
+          "/\\*\\s*VULNERABLE"
+        ],
+        "vuln_remaining": [],
+        "func_preserved": [
+          "zbx_db_execute\\s*\\(",
+          "zbx_db_dyn_escape_string\\s*\\(",
+          "void\\s+zbx_audit_log_clientip\\s*\\("
+        ],
+        "func_missing": [],
+        "fix_present": [
+          "FIXED.*CVE-2024-22120",
+          "value_esc\\s*\\)\\s*;.*fixed"
+        ],
+        "fix_missing": []
+      }
+    },
+    "compile": {
+      "status": "SKIP",
+      "reason": "gcc 不可用"
+    }
+  },
+  "apply_stage": "APPLIED",
+  "status": "REGRESSION_PASS",
+  "reason": "所有回归检查通过",
+  "completedAt": "2026-05-07T14:08:08Z"
+}

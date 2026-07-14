@@ -1,0 +1,84 @@
+
+services:
+  openhands:
+    build:
+      context: ./
+      dockerfile: ./containers/app/Dockerfile
+    image: openhands:latest
+    container_name: openhands-app-${DATE:-}
+    environment:
+      - AGENT_SERVER_IMAGE_REPOSITORY=${AGENT_SERVER_IMAGE_REPOSITORY:-openhands-agent-server}
+      - AGENT_SERVER_IMAGE_TAG=${AGENT_SERVER_IMAGE_TAG:-custom}
+      #- SANDBOX_USER_ID=${SANDBOX_USER_ID:-1234} # enable this only if you want a specific non-root sandbox user but you will have to manually adjust permissions of ~/.openhands for this user
+      - WORKSPACE_MOUNT_PATH=${WORKSPACE_BASE:-$PWD/workspace}
+      - SANDBOX_LOCAL_RUNTIME_URL=http://localhost:8000
+      - SANDBOX_STARTUP_GRACE_SECONDS=60
+      - ENABLE_BROWSER=false
+    ports:
+      - "3000:3000"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ~/.openhands:/.openhands
+      - ${WORKSPACE_BASE:-$PWD/workspace}:/opt/workspace_base
+    pull_policy: build
+    stdin_open: true
+    tty: true
+
+  # ── Neo4j 图数据库 ──────────────────────────────────────────────
+  neo4j:
+    image: neo4j:5.26.0
+    container_name: openhands-neo4j
+    environment:
+      NEO4J_AUTH: neo4j/sca012password
+    ports:
+      - "7474:7474"   # Neo4j Browser
+      - "7687:7687"   # Bolt 协议
+    volumes:
+      - neo4j_data:/data
+      - neo4j_logs:/logs
+    healthcheck:
+      test: ["CMD-SHELL", "cypher-shell -u neo4j -p sca012password 'RETURN 1' || exit 1"]
+      interval: 10s
+      timeout: 15s
+      retries: 10
+      start_period: 30s
+
+  # ── Neo4j 数据导入（一次性） ─────────────────────────────────────
+  neo4j-import:
+    build:
+      context: .
+      dockerfile: scripts/Dockerfile.neo4j-api
+    container_name: openhands-neo4j-import
+    environment:
+      NEO4J_URI: bolt://neo4j:7687
+      NEO4J_USER: neo4j
+      NEO4J_PASS: sca012password
+    command: >
+      sh -c "python neo4j_import.py && python neo4j_cross_cve_relations.py && echo 'Neo4j import completed'"
+    depends_on:
+      neo4j:
+        condition: service_healthy
+    restart: "no"
+
+  # ── Neo4j Flask 查询 API ──────────────────────────────────────────
+  neo4j-api:
+    build:
+      context: .
+      dockerfile: scripts/Dockerfile.neo4j-api
+    container_name: openhands-neo4j-api
+    environment:
+      NEO4J_URI: bolt://neo4j:7687
+      NEO4J_USER: neo4j
+      NEO4J_PASS: sca012password
+    ports:
+      - "7475:7475"
+    depends_on:
+      neo4j:
+        condition: service_healthy
+    restart: unless-stopped
+
+volumes:
+  neo4j_data:
+  neo4j_logs:

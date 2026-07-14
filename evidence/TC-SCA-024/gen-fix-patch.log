@@ -1,0 +1,59 @@
+[SCA-014 FIX] 修复 Patch 生成开始（增强版）
+[SCA-014 FIX] 目标文件: samples/cve-2024-22120/audit.c
+[SCA-014 FIX] 时间: 2026-05-07T09:55:26.236674
+============================================================
+CVE ID: CVE-2024-22120
+漏洞类型: SQLi
+受影响应用: Zabbix
+编程语言: C
+漏洞描述: Zabbix 时间选择器参数未参数化，导致 SQL 注入（CWE-89）
+修复描述: Zabbix 时间选择器参数未参数化，导致 SQL 注入（CWE-89）
+安全影响: 参数化查询消除 SQL 注入风险，防止数据库未授权访问
+
+修复 Patch:
+------------------------------------------------------------
+--- a/ui/include/classes/api/services/CHistory.php
++++ b/ui/include/classes/api/services/CHistory.php
+@@ -45,8 +45,10 @@ class CHistory extends CApiService {
+-    $sql = "SELECT * FROM history WHERE itemid=" . $options['itemids'][0]
+-         . " AND clock>=" . $options['time_from']
+-         . " AND clock<=" . $options['time_till'];
+-    $result = DBselect($sql);
++    // SCA-014 Fix: 使用参数化查询防止 SQL 注入 (CVE-2024-22120)
++    $sql = "SELECT * FROM history WHERE itemid=? AND clock>=? AND clock<=?";
++    $result = DBselect($sql, [
++        $options['itemids'][0],
++        (int)$options['time_from'],
++        (int)$options['time_till']
++    ]);
+------------------------------------------------------------
+
+[SCA-014 FIX] ✅ 修复 Patch 生成完成（增强版，支持 9 种漏洞类型）！
+[SCA-014 FIX] 请查看 Diff 视图确认修复内容。
+
+SCA_FIX_JSON:{"type": "SCA_FIX_RESULT", "file": "samples/cve-2024-22120/audit.c", "cve": "CVE-2024-22120", "vuln_type": "SQLi", "app": "Zabbix", "lang": "C", "patch": "--- a/ui/include/classes/api/services/CHistory.php\n+++ b/ui/include/classes/api/services/CHistory.php\n@@ -45,8 +45,10 @@ class CHistory extends CApiService {\n-    $sql = \"SELECT * FROM history WHERE itemid=\" . $options['itemids'][0]\n-         . \" AND clock>=\" . $options['time_from']\n-         . \" AND clock<=\" . $options['time_till'];\n-    $result = DBselect($sql);\n+    // SCA-014 Fix: 使用参数化查询防止 SQL 注入 (CVE-2024-22120)\n+    $sql = \"SELECT * FROM history WHERE itemid=? AND clock>=? AND clock<=?\";\n+    $result = DBselect($sql, [\n+        $options['itemids'][0],\n+        (int)$options['time_from'],\n+        (int)$options['time_till']\n+    ]);", "description": "Zabbix 时间选择器参数未参数化，导致 SQL 注入（CWE-89）", "securityImpact": "参数化查询消除 SQL 注入风险，防止数据库未授权访问", "generatedAt": "2026-05-07T09:55:26.236845", "version": "SCA-014"}
+[TC-SCA-024] 补丁生成开始（unified diff 模式）
+[TC-SCA-024] 目标文件: samples/cve-2024-22120/audit.c
+[TC-SCA-024] CVE ID: CVE-2024-22120
+[TC-SCA-024] 输出路径: reports/TC-SCA-024/patch.diff
+============================================================
+[TC-SCA-024] ✅ unified diff 生成成功，变更行数: 6
+
+--- a/audit.c
++++ b/audit.c
+@@ -36,10 +36,10 @@
+     char sql[1024];
+     char *value_esc = zbx_db_dyn_escape_string(clientip);
+ 
+-    /* VULNERABLE: uses clientip instead of escaped value_esc */
++    /* FIXED (CVE-2024-22120): use escaped value_esc to prevent SQL injection */
+     snprintf(sql, sizeof(sql),
+              "INSERT INTO auditlog(clientip) VALUES('%s')",
+-             clientip);  /* <-- taint sink: should be value_esc */
++             value_esc);  /* <-- fixed: use escaped value */
+ 
+     zbx_db_execute("%s", sql);
+     free(value_esc);
+
+
+SCA_PATCH_JSON:{"cveId": "CVE-2024-22120", "targetFile": "samples/cve-2024-22120/audit.c", "patchFile": "reports/TC-SCA-024/patch.diff", "patchType": "sql_injection_escape_fix", "riskLevel": "medium", "generatedAt": "2026-05-07T13:55:26Z", "summary": "Replace unsafe clientip interpolation with escaped value_esc in audit log SQL.", "expectedEffect": "Block time-based SQL injection via X-Forwarded-For/clientip."}

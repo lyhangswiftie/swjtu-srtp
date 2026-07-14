@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SecureCodeAct GitHub Issues 修复报告</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #0d1117; color: #c9d1d9; }
+  .header { background: linear-gradient(135deg, #161b22, #21262d); padding: 32px 40px; border-bottom: 1px solid #30363d; }
+  .header h1 { font-size: 24px; color: #f0f6fc; margin-bottom: 8px; }
+  .header .meta { color: #8b949e; font-size: 14px; }
+  .header .badge { display: inline-block; background: #238636; color: #fff; padding: 2px 10px; border-radius: 12px; font-size: 12px; margin-left: 8px; }
+  .container { max-width: 1200px; margin: 0 auto; padding: 24px 40px; }
+  .summary-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 32px; }
+  .summary-card { background: #161b22; border: 1px solid #30363d; border-radius: 8px; padding: 20px; text-align: center; }
+  .summary-card .num { font-size: 36px; font-weight: 700; color: #58a6ff; }
+  .summary-card .label { font-size: 13px; color: #8b949e; margin-top: 4px; }
+  .section { margin-bottom: 32px; }
+  .section-title { font-size: 18px; color: #f0f6fc; margin-bottom: 16px; padding-bottom: 8px; border-bottom: 1px solid #30363d; display: flex; align-items: center; gap: 8px; }
+  .issue-card { background: #161b22; border: 1px solid #30363d; border-radius: 8px; margin-bottom: 12px; overflow: hidden; }
+  .issue-header { padding: 12px 16px; display: flex; align-items: center; gap: 12px; background: #1c2128; }
+  .issue-num { background: #388bfd1a; color: #58a6ff; border: 1px solid #388bfd66; padding: 2px 8px; border-radius: 4px; font-size: 13px; font-weight: 600; white-space: nowrap; }
+  .issue-title { flex: 1; font-size: 14px; color: #e6edf3; }
+  .issue-status { background: #238636; color: #fff; padding: 2px 10px; border-radius: 12px; font-size: 12px; white-space: nowrap; }
+  .issue-body { padding: 12px 16px; }
+  .diff-row { display: flex; gap: 12px; margin-bottom: 8px; font-size: 13px; font-family: 'SFMono-Regular', Consolas, monospace; }
+  .diff-before { flex: 1; background: #3d1f1f; border: 1px solid #6e2b2b; border-radius: 4px; padding: 8px 12px; color: #ffa198; }
+  .diff-after { flex: 1; background: #1a2f1a; border: 1px solid #2b6e2b; border-radius: 4px; padding: 8px 12px; color: #7ee787; }
+  .diff-label { font-size: 11px; color: #8b949e; margin-bottom: 4px; }
+  .label-tag { display: inline-block; padding: 1px 6px; border-radius: 10px; font-size: 11px; margin-right: 4px; }
+  .label-bug { background: #da3633; color: #fff; }
+  .label-deps { background: #0075ca; color: #fff; }
+  .label-docker { background: #0e8a16; color: #fff; }
+  .label-actions { background: #7057ff; color: #fff; }
+  .label-python { background: #e4e669; color: #333; }
+  .label-js { background: #f1e05a; color: #333; }
+  .files-changed { margin-top: 8px; }
+  .file-tag { display: inline-block; background: #21262d; border: 1px solid #30363d; border-radius: 4px; padding: 2px 8px; font-size: 12px; font-family: monospace; margin: 2px; color: #8b949e; }
+  .commit-box { background: #161b22; border: 1px solid #388bfd66; border-radius: 8px; padding: 20px; margin-top: 24px; }
+  .commit-hash { font-family: monospace; font-size: 20px; color: #58a6ff; }
+  .timestamp { color: #8b949e; font-size: 13px; margin-top: 4px; }
+</style>
+</head>
+<body>
+<div class="header">
+  <h1>🔧 SecureCodeAct — GitHub Issues 修复报告 <span class="badge">全部修复</span></h1>
+  <div class="meta">仓库: SWJTU-AI-Lab/securecodeact &nbsp;|&nbsp; 修复时间: 2026-04-23 &nbsp;|&nbsp; 修复 Issues: 13 个</div>
+</div>
+
+<div class="container">
+  <!-- 汇总统计 -->
+  <div class="summary-grid">
+    <div class="summary-card"><div class="num">13</div><div class="label">Issues 已修复</div></div>
+    <div class="summary-card"><div class="num">13</div><div class="label">修改文件数</div></div>
+    <div class="summary-card"><div class="num">222</div><div class="label">新增行数</div></div>
+    <div class="summary-card"><div class="num">95</div><div class="label">删除行数</div></div>
+  </div>
+
+  <!-- Bug 修复 -->
+  <div class="section">
+    <div class="section-title">🐛 Bug 修复</div>
+
+    <div class="issue-card">
+      <div class="issue-header">
+        <span class="issue-num">#17</span>
+        <span class="issue-title">[Bug]: 沙箱环境启动失败 — WSL2 下 500: Sandbox entered error state</span>
+        <span class="label-tag label-bug">bug</span>
+        <span class="issue-status">✅ 已修复</span>
+      </div>
+      <div class="issue-body">
+        <div class="diff-row">
+          <div class="diff-before">
+            <div class="diff-label">修复前（install.sh）</div>
+            -e SANDBOX_USE_HOST_NETWORK=true<br>
+            # 缺少 AGENT_SERVER_USE_HOST_NETWORK<br>
+            # 缺少 WSL2 检测<br>
+            # 缺少 NET_ADMIN/NET_RAW 权限<br>
+            LLM_MODEL="gpt-4.5-preview"  # 已废弃
+          </div>
+          <div class="diff-after">
+            <div class="diff-label">修复后（install.sh）</div>
+            -e SANDBOX_USE_HOST_NETWORK=true \<br>
+            -e AGENT_SERVER_USE_HOST_NETWORK=true \<br>
+            --cap-add NET_ADMIN \  # WSL2 iptables<br>
+            --cap-add NET_RAW \   # WSL2 raw table<br>
+            LLM_MODEL="${LLM_MODEL:-gpt-4.1-mini}"
+          </div>
+        </div>
+        <div class="files-changed">
+          修改文件: <span class="file-tag">install.sh</span>
+          <span style="color:#8b949e;font-size:12px;margin-left:8px;">+165行 -55行 | WSL2自动检测 + 健康检查轮询 + 双环境变量修正</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Docker 依赖更新 -->
+  <div class="section">
+    <div class="section-title">🐳 Docker 镜像版本更新</div>
+
+    <div class="issue-card">
+      <div class="issue-header">
+        <span class="issue-num">#1</span>
+        <span class="issue-title">bump node from 25.8-trixie-slim to 25.9-trixie-slim in /containers/app</span>
+        <span class="label-tag label-docker">docker</span>
+        <span class="issue-status">✅ 已修复</span>
+      </div>
+      <div class="issue-body">
+        <div class="diff-row">
+          <div class="diff-before"><div class="diff-label">修复前</div>FROM node:25.8-trixie-slim AS frontend-builder</div>
+          <div class="diff-after"><div class="diff-label">修复后</div>FROM node:25.9-trixie-slim AS frontend-builder</div>
+        </div>
+        <div class="files-changed">修改文件: <span class="file-tag">containers/app/Dockerfile</span></div>
+      </div>
+    </div>
+
+    <div class="issue-card">
+      <div class="issue-header">
+        <span class="issue-num">#3</span>
+        <span class="issue-title">bump ubuntu from 22.04 to 24.04 in /containers/dev</span>
+        <span class="label-tag label-docker">docker</span>
+        <span class="issue-status">✅ 已修复</span>
+      </div>
+      <div class="issue-body">
+        <div class="diff-row">
+          <div class="diff-before"><div class="diff-label">修复前</div>FROM ubuntu:22.04 AS dind</div>
+          <div class="diff-after"><div class="diff-label">修复后</div>FROM ubuntu:24.04 AS dind</div>
+        </div>
+        <div class="files-changed">修改文件: <span class="file-tag">containers/dev/Dockerfile</span></div>
+      </div>
+    </div>
+
+    <div class="issue-card">
+      <div class="issue-header">
+        <span class="issue-num">#12</span>
+        <span class="issue-title">bump openhands/runtime from 1.6.0-nikolaik to 1.13.1-nikolaik in /containers</span>
+        <span class="label-tag label-docker">docker</span>
+        <span class="issue-status">✅ 已修复</span>
+      </div>
+      <div class="issue-body">
+        <div class="diff-row">
+          <div class="diff-before"><div class="diff-label">修复前</div>FROM ghcr.io/openhands/runtime:1.6.0-nikolaik</div>
+          <div class="diff-after"><div class="diff-label">修复后</div>FROM ghcr.io/openhands/runtime:1.13.1-nikolaik</div>
+        </div>
+        <div class="files-changed">修改文件: <span class="file-tag">containers/Dockerfile-lite</span></div>
+      </div>
+    </div>
+
+    <div class="issue-card">
+      <div class="issue-header">
+        <span class="issue-num">#13</span>
+        <span class="issue-title">bump python from 3.13.7-slim-trixie to 3.14.0-slim-trixie in /containers/app</span>
+        <span class="label-tag label-docker">docker</span>
+        <span class="issue-status">✅ 已修复</span>
+      </div>
+      <div class="issue-body">
+        <div class="diff-row">
+          <div class="diff-before"><div class="diff-label">修复前</div>FROM python:3.13.7-slim-trixie AS base</div>
+          <div class="diff-after"><div class="diff-label">修复后</div>FROM python:3.14.0-slim-trixie AS base</div>
+        </div>
+        <div class="files-changed">修改文件: <span class="file-tag">containers/app/Dockerfile</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- GitHub Actions 更新 -->
+  <div class="section">
+    <div class="section-title">⚙️ GitHub Actions 版本更新</div>
+
+    <div class="issue-card">
+      <div class="issue-header">
+        <span class="issue-num">#2</span>
+        <span class="issue-title">bump docker/setup-buildx-action from 3 to 4</span>
+        <span class="label-tag label-actions">github_actions</span>
+        <span class="issue-status">✅ 已修复</span>
+      </div>
+      <div class="issue-body">
+        <div class="diff-row">
+          <div class="diff-before"><div class="diff-label">修复前（3处）</div>uses: docker/setup-buildx-action@v3</div>
+          <div class="diff-after"><div class="diff-label">修复后（3处）</div>uses: docker/setup-buildx-action@v4</div>
+        </div>
+        <div class="files-changed">修改文件: <span class="file-tag">ghcr-build.yml</span> <span class="file-tag">py-tests.yml</span></div>
+      </div>
+    </div>
+
+    <div class="issue-card">
+      <div class="issue-header">
+        <span class="issue-num">#4</span>
+        <span class="issue-title">bump useblacksmith/build-push-action from 1 to 2</span>
+        <span class="label-tag label-actions">github_actions</span>
+        <span class="issue-status">✅ 已修复</span>
+      </div>
+      <div class="issue-body">
+        <div class="diff-row">
+          <div class="diff-before"><div class="diff-label">修复前（3处）</div>uses: useblacksmith/build-push-action@v1</div>
+          <div class="diff-after"><div class="diff-label">修复后（3处）</div>uses: useblacksmith/build-push-action@v2</div>
+        </div>
+        <div class="files-changed">修改文件: <span class="file-tag">ghcr-build.yml</span></div>
+      </div>
+    </div>
+
+    <div class="issue-card">
+      <div class="issue-header">
+        <span class="issue-num">#5</span>
+        <span class="issue-title">bump dawidd6/action-download-artifact from 15 to 20</span>
+        <span class="label-tag label-actions">github_actions</span>
+        <span class="issue-status">✅ 已修复</span>
+      </div>
+      <div class="issue-body">
+        <div class="diff-row">
+          <div class="diff-before"><div class="diff-label">修复前</div>uses: dawidd6/action-download-artifact@v15</div>
+          <div class="diff-after"><div class="diff-label">修复后</div>uses: dawidd6/action-download-artifact@v20</div>
+        </div>
+        <div class="files-changed">修改文件: <span class="file-tag">pr-review-evaluation.yml</span></div>
+      </div>
+    </div>
+
+    <div class="issue-card">
+      <div class="issue-header">
+        <span class="issue-num">#6</span>
+        <span class="issue-title">bump actions/github-script from 7 to 8</span>
+        <span class="label-tag label-actions">github_actions</span>
+        <span class="issue-status">✅ 已修复</span>
+      </div>
+      <div class="issue-body">
+        <div class="diff-row">
+          <div class="diff-before"><div class="diff-label">修复前（9处）</div>uses: actions/github-script@v7</div>
+          <div class="diff-after"><div class="diff-label">修复后（9处）</div>uses: actions/github-script@v8</div>
+        </div>
+        <div class="files-changed">修改文件: <span class="file-tag">openhands-resolver.yml</span> <span class="file-tag">pr-artifacts.yml</span> <span class="file-tag">welcome-good-first-issue.yml</span></div>
+      </div>
+    </div>
+
+    <div class="issue-card">
+      <div class="issue-header">
+        <span class="issue-num">#7</span>
+        <span class="issue-title">bump docker/setup-qemu-action from 3.7.0 to 4.0.0</span>
+        <span class="label-tag label-actions">github_actions</span>
+        <span class="issue-status">✅ 已修复</span>
+      </div>
+      <div class="issue-body">
+        <div class="diff-row">
+          <div class="diff-before"><div class="diff-label">修复前（2处）</div>uses: docker/setup-qemu-action@v3.7.0</div>
+          <div class="diff-after"><div class="diff-label">修复后（2处）</div>uses: docker/setup-qemu-action@v4.0.0</div>
+        </div>
+        <div class="files-changed">修改文件: <span class="file-tag">ghcr-build.yml</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Python 依赖更新 -->
+  <div class="section">
+    <div class="section-title">🐍 Python 依赖版本更新</div>
+    <div class="issue-card">
+      <div class="issue-header">
+        <span class="issue-num">#10</span>
+        <span class="issue-title">bump the version-all group with 6 updates</span>
+        <span class="label-tag label-python">python</span>
+        <span class="issue-status">✅ 已修复</span>
+      </div>
+      <div class="issue-body">
+        <div class="diff-row">
+          <div class="diff-before">
+            <div class="diff-label">修复前（pyproject.toml）</div>
+            pathspec &gt;= 0.12.1<br>
+            python-json-logger &gt;= 3.2.1<br>
+            starlette &gt;= 0.49.1<br>
+            kubernetes &gt;= 33.1<br>
+            asyncpg &gt;= 0.30<br>
+            pytest &gt;= 8.4
+          </div>
+          <div class="diff-after">
+            <div class="diff-label">修复后（pyproject.toml）</div>
+            pathspec &gt;= 1.0.4<br>
+            python-json-logger &gt;= 4.1.0<br>
+            starlette &gt;= 1.0.0<br>
+            kubernetes &gt;= 35.0.0<br>
+            asyncpg &gt;= 0.31.0<br>
+            pytest &gt;= 9.0.2
+          </div>
+        </div>
+        <div class="files-changed">修改文件: <span class="file-tag">pyproject.toml</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 前端依赖更新 -->
+  <div class="section">
+    <div class="section-title">⚛️ 前端 JavaScript 依赖版本更新</div>
+
+    <div class="issue-card">
+      <div class="issue-header">
+        <span class="issue-num">#15</span>
+        <span class="issue-title">bump the version-all group across 1 directory with 38 updates</span>
+        <span class="label-tag label-js">javascript</span>
+        <span class="issue-status">✅ 已修复</span>
+      </div>
+      <div class="issue-body">
+        <div class="diff-row">
+          <div class="diff-before">
+            <div class="diff-label">修复前（package.json，部分）</div>
+            @heroui/react: 2.8.7<br>
+            axios: 1.13.5<br>
+            lucide-react: ^0.562.0<br>
+            i18next: ^25.8.0<br>
+            react: ^19.2.3<br>
+            react-router: ^7.12.0<br>
+            framer-motion: ^12.28.1
+          </div>
+          <div class="diff-after">
+            <div class="diff-label">修复后（package.json，部分）</div>
+            @heroui/react: 3.0.2<br>
+            axios: 1.15.0<br>
+            lucide-react: ^1.8.0<br>
+            i18next: ^26.0.4<br>
+            react: ^19.2.5<br>
+            react-router: ^7.14.1<br>
+            framer-motion: ^12.38.0
+          </div>
+        </div>
+        <div class="files-changed">修改文件: <span class="file-tag">frontend/package.json</span> <span style="color:#8b949e;font-size:12px;">共更新 19 个生产依赖</span></div>
+      </div>
+    </div>
+
+    <div class="issue-card">
+      <div class="issue-header">
+        <span class="issue-num">#16</span>
+        <span class="issue-title">bump the eslint group across 1 directory with 7 updates</span>
+        <span class="label-tag label-js">javascript</span>
+        <span class="issue-status">✅ 已修复</span>
+      </div>
+      <div class="issue-body">
+        <div class="diff-row">
+          <div class="diff-before">
+            <div class="diff-label">修复前（devDependencies）</div>
+            eslint: ^8.57.0<br>
+            @typescript-eslint/eslint-plugin: ^7.18.0<br>
+            @typescript-eslint/parser: ^7.18.0<br>
+            eslint-plugin-react-hooks: ^4.6.2<br>
+            eslint-plugin-unused-imports: ^4.2.0
+          </div>
+          <div class="diff-after">
+            <div class="diff-label">修复后（devDependencies）</div>
+            eslint: ^10.2.0<br>
+            @typescript-eslint/eslint-plugin: ^8.58.2<br>
+            @typescript-eslint/parser: ^8.58.2<br>
+            eslint-plugin-react-hooks: ^7.0.1<br>
+            eslint-plugin-unused-imports: ^4.4.1
+          </div>
+        </div>
+        <div class="files-changed">修改文件: <span class="file-tag">frontend/package.json</span> <span style="color:#8b949e;font-size:12px;">共更新 7 个开发依赖</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Commit 信息 -->
+  <div class="commit-box">
+    <div style="color:#8b949e;font-size:13px;margin-bottom:8px;">最终 Git Commit</div>
+    <div class="commit-hash" id="commit-hash">（提交后更新）</div>
+    <div class="timestamp">分支: main &nbsp;|&nbsp; 修改文件: 13 &nbsp;|&nbsp; +222 / -95 行</div>
+    <div style="margin-top:12px;font-size:13px;color:#7ee787;">✅ 所有 13 个 Issues 已修复并推送至 GitHub main 分支</div>
+  </div>
+</div>
+</body>
+</html>

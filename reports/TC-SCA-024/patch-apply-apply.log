@@ -1,0 +1,32 @@
+[TC-SCA-024/G3-G4] 补丁应用器启动
+[TC-SCA-024/G3-G4] 源文件: samples/cve-2024-22120/audit.c
+[TC-SCA-024/G3-G4] diff 文件: reports/TC-SCA-024/patch.diff
+[TC-SCA-024/G3-G4] 模式: --apply
+============================================================
+[TC-SCA-024/G3-G4] 临时工作区: /tmp/sca-024-patch-ty_86oo9
+[TC-SCA-024/G4] ✅ 补丁应用成功（临时工作区）
+[TC-SCA-024/G4] 已修改文件: /tmp/sca-024-patch-ty_86oo9/audit.c
+
+=== 修复后文件预览（前 20 行）===
+    1: /*
+    2:  * samples/cve-2024-22120/audit.c
+    3:  *
+    4:  * 最小可解析 C 代码样例，用于 TC-SCA-019 Joern smoke 测试。
+    5:  * 模拟 CVE-2024-22120：Zabbix 审计日志 clientip 字段 SQL 注入（时间盲注）。
+    6:  *
+    7:  * 漏洞路径：
+    8:  *   argv[1] / clientip → snprintf → sql → zbx_db_execute
+    9:  *
+   10:  * 注意：此文件为教学用最小样例，不是完整 Zabbix 源码。
+   11:  */
+   12: 
+   13: #include <stdio.h>
+   14: #include <stdlib.h>
+   15: #include <string.h>
+   16: 
+   17: /* 模拟 Zabbix 数据库执行函数（sink） */
+   18: void zbx_db_execute(const char *fmt, const char *sql) {
+   19:     printf(fmt, sql);
+   20: }
+
+SCA_APPLY_JSON:{"cveId": "CVE-2024-22120", "sourceFile": "samples/cve-2024-22120/audit.c", "diffFile": "reports/TC-SCA-024/patch.diff", "workdir": "/tmp/sca-024-patch-ty_86oo9", "startedAt": "2026-05-07T14:04:38Z", "stage": "APPLIED", "check_result": {"returncode": 0, "stdout": "", "stderr": "", "command": "git apply --check /tmp/sca-024-patch-ty_86oo9/adjusted.diff"}, "apply_result": {"returncode": 0, "stdout": "", "stderr": "", "command": "git apply /tmp/sca-024-patch-ty_86oo9/adjusted.diff"}, "patchedFile": "/tmp/sca-024-patch-ty_86oo9/audit.c", "completedAt": "2026-05-07T14:04:38Z"}

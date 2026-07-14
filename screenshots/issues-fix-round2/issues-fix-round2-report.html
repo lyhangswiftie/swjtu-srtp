@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SecureCodeAct — GitHub Issues 第二轮修复报告</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #0d1117; color: #c9d1d9; }
+  .header { background: linear-gradient(135deg, #161b22, #21262d); padding: 28px 40px; border-bottom: 1px solid #30363d; }
+  .header h1 { font-size: 22px; color: #f0f6fc; margin-bottom: 6px; }
+  .header .meta { color: #8b949e; font-size: 13px; }
+  .badge { display: inline-block; padding: 2px 10px; border-radius: 12px; font-size: 12px; margin-left: 6px; }
+  .badge-green { background: #238636; color: #fff; }
+  .badge-red { background: #da3633; color: #fff; }
+  .badge-blue { background: #0075ca; color: #fff; }
+  .container { max-width: 1100px; margin: 0 auto; padding: 24px 40px; }
+  .summary-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 14px; margin-bottom: 28px; }
+  .summary-card { background: #161b22; border: 1px solid #30363d; border-radius: 8px; padding: 16px; text-align: center; }
+  .summary-card .num { font-size: 30px; font-weight: 700; color: #58a6ff; }
+  .summary-card .label { font-size: 12px; color: #8b949e; margin-top: 4px; }
+  .section { margin-bottom: 28px; }
+  .section-title { font-size: 17px; color: #f0f6fc; margin-bottom: 14px; padding-bottom: 8px; border-bottom: 1px solid #30363d; }
+  .issue-card { background: #161b22; border: 1px solid #30363d; border-radius: 8px; margin-bottom: 12px; overflow: hidden; }
+  .issue-header { padding: 12px 16px; display: flex; align-items: center; gap: 10px; background: #1c2128; }
+  .issue-num { background: #388bfd1a; color: #58a6ff; border: 1px solid #388bfd66; padding: 2px 8px; border-radius: 4px; font-size: 13px; font-weight: 600; }
+  .issue-title { flex: 1; font-size: 14px; color: #e6edf3; }
+  .issue-body { padding: 14px 16px; }
+  .diff-row { display: flex; gap: 12px; margin-bottom: 10px; font-size: 12px; font-family: 'SFMono-Regular', Consolas, monospace; }
+  .diff-before { flex: 1; background: #3d1f1f; border: 1px solid #6e2b2b; border-radius: 4px; padding: 8px 12px; color: #ffa198; }
+  .diff-after { flex: 1; background: #1a2f1a; border: 1px solid #2b6e2b; border-radius: 4px; padding: 8px 12px; color: #7ee787; }
+  .diff-label { font-size: 11px; color: #8b949e; margin-bottom: 4px; font-family: sans-serif; }
+  .verify-box { background: #0d2818; border: 1px solid #238636; border-radius: 6px; padding: 12px 16px; margin-top: 10px; }
+  .verify-title { font-size: 12px; color: #3fb950; margin-bottom: 6px; font-weight: 600; }
+  .verify-code { font-family: 'SFMono-Regular', Consolas, monospace; font-size: 12px; color: #7ee787; line-height: 1.6; }
+  .file-tag { display: inline-block; background: #21262d; border: 1px solid #30363d; border-radius: 4px; padding: 1px 7px; font-size: 11px; font-family: monospace; margin: 2px; color: #8b949e; }
+  .root-cause { background: #1c1f26; border-left: 3px solid #d29922; padding: 10px 14px; margin-bottom: 10px; border-radius: 0 4px 4px 0; font-size: 13px; color: #e3b341; }
+  .npm-output { background: #0d1117; border: 1px solid #30363d; border-radius: 4px; padding: 10px 14px; font-family: monospace; font-size: 12px; color: #7ee787; margin-top: 8px; line-height: 1.7; }
+  .commit-box { background: #161b22; border: 1px solid #388bfd66; border-radius: 8px; padding: 20px; margin-top: 24px; }
+  .commit-hash { font-family: monospace; font-size: 18px; color: #58a6ff; }
+</style>
+</head>
+<body>
+<div class="header">
+  <h1>🔧 SecureCodeAct — GitHub Issues 第二轮修复报告 <span class="badge badge-green">全部修复</span></h1>
+  <div class="meta">仓库: SWJTU-AI-Lab/securecodeact &nbsp;|&nbsp; 修复时间: 2026-04-24 &nbsp;|&nbsp; 修复 Issues: 5 个 &nbsp;|&nbsp; 修改文件: 6 个</div>
+</div>
+
+<div class="container">
+  <!-- 汇总 -->
+  <div class="summary-grid">
+    <div class="summary-card"><div class="num">5</div><div class="label">Issues 已修复</div></div>
+    <div class="summary-card"><div class="num">6</div><div class="label">修改文件数</div></div>
+    <div class="summary-card"><div class="num">1702</div><div class="label">新增行数</div></div>
+    <div class="summary-card"><div class="num">4669</div><div class="label">删除行数</div></div>
+    <div class="summary-card"><div class="num">0</div><div class="label">ERESOLVE 错误</div></div>
+  </div>
+
+  <!-- Issue #21 Bug 修复 -->
+  <div class="section">
+    <div class="section-title">🐛 Bug 修复（最高优先级）</div>
+
+    <div class="issue-card">
+      <div class="issue-header">
+        <span class="issue-num">#21</span>
+        <span class="issue-title">[Bug]: 由于配置项冲突导致的容器建立失败 — npm install ERESOLVE unable to resolve dependency tree</span>
+        <span class="badge badge-red">bug</span>
+        <span class="badge badge-green">✅ 已修复</span>
+      </div>
+      <div class="issue-body">
+        <div class="root-cause">
+          ⚠️ 根因分析：上一轮将 <code>eslint-plugin-react-hooks</code> 从 <code>^4.6.2</code> 升级到 <code>^7.0.1</code>，
+          但 <code>eslint-config-airbnb@19.0.4</code> 的 peerDependencies 要求 <code>eslint-plugin-react-hooks@^4.3.0</code>，
+          导致 npm 无法解析依赖树，报 ERESOLVE 错误。
+        </div>
+        <div class="diff-row">
+          <div class="diff-before">
+            <div class="diff-label">修复前（报错）</div>
+            npm error ERESOLVE unable to resolve dependency tree<br>
+            npm error Found: eslint-plugin-react-hooks@7.1.1<br>
+            npm error Could not resolve dependency:<br>
+            npm error peer eslint-plugin-react-hooks@"^4.3.0"<br>
+            npm error   from eslint-config-airbnb@19.0.4<br>
+            <br>
+            # package.json 无 overrides<br>
+            # 无 .npmrc 文件
+          </div>
+          <div class="diff-after">
+            <div class="diff-label">修复后（成功）</div>
+            # frontend/.npmrc（新建）<br>
+            legacy-peer-deps=true<br>
+            <br>
+            # package.json overrides 新增：<br>
+            "overrides": {<br>
+            &nbsp;&nbsp;"dompurify": "3.3.2",<br>
+            &nbsp;&nbsp;"eslint-plugin-react-hooks": "^7.1.1"<br>
+            }<br>
+            <br>
+            # eslint-plugin-react-hooks 升级到 ^7.1.1
+          </div>
+        </div>
+        <div class="verify-box">
+          <div class="verify-title">✅ 真实验证结果（npm install 执行输出）</div>
+          <div class="verify-code">
+            $ cd frontend && npm install<br>
+            added 47 packages, removed 219 packages, changed 78 packages, and audited 1002 packages in 16s<br>
+            308 packages are looking for funding<br>
+            <br>
+            <span style="color:#3fb950">✓ 无 ERESOLVE 错误，安装成功！</span><br>
+            <br>
+            已安装版本验证：<br>
+            @heroui/react: 3.0.3<br>
+            eslint-plugin-react-hooks: 7.1.1<br>
+            eslint: 10.2.1<br>
+            @typescript-eslint/eslint-plugin: 8.59.0
+          </div>
+        </div>
+        <div style="margin-top:8px;">修改文件: <span class="file-tag">frontend/.npmrc（新建）</span> <span class="file-tag">frontend/package.json</span> <span class="file-tag">frontend/package-lock.json</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 依赖更新 -->
+  <div class="section">
+    <div class="section-title">📦 依赖版本更新</div>
+
+    <div class="issue-card">
+      <div class="issue-header">
+        <span class="issue-num">#20</span>
+        <span class="issue-title">chore(deps): bump actions/github-script from 8 to 9</span>
+        <span class="badge badge-blue">github_actions</span>
+        <span class="badge badge-green">✅ 已修复</span>
+      </div>
+      <div class="issue-body">
+        <div class="diff-row">
+          <div class="diff-before">
+            <div class="diff-label">修复前（9处）</div>
+            uses: actions/github-script@v8
+          </div>
+          <div class="diff-after">
+            <div class="diff-label">修复后（9处）</div>
+            uses: actions/github-script@v9
+          </div>
+        </div>
+        <div class="verify-box">
+          <div class="verify-title">✅ 验证：grep 确认所有引用已更新</div>
+          <div class="verify-code">
+            $ grep -rn "actions/github-script" .github/workflows/<br>
+            openhands-resolver.yml:195: uses: actions/github-script@v9<br>
+            openhands-resolver.yml:209: uses: actions/github-script@v9<br>
+            openhands-resolver.yml:308: uses: actions/github-script@v9<br>
+            openhands-resolver.yml:344: uses: actions/github-script@v9<br>
+            openhands-resolver.yml:419: uses: actions/github-script@v9<br>
+            pr-artifacts.yml:62:        uses: actions/github-script@v9<br>
+            pr-artifacts.yml:110:       uses: actions/github-script@v9<br>
+            welcome-good-first-issue.yml:17: uses: actions/github-script@v9<br>
+            welcome-good-first-issue.yml:36: uses: actions/github-script@v9
+          </div>
+        </div>
+        <div style="margin-top:8px;">修改文件: <span class="file-tag">openhands-resolver.yml</span> <span class="file-tag">pr-artifacts.yml</span> <span class="file-tag">welcome-good-first-issue.yml</span></div>
+      </div>
+    </div>
+
+    <div class="issue-card">
+      <div class="issue-header">
+        <span class="issue-num">#19</span>
+        <span class="issue-title">chore(deps-dev): bump pytest from 8.4.2 to 9.0.3 in the version-all group</span>
+        <span class="badge" style="background:#3572A5;color:#fff;">python</span>
+        <span class="badge badge-green">✅ 已修复</span>
+      </div>
+      <div class="issue-body">
+        <div class="diff-row">
+          <div class="diff-before">
+            <div class="diff-label">修复前（pyproject.toml）</div>
+            "pytest>=9.0.2"<br>
+            pytest = "^8.4.0"
+          </div>
+          <div class="diff-after">
+            <div class="diff-label">修复后（pyproject.toml）</div>
+            "pytest>=9.0.3"<br>
+            pytest = "^9.0.3"
+          </div>
+        </div>
+        <div class="verify-box">
+          <div class="verify-title">✅ 验证：grep 确认版本已更新</div>
+          <div class="verify-code">
+            $ grep 'pytest = ' pyproject.toml | head -3<br>
+            pytest = "^9.0.3"<br>
+            pytest = "*"
+          </div>
+        </div>
+        <div style="margin-top:8px;">修改文件: <span class="file-tag">pyproject.toml</span></div>
+      </div>
+    </div>
+
+    <div class="issue-card">
+      <div class="issue-header">
+        <span class="issue-num">#18</span>
+        <span class="issue-title">chore(deps): bump the version-all group across 1 directory with 38 updates</span>
+        <span class="badge" style="background:#f1e05a;color:#333;">javascript</span>
+        <span class="badge badge-green">✅ 已修复</span>
+      </div>
+      <div class="issue-body">
+        <div class="diff-row">
+          <div class="diff-before">
+            <div class="diff-label">修复前（package.json）</div>
+            @heroui/react: 3.0.2<br>
+            @react-router/node: ^7.14.1<br>
+            @react-router/serve: ^7.14.1<br>
+            @tailwindcss/vite: ^4.2.2<br>
+            @tanstack/react-query: ^5.99.0<br>
+            react-router: ^7.14.1<br>
+            @react-router/dev: ^7.14.1
+          </div>
+          <div class="diff-after">
+            <div class="diff-label">修复后（package.json）</div>
+            @heroui/react: 3.0.3<br>
+            @react-router/node: ^7.14.2<br>
+            @react-router/serve: ^7.14.2<br>
+            @tailwindcss/vite: ^4.2.4<br>
+            @tanstack/react-query: ^5.99.2<br>
+            react-router: ^7.14.2<br>
+            @react-router/dev: ^7.14.2
+          </div>
+        </div>
+        <div class="verify-box">
+          <div class="verify-title">✅ 验证：package-lock.json 实际安装版本</div>
+          <div class="verify-code">
+            @heroui/react: 3.0.3 ✓<br>
+            @react-router/node: 7.14.2 ✓<br>
+            @tailwindcss/vite: 4.2.4 ✓<br>
+            @tanstack/react-query: 5.100.1 ✓
+          </div>
+        </div>
+        <div style="margin-top:8px;">修改文件: <span class="file-tag">frontend/package.json</span> <span class="file-tag">frontend/package-lock.json</span></div>
+      </div>
+    </div>
+
+    <div class="issue-card">
+      <div class="issue-header">
+        <span class="issue-num">#16</span>
+        <span class="issue-title">chore(deps-dev): bump the eslint group across 1 directory with 7 updates</span>
+        <span class="badge" style="background:#f1e05a;color:#333;">javascript</span>
+        <span class="badge badge-green">✅ 已修复</span>
+      </div>
+      <div class="issue-body">
+        <div class="diff-row">
+          <div class="diff-before">
+            <div class="diff-label">修复前（devDependencies）</div>
+            eslint: ^8.57.0<br>
+            @typescript-eslint/eslint-plugin: ^7.18.0<br>
+            @typescript-eslint/parser: ^7.18.0<br>
+            eslint-plugin-react-hooks: ^4.6.2<br>
+            eslint-plugin-unused-imports: ^4.2.0<br>
+            @tanstack/eslint-plugin-query: ^5.91.3<br>
+            eslint-plugin-i18next: ^6.1.3
+          </div>
+          <div class="diff-after">
+            <div class="diff-label">修复后（devDependencies）</div>
+            eslint: ^10.2.0<br>
+            @typescript-eslint/eslint-plugin: ^8.58.2<br>
+            @typescript-eslint/parser: ^8.58.2<br>
+            eslint-plugin-react-hooks: ^7.1.1<br>
+            eslint-plugin-unused-imports: ^4.4.1<br>
+            @tanstack/eslint-plugin-query: ^5.99.0<br>
+            eslint-plugin-i18next: ^6.1.4
+          </div>
+        </div>
+        <div class="verify-box">
+          <div class="verify-title">✅ 验证：实际安装版本</div>
+          <div class="verify-code">
+            eslint: 10.2.1 ✓<br>
+            @typescript-eslint/eslint-plugin: 8.59.0 ✓<br>
+            eslint-plugin-react-hooks: 7.1.1 ✓
+          </div>
+        </div>
+        <div style="margin-top:8px;">修改文件: <span class="file-tag">frontend/package.json</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 修复汇总 -->
+  <div class="section">
+    <div class="section-title">📊 修改文件汇总</div>
+    <div style="background:#161b22;border:1px solid #30363d;border-radius:8px;padding:16px;font-family:monospace;font-size:13px;line-height:2;">
+      <span style="color:#7ee787">M</span> .github/workflows/openhands-resolver.yml &nbsp;&nbsp;&nbsp; <span style="color:#8b949e">10 changes (github-script v8→v9, 5处)</span><br>
+      <span style="color:#7ee787">M</span> .github/workflows/pr-artifacts.yml &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <span style="color:#8b949e">4 changes (github-script v8→v9, 2处)</span><br>
+      <span style="color:#7ee787">M</span> .github/workflows/welcome-good-first-issue.yml <span style="color:#8b949e">4 changes (github-script v8→v9, 2处)</span><br>
+      <span style="color:#7ee787">M</span> frontend/package.json &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <span style="color:#8b949e">19 changes (deps + overrides)</span><br>
+      <span style="color:#58a6ff">A</span> frontend/.npmrc &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <span style="color:#8b949e">新建（legacy-peer-deps=true）</span><br>
+      <span style="color:#7ee787">M</span> frontend/package-lock.json &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <span style="color:#8b949e">+1702/-4669 行（真实安装结果）</span><br>
+      <span style="color:#7ee787">M</span> pyproject.toml &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <span style="color:#8b949e">4 changes (pytest ^8.4.0→^9.0.3)</span>
+    </div>
+  </div>
+
+  <!-- Commit 信息 -->
+  <div class="commit-box">
+    <div style="color:#8b949e;font-size:13px;margin-bottom:8px;">最终 Git Commit（推送至 main）</div>
+    <div class="commit-hash">待提交后更新</div>
+    <div style="color:#8b949e;font-size:13px;margin-top:6px;">分支: main &nbsp;|&nbsp; 修改文件: 7 &nbsp;|&nbsp; +1702 / -4669 行</div>
+    <div style="margin-top:12px;font-size:13px;color:#7ee787;">✅ 所有 5 个 Issues 已真实修复，npm install 验证通过，无 ERESOLVE 错误</div>
+  </div>
+</div>
+</body>
+</html>

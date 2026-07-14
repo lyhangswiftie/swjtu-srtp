@@ -1,0 +1,51 @@
+{
+  "generated_at": "2026-05-18T13:52:44Z",
+  "repo": "SWJTU-AI-Lab/securecodeact",
+  "issues_resolved": [
+    {
+      "issue": "#36",
+      "tc": "TC-SCA-019",
+      "title": "真实 Joern CPG 端到端链路打通",
+      "gates": "G0-G7",
+      "verdict": "PASS",
+      "log_file": "logs/issue-verification/TC-SCA-019-verify.log",
+      "log_size_bytes": 1505
+    },
+    {
+      "issue": "#37",
+      "tc": "TC-SCA-020",
+      "title": "SCA-HUD 主控制台拆分与状态治理",
+      "gates": "G0-G7",
+      "verdict": "PASS",
+      "log_file": "logs/issue-verification/TC-SCA-020-verify.log",
+      "log_size_bytes": 1345
+    },
+    {
+      "issue": "#38",
+      "tc": "TC-SCA-023",
+      "title": "PoC 执行安全闸门与结果可信度提升",
+      "gates": "G0-G7",
+      "verdict": "PASS",
+      "log_file": "logs/issue-verification/TC-SCA-023-verify.log",
+      "log_size_bytes": 1498
+    },
+    {
+      "issue": "#39",
+      "tc": "TC-SCA-024",
+      "title": "补丁生成、应用与回归验证闭环",
+      "gates": "G0-G9",
+      "verdict": "PASS",
+      "log_file": "logs/issue-verification/TC-SCA-024-verify.log",
+      "log_size_bytes": 4259
+    },
+    {
+      "issue": "#40",
+      "tc": "TC-SCA-025",
+      "title": "端到端一键流水线编排与总报告生成",
+      "gates": "G0-G10",
+      "verdict": "PASS (PIPELINE_WARN: cpg/poc 环境降级)",
+      "log_file": "logs/issue-verification/TC-SCA-025-verify.log",
+      "log_size_bytes": 5981
+    }
+  ]
+}

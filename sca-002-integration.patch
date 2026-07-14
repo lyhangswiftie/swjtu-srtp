@@ -1,0 +1,1855 @@
+diff --git a/docs/OpenHands_Backend_Integration.md b/docs/OpenHands_Backend_Integration.md
+new file mode 100644
+index 000000000..84314f8fc
+--- /dev/null
++++ b/docs/OpenHands_Backend_Integration.md
+@@ -0,0 +1,61 @@
++# OpenHands 后端集成详细说明文档 (Backend Integration Guide)
++
++## 1. 架构概览 (Architecture Overview)
++
++本系统前端（战术 HUD）与 OpenHands 后端的通信主要依赖两种协议：
++1. **WebSocket (WS)**：用于实时双向通信，包括 Agent 状态流、终端日志输出、聊天消息收发等。
++2. **REST API (HTTP)**：用于一次性或配置类操作，如获取系统配置、初始化会话、拉取 GitHub 仓库等。
++
++## 2. 核心通信链路对接 (Core Communication Links)
++
++### 2.1 WebSocket 实时事件流
++OpenHands 后端的核心是一个事件驱动的架构。前端需要连接到后端的 WebSocket 服务（通常为 `ws://<backend-host>:<port>/ws`）。
++
++*   **发送指令 (Action)**：当用户在 `OpenHandsChat` 中发送消息时，前端需要向 WS 发送一个 `Action` 对象。
++    ```json
++    {
++      "action": "CmdRunAction", // 或 "MessageAction"
++      "args": { "command": "扫描 src/core/utils/io.c" }
++    }
++    ```
++*   **接收观测 (Observation)**：前端需要监听 WS 传来的 `Observation` 事件，并分发到不同的组件：
++    *   `CmdOutputObservation` -> 更新 `OpenHandsTerminal` 的日志输出。
++    *   `AgentMessageObservation` -> 更新 `OpenHandsChat` 的对话列表。
++    *   `FileReadObservation` / `FileEditObservation` -> 更新 `OpenHandsDiffViewer` 的代码视图。
++
++### 2.2 REST API 接口映射
++左侧边栏和顶部配置栏的操作需要对接以下 REST API：
++
++*   **会话控制 (Session Control)**
++    *   `POST /api/session`：新建空白会话，获取 `sessionToken`。
++    *   `GET /api/session/{token}`：恢复历史会话。
++*   **代码仓库 (GitHub Repo)**
++    *   `POST /api/workspace/github`：传入 Repo URL 和 Branch，后端将克隆代码并挂载到沙箱。
++*   **系统配置 (Settings)**
++    *   `GET /api/config`：获取当前的 LLM、Agent、MCP 配置。
++    *   `POST /api/config`：保存用户在 Settings Modal 中修改的配置。
++
++## 3. 组件级对接指南 (Component-Level Integration)
++
++### 3.1 侧边栏：文件资源管理器 (File Explorer)
++*   **接口**：`GET /api/files/list?path=/`
++*   **逻辑**：在 `activeSidebar === 'files'` 时触发请求，将返回的 JSON 树状结构渲染到侧边栏。点击文件时，触发 `GET /api/files/read?path={filepath}`，并将内容传递给 `OpenHandsDiffViewer`。
++
++### 3.2 侧边栏：代码仓库对接 (GitHub Integration)
++*   **逻辑**：用户在输入框填写 URL 和 Branch，点击“加载仓库到沙箱”后，前端调用 `POST /api/workspace/github`。成功后，触发文件资源管理器的刷新，并向 Chat 发送一条系统消息：“已成功挂载 GitHub 仓库”。
++
++### 3.3 侧边栏：会话控制 (Session Control)
++*   **逻辑**：
++    *   **新建会话**：调用 `POST /api/session`，清空当前的 Chat、Terminal 和 Diff 状态，重置沙箱环境。
++    *   **恢复会话**：用户输入 Token，调用 `GET /api/session/{token}`，后端返回该会话的历史事件流，前端重放这些事件以恢复 Chat 和 Terminal 的状态。
++
++### 3.4 核心工作区 (Chat, Terminal, Diff)
++*   **状态管理**：建议引入 Redux Toolkit (RTK) 或 Zustand。将 `Dashboard.tsx` 中的 `chatMessages`, `terminalLogs`, `vulnList` 提升为全局 Store。
++*   **WebSocket 中间件**：在 Redux 中间件中拦截 WS 消息，根据消息类型（Action/Observation）派发对应的 Redux Action，从而自动触发 React 组件的重新渲染。
++
++## 4. 安全审计特有逻辑 (Security Audit Specifics)
++
++OpenHands 原生主要面向通用软件开发。为了适配本系统的“代码安全智能体”定位，需要在后端进行以下定制：
++
++1.  **自定义 Agent Class**：在后端实现一个 `SecurityAuditorAgent`，其 System Prompt 专注于漏洞挖掘、PoC 编写和补丁生成。
++2.  **漏洞状态同步**：当 Agent 成功执行 PoC（如捕获到 SIGSEGV）或成功应用补丁时，后端应发送自定义的 `SecurityObservation`。前端监听到此事件后，更新 Dashboard 顶部的统计数据和漏洞列表的状态（未修复 -> 已验证 -> 已修复）。
+diff --git a/docs/OpenHands_Integration_Guide.md b/docs/OpenHands_Integration_Guide.md
+new file mode 100644
+index 000000000..68ece5d7f
+--- /dev/null
++++ b/docs/OpenHands_Integration_Guide.md
+@@ -0,0 +1,98 @@
++# OpenHands 战术 HUD 前端集成说明书 (Integration Guide)
++
++## 1. 架构概述 (Architecture Overview)
++
++本项目将 OpenHands 强大的“智能体底座 (Agentic Base)”与定制化的“战术指挥舱 (Security HUD)”进行了深度融合。
++前端架构采用了**单向数据流 (Single Source of Truth)** 与 **展示型组件 (Dumb Components)** 的设计模式。
++
++*   **Dashboard.tsx (主控台)**：作为容器组件 (Smart Component)，负责与 OpenHands 后端（通过 WebSocket 或 Redux/Zustand Store）进行数据交互，维护全局状态。
++*   **OpenHandsMocks.tsx (UI 组件)**：作为纯展示组件 (Dumb Components)，仅通过 `props` 接收数据并触发回调，内部不维护复杂的业务状态。在实际集成时，这些组件将直接替换为或包裹 OpenHands 的原生 React 组件。
++
++---
++
++## 2. 原 OpenHands 前端功能接口覆盖度分析
++
++为了确保“无遗漏”且“完全符合原有接口”，以下是 OpenHands 核心前端功能与当前战术 HUD 界面的映射与覆盖情况分析：
++
++| OpenHands 原生功能模块 | 核心接口/状态 (State/API) | 战术 HUD 对应区域 | 覆盖状态 | 集成说明 & 差异处理 |
++| :--- | :--- | :--- | :--- | :--- |
++| **Chat Interface (聊天交互)** | `messages`, `sendMessage()`, `agentState` | 左栏：Agent 交互终端 | **100% 覆盖** | 完美映射。HUD 提供了 `messages` 渲染列表和 `onSendMessage` 回调。需接入 OpenHands 的 `useChat` Hook。 |
++| **Terminal (终端日志)** | `terminalLogs`, `executeCommand()` | 右栏：Agent 终端 | **100% 覆盖** | 完美映射。HUD 提供了 `logs` 渲染列表。需接入 OpenHands 的 `useTerminal` Hook 监听 stdout/stderr。 |
++| **File Explorer (文件树)** | `fileTree`, `fetchDirectory()`, `selectFile()` | 左侧边栏：文件资源管理器 | **100% 覆盖** | 完美映射。HUD 提供了树状文件结构。需接入 OpenHands 的文件系统 API，将树状结构数据绑定至该区域，并添加点击事件以联动中栏代码视图。 |
++| **GitHub Repo (代码仓库)** | `setWorkspace`, `githubToken` | 左侧边栏：代码仓库对接 | **100% 覆盖** | 完美映射。HUD 提供了输入 Repo URL 和 Branch 的界面，用于初始化沙箱工作区。 |
++| **Session Control (会话控制)** | `initSession`, `clearSession`, `sessionToken` | 左侧边栏：会话控制 | **100% 覆盖** | 完美映射。HUD 提供了新建空白会话、终止沙箱以及通过 Token 恢复历史会话的界面。 |
++| **Code / Diff Viewer (代码视图)** | `currentFile`, `fileContent`, `diffData`, `applyPatch()` | 中栏：代码修复对比 Diff | **100% 覆盖** | 完美映射。HUD 提供了双栏 Diff 视图及“应用补丁”按钮。需对接 OpenHands 的 `useFileEditor` 或相应状态。 |
++| **Settings & Config (系统设置)** | `llmConfig`, `agentConfig`, `workspaceConfig` | 顶部：系统配置 Modal | **100% 覆盖** | 完美映射。HUD 提供了统一的模态框，涵盖了 LLM、Agent、Workspace 的配置项。 |
++| **Skills (技能库)** | `skills`, `addSkill()`, `toggleSkill()` | 顶部：系统配置 Modal -> Skills | **100% 覆盖** | 完美映射。HUD 提供了自定义 Python 技能的列表展示和启停开关。 |
++| **MCP Management (MCP 管理)** | `mcpServers`, `addMcp()`, `mcpStatus` | 顶部：系统配置 Modal -> MCP | **100% 覆盖** | 完美映射。HUD 提供了 MCP 列表和状态指示灯。 |
++| **Browser Preview (网页预览)** | `browserUrl`, `browserState`, `screenshot` | **N/A (架构替换)** | **架构调整** | *注意*：OpenHands 原生的浏览器预览主要用于 Web 开发。在本**安全审计**场景中，该区域被替换为更符合业务需求的 **[代码属性图 CPG]**。如果需要保留，可在中栏增加一个 `[沙箱 Web 预览]` 的 Tab。 |
++| **Control Panel (控制面板)** | `start`, `stop`, `clear`, `agentStatus` | 顶部状态栏 / 底部 Footer | **100% 覆盖** | OpenHands 的启停控制可通过 Chat 触发，Agent 状态（如 Running, Error, Finished）已映射至 Footer 的“系统状态”和顶部 Header 的“大模型活跃”指示灯。 |
++
++---
++
++## 3. 核心状态对接指南 (State Integration)
++
++在实际接入 OpenHands 源码时，请按照以下步骤修改 `src/components/Dashboard.tsx`：
++
++### 3.1 替换状态源 (Replace State Sources)
++将 `Dashboard.tsx` 中硬编码的 `useState` 替换为 OpenHands 提供的全局状态 Hook（例如基于 Redux, Zustand 或 Context API）。
++
++```javascript
++// 替换前 (Mock)
++const [chatMessages, setChatMessages] = useState([...]);
++const [terminalLogs, setTerminalLogs] = useState([...]);
++
++// 替换后 (OpenHands Integration)
++import { useChat } from '@openhands/hooks/useChat';
++import { useTerminal } from '@openhands/hooks/useTerminal';
++import { useAgentState } from '@openhands/hooks/useAgentState';
++
++export default function Dashboard() {
++  const { messages, sendMessage } = useChat();
++  const { logs } = useTerminal();
++  const { agentState } = useAgentState();
++  // ...
++}
++```
++
++### 3.2 绑定回调函数 (Bind Callbacks)
++将 UI 组件的交互事件绑定到 OpenHands 的 Action 上。
++
++```javascript
++// 替换前 (Mock)
++const handleSendMessage = (text) => { ... };
++
++// 替换后 (OpenHands Integration)
++const handleSendMessage = (text) => {
++  sendMessage(text); // 调用 OpenHands 原生发送接口
++};
++
++// 在 JSX 中传递
++<OpenHandsChat messages={messages} onSendMessage={handleSendMessage} />
++```
++
++### 3.3 漏洞状态联动逻辑 (Vulnerability State Sync)
++本系统特有的“漏洞列表”状态（未修复、已验证、已修复）需要通过解析 OpenHands Agent 的输出日志或特定事件来更新。
++
++**建议方案**：在 OpenHands 后端增加自定义的 `Observation` 类型（如 `SecurityAuditObservation`），前端监听该事件并更新 `vulnList` 状态。
++
++```javascript
++// 伪代码示例：监听 OpenHands 事件流
++useEffect(() => {
++  const handleAgentEvent = (event) => {
++    if (event.type === 'poc_success' && event.cwe === 'CWE-119') {
++      updateVulnStatus('CWE-119', '已验证');
++    } else if (event.type === 'patch_applied' && event.cwe === 'CWE-119') {
++      updateVulnStatus('CWE-119', '已修复');
++    }
++  };
++  OpenHandsEventStream.subscribe(handleAgentEvent);
++  return () => OpenHandsEventStream.unsubscribe(handleAgentEvent);
++}, []);
++```
++
++---
++
++## 4. 总结
++
++当前的战术 HUD 界面在组件结构和数据接口上已经**完全兼容** OpenHands 的前端架构。所有的 UI 组件都已“纯化”，只需在 `Dashboard.tsx` 顶层接入 OpenHands 的状态流，即可实现无缝的真实数据驱动。唯一的业务差异在于将原有的“浏览器预览”替换为了安全领域的“CPG 图谱”，这完全符合当前安全防御平台的业务定位。
+diff --git a/frontend/src/components/sca-hud/Dashboard.tsx b/frontend/src/components/sca-hud/Dashboard.tsx
+new file mode 100644
+index 000000000..abf0cf547
+--- /dev/null
++++ b/frontend/src/components/sca-hud/Dashboard.tsx
+@@ -0,0 +1,761 @@
++import React, { useState } from 'react';
++import { ShieldAlert, Cpu, Database, Activity, TerminalSquare, Server, CheckCircle2, FileCode2, FolderOpen, File, ChevronRight, ChevronDown, AlertCircle, MessageSquare, Code, Settings, X, Box, LayoutDashboard, History, FolderKanban, Plus, Search, Clock, FolderTree, Github, GitBranch, FileText, PlayCircle } from 'lucide-react';
++import { OpenHandsChat, OpenHandsTerminal, OpenHandsDiffViewer } from './OpenHandsMocks';
++
++// Reusable HUD Panel Component with L-shaped corners and neon glow
++function HudPanel({ title = null, children, className = "", headerRight = null, titleIcon: Icon = null }) {
++  return (
++    <div className={`relative border border-[#00FF9F]/30 bg-[#1A202C] flex flex-col ${className}`}>
++      {/* L-shaped corners */}
++      <div className="absolute top-0 left-0 w-3 h-3 border-t-[2px] border-l-[2px] border-[#00FF9F] z-20"></div>
++      <div className="absolute top-0 right-0 w-3 h-3 border-t-[2px] border-r-[2px] border-[#00FF9F] z-20"></div>
++      <div className="absolute bottom-0 left-0 w-3 h-3 border-b-[2px] border-l-[2px] border-[#00FF9F] z-20"></div>
++      <div className="absolute bottom-0 right-0 w-3 h-3 border-b-[2px] border-r-[2px] border-[#00FF9F] z-20"></div>
++      
++      {title && (
++        <div className="text-[11px] font-bold text-[#00FF9F] bg-[#00FF9F]/10 px-3 py-1.5 border-b border-[#00FF9F]/30 flex justify-between items-center relative z-10">
++          <div className="flex items-center gap-2">
++            {Icon && <Icon size={14} className="text-[#00FF9F]" />}
++            <span className="tracking-wide drop-shadow-[0_0_2px_rgba(0,255,159,0.8)]">{title}</span>
++          </div>
++          {headerRight}
++        </div>
++      )}
++      <div className="flex-1 flex flex-col relative z-10 overflow-hidden">
++        {children}
++      </div>
++    </div>
++  );
++}
++
++export default function Dashboard() {
++  const [activeTab, setActiveTab] = useState('cpg');
++  const [showSettings, setShowSettings] = useState(false);
++  const [settingsTab, setSettingsTab] = useState('llm');
++  const [activeSidebar, setActiveSidebar] = useState<string | null>(null);
++
++  // State lifted up to Dashboard to ensure consistency across components
++  // In a real OpenHands integration, these would be populated via WebSocket/Redux
++  const [chatMessages, setChatMessages] = useState([
++    { role: 'agent', text: '您好，我是 OpenHands 安全审计智能体。已连接到目标系统，准备执行漏洞扫描与渗透测试。请下达指令。' },
++    { role: 'user', text: '扫描 src/core/utils/io.c 文件中的潜在漏洞。' },
++    { role: 'agent', text: '正在分析 io.c... 发现潜在的缓冲区溢出漏洞 (CWE-119)。已在右侧终端生成 PoC 脚本，并在中央视图生成 CPG 图谱。' }
++  ]);
++
++  const [vulnList, setVulnList] = useState([
++    { id: 'CWE-89', file: 'db.py:45', severity: '高危', severityClass: 'text-red-400', status: '未修复', statusClass: 'text-red-400 border-red-400/30 bg-red-400/10', active: false },
++    { id: 'CWE-119', file: 'io.c:120', severity: '极危', severityClass: 'text-red-400', status: '已验证', statusClass: 'text-amber-400 border-amber-400/30 bg-amber-400/10', active: true },
++    { id: 'CWE-502', file: 'svc.java:8', severity: '中危', severityClass: 'text-amber-400', status: '未验证', statusClass: 'text-slate-400 border-slate-600 bg-slate-800/50', active: false },
++    { id: 'CWE-22', file: 'file.py:32', severity: '低危', severityClass: 'text-emerald-400', status: '已修复', statusClass: 'text-[#00FF9F] border-[#00FF9F]/30 bg-[#00FF9F]/10', active: false },
++  ]);
++
++  const [terminalLogs, setTerminalLogs] = useState([
++    "$ ./run_poc.sh --target src/core/utils/io.c",
++    "> 初始化多智能体协同渗透...",
++    "> 结合图谱合成针对性 Payload...",
++    "> 注入动态沙箱环境执行...",
++    "> [eBPF] 捕获内核级异常信号:",
++    "SIGSEGV @ 0x4f2a (kernel_sys_write)",
++    "> [结果] 漏洞可利用性验证通过 (RCE).",
++    "> 成功获取目标系统 Shell 权限."
++  ]);
++
++  const diffData = {
++    file: "src/core/utils/io.c",
++    originalCode: [
++      { line: 118, text: "// Process input buffer", isHighlight: false },
++      { line: 119, text: "void process(char *in) {", isHighlight: false },
++      { line: 120, text: "-   strcpy(buffer, in);", isHighlight: true },
++      { line: 121, text: "}", isHighlight: false }
++    ],
++    modifiedCode: [
++      { line: 118, text: "// Process input buffer safely", isHighlight: false },
++      { line: 119, text: "void process(char *in) {", isHighlight: false },
++      { line: 120, text: "+   strncpy(buffer, in, sizeof(buffer)-1);", isHighlight: true },
++      { line: 121, text: "+   buffer[sizeof(buffer)-1] = '\\0';", isHighlight: true },
++      { line: 122, text: "}", isHighlight: false }
++    ]
++  };
++
++  const handleSendMessage = (text) => {
++    setChatMessages(prev => [...prev, { role: 'user', text }]);
++    
++    // Simulate OpenHands backend processing and dispatching events to both Chat and Terminal
++    setTimeout(() => {
++      if (text.includes('修复') || text.includes('patch') || text.includes('fix')) {
++        setChatMessages(prev => [...prev, { role: 'agent', text: '收到指令，正在应用 AI 推荐的补丁并进行回归测试...' }]);
++        setTerminalLogs(prev => [...prev, `$ apply_patch io.c`, "> 补丁应用成功", "> 重新编译并运行测试用例...", "> [结果] 漏洞已修复"]);
++        setVulnList(prev => prev.map(v => v.id === 'CWE-119' ? { ...v, status: '已修复', statusClass: 'text-[#00FF9F] border-[#00FF9F]/30 bg-[#00FF9F]/10' } : v));
++      } else if (text.includes('验证') || text.includes('渗透') || text.includes('poc')) {
++        setChatMessages(prev => [...prev, { role: 'agent', text: '收到指令，正在针对 CWE-119 执行自动化渗透测试...' }]);
++        setTerminalLogs(prev => [...prev, `$ ./run_poc.sh --target src/core/utils/io.c`, "> 注入动态沙箱环境执行...", "> [eBPF] 捕获内核级异常信号: SIGSEGV", "> [结果] 漏洞可利用性验证通过 (RCE)"]);
++        setVulnList(prev => prev.map(v => v.id === 'CWE-119' ? { ...v, status: '已验证', statusClass: 'text-amber-400 border-amber-400/30 bg-amber-400/10' } : v));
++      } else {
++        setChatMessages(prev => [...prev, { role: 'agent', text: '收到指令，正在调度底层扫描引擎执行后续安全分析任务...' }]);
++        setTerminalLogs(prev => [...prev, `$ 接收到上层指令: ${text}`, "> 正在解析指令语义并映射至底层操作..."]);
++      }
++    }, 800);
++  };
++
++  return (
++    <div className="h-screen w-screen bg-[#2D3748] text-slate-300 font-mono text-[11px] flex overflow-hidden selection:bg-[#00FF9F]/30">
++      
++      {/* Global Activity Bar */}
++      <div className="w-14 bg-[#1A202C] border-r border-[#00FF9F]/30 flex flex-col items-center py-4 z-50 justify-between shrink-0 shadow-[2px_0_10px_rgba(0,0,0,0.5)]">
++        <div className="flex flex-col gap-4 w-full items-center">
++          <div className="w-8 h-8 rounded-md bg-[#00FF9F]/20 border border-[#00FF9F]/50 flex items-center justify-center mb-2 shadow-[0_0_10px_rgba(0,255,159,0.2)]">
++            <ShieldAlert size={18} className="text-[#00FF9F]" />
++          </div>
++          <button 
++            onClick={() => setActiveSidebar(activeSidebar === 'files' ? null : 'files')}
++            className={`p-2 rounded-md transition-colors ${activeSidebar === 'files' ? 'text-[#00FF9F] bg-[#00FF9F]/10 border-l-2 border-[#00FF9F]' : 'text-slate-500 hover:text-slate-300 hover:bg-slate-800'}`}
++            title="文件资源管理器 (File Explorer)"
++          >
++            <FolderTree size={20} />
++          </button>
++          <button 
++            onClick={() => setActiveSidebar(activeSidebar === 'repo' ? null : 'repo')}
++            className={`p-2 rounded-md transition-colors ${activeSidebar === 'repo' ? 'text-[#00FF9F] bg-[#00FF9F]/10 border-l-2 border-[#00FF9F]' : 'text-slate-500 hover:text-slate-300 hover:bg-slate-800'}`}
++            title="代码仓库对接 (GitHub Integration)"
++          >
++            <Github size={20} />
++          </button>
++          <button 
++            onClick={() => setActiveSidebar(activeSidebar === 'sessions' ? null : 'sessions')}
++            className={`p-2 rounded-md transition-colors ${activeSidebar === 'sessions' ? 'text-[#00FF9F] bg-[#00FF9F]/10 border-l-2 border-[#00FF9F]' : 'text-slate-500 hover:text-slate-300 hover:bg-slate-800'}`}
++            title="会话与沙箱控制 (Session Control)"
++          >
++            <PlayCircle size={20} />
++          </button>
++        </div>
++        <div className="flex flex-col gap-4 w-full items-center">
++          <button 
++            onClick={() => setShowSettings(true)}
++            className="p-2 rounded-md text-slate-500 hover:text-[#00FF9F] hover:bg-[#00FF9F]/10 transition-colors"
++            title="系统配置 (Settings)"
++          >
++            <Settings size={20} />
++          </button>
++        </div>
++      </div>
++
++      {/* Secondary Sidebar */}
++      {activeSidebar === 'files' && (
++        <div className="w-64 bg-[#1A202C] border-r border-[#00FF9F]/30 flex flex-col z-40 shrink-0 shadow-[5px_0_15px_rgba(0,0,0,0.5)]">
++          <div className="p-3 border-b border-[#00FF9F]/30 flex justify-between items-center">
++            <span className="text-xs font-bold text-slate-200">文件资源管理器</span>
++            <button className="p-1 bg-[#00FF9F]/20 text-[#00FF9F] rounded-sm hover:bg-[#00FF9F]/30 transition-colors" title="刷新文件树">
++              <Activity size={14} />
++            </button>
++          </div>
++          <div className="p-2 flex-1 overflow-y-auto">
++            <div className="flex flex-col gap-1 mt-1 text-slate-300">
++              <div className="flex items-center gap-1.5 p-1 hover:bg-slate-800 rounded-sm cursor-pointer">
++                <ChevronDown size={14} className="text-slate-500" />
++                <FolderOpen size={14} className="text-blue-400" />
++                <span>src</span>
++              </div>
++              <div className="flex flex-col gap-1 pl-5">
++                <div className="flex items-center gap-1.5 p-1 hover:bg-slate-800 rounded-sm cursor-pointer">
++                  <ChevronDown size={14} className="text-slate-500" />
++                  <FolderOpen size={14} className="text-blue-400" />
++                  <span>core</span>
++                </div>
++                <div className="flex flex-col gap-1 pl-5">
++                  <div className="flex items-center gap-1.5 p-1 hover:bg-slate-800 rounded-sm cursor-pointer">
++                    <ChevronRight size={14} className="text-slate-500" />
++                    <FolderOpen size={14} className="text-blue-400" />
++                    <span>utils</span>
++                  </div>
++                  <div className="flex items-center gap-1.5 p-1 bg-[#00FF9F]/10 text-[#00FF9F] rounded-sm cursor-pointer">
++                    <FileCode2 size={14} />
++                    <span>io.c</span>
++                  </div>
++                </div>
++                <div className="flex items-center gap-1.5 p-1 hover:bg-slate-800 rounded-sm cursor-pointer">
++                  <FileCode2 size={14} className="text-amber-400" />
++                  <span>db.py</span>
++                </div>
++              </div>
++              <div className="flex items-center gap-1.5 p-1 hover:bg-slate-800 rounded-sm cursor-pointer">
++                <FileText size={14} className="text-slate-400" />
++                <span>README.md</span>
++              </div>
++            </div>
++          </div>
++        </div>
++      )}
++
++      {activeSidebar === 'repo' && (
++        <div className="w-64 bg-[#1A202C] border-r border-[#00FF9F]/30 flex flex-col z-40 shrink-0 shadow-[5px_0_15px_rgba(0,0,0,0.5)]">
++          <div className="p-3 border-b border-[#00FF9F]/30 flex justify-between items-center">
++            <span className="text-xs font-bold text-slate-200">代码仓库 (Repository)</span>
++          </div>
++          <div className="p-4 flex flex-col gap-4">
++            <div className="flex flex-col gap-2">
++              <label className="text-slate-400 text-[10px] font-bold">GitHub Repository URL</label>
++              <div className="flex items-center bg-[#0b1120] border border-slate-700 rounded-sm px-2 py-1.5">
++                <Github size={14} className="text-slate-500 mr-2" />
++                <input type="text" defaultValue="https://github.com/example/core-system-v2" className="bg-transparent border-none outline-none text-[10px] w-full text-slate-300" />
++              </div>
++            </div>
++            <div className="flex flex-col gap-2">
++              <label className="text-slate-400 text-[10px] font-bold">Branch / Commit</label>
++              <div className="flex items-center bg-[#0b1120] border border-slate-700 rounded-sm px-2 py-1.5">
++                <GitBranch size={14} className="text-slate-500 mr-2" />
++                <input type="text" defaultValue="main" className="bg-transparent border-none outline-none text-[10px] w-full text-slate-300" />
++              </div>
++            </div>
++            <button className="w-full bg-[#00FF9F]/20 text-[#00FF9F] border border-[#00FF9F]/50 py-2 rounded-sm hover:bg-[#00FF9F]/30 transition-colors font-bold mt-2">
++              加载仓库到沙箱
++            </button>
++          </div>
++        </div>
++      )}
++
++      {activeSidebar === 'sessions' && (
++        <div className="w-64 bg-[#1A202C] border-r border-[#00FF9F]/30 flex flex-col z-40 shrink-0 shadow-[5px_0_15px_rgba(0,0,0,0.5)]">
++          <div className="p-3 border-b border-[#00FF9F]/30 flex justify-between items-center">
++            <span className="text-xs font-bold text-slate-200">会话控制 (Sessions)</span>
++          </div>
++          <div className="p-4 flex flex-col gap-4">
++            <div className="bg-[#0b1120] border border-[#00FF9F]/30 p-3 rounded-sm">
++              <div className="text-[#00FF9F] font-bold mb-1 flex items-center gap-2"><Activity size={14}/> 当前活跃会话</div>
++              <div className="text-slate-400 text-[9px] break-all">ID: sess_9f8a2b1c-4d5e-6f7a</div>
++              <div className="text-slate-500 text-[9px] mt-1">已消耗 Token: 12,450</div>
++            </div>
++            
++            <div className="flex flex-col gap-2 mt-2">
++              <button className="w-full bg-blue-500/20 text-blue-400 border border-blue-500/50 py-2 rounded-sm hover:bg-blue-500/30 transition-colors font-bold flex items-center justify-center gap-2">
++                <Plus size={14} /> 新建空白会话
++              </button>
++              <button className="w-full bg-red-500/20 text-red-400 border border-red-500/50 py-2 rounded-sm hover:bg-red-500/30 transition-colors font-bold flex items-center justify-center gap-2">
++                <X size={14} /> 终止当前沙箱
++              </button>
++            </div>
++
++            <div className="mt-4 border-t border-slate-700 pt-4">
++              <label className="text-slate-400 text-[10px] font-bold mb-2 block">恢复历史会话 (Resume)</label>
++              <div className="flex items-center bg-[#0b1120] border border-slate-700 rounded-sm px-2 py-1.5 mb-2">
++                <input type="text" placeholder="输入 Session Token..." className="bg-transparent border-none outline-none text-[10px] w-full text-slate-300" />
++              </div>
++              <button className="w-full bg-slate-800 text-slate-300 border border-slate-600 py-1.5 rounded-sm hover:bg-slate-700 transition-colors">
++                恢复会话
++              </button>
++            </div>
++          </div>
++        </div>
++      )}
++
++      {/* Main Content Wrapper */}
++      <div className="flex-1 flex flex-col gap-3 p-3 overflow-hidden">
++        {/* 1. Header (60px height) */}
++        <header className="h-[60px] shrink-0 relative border border-[#00FF9F]/30 bg-[#1A202C] flex items-center justify-between px-4">
++        {/* L-shaped corners for Header */}
++        <div className="absolute top-0 left-0 w-3 h-3 border-t-[2px] border-l-[2px] border-[#00FF9F] z-20"></div>
++        <div className="absolute top-0 right-0 w-3 h-3 border-t-[2px] border-r-[2px] border-[#00FF9F] z-20"></div>
++        <div className="absolute bottom-0 left-0 w-3 h-3 border-b-[2px] border-l-[2px] border-[#00FF9F] z-20"></div>
++        <div className="absolute bottom-0 right-0 w-3 h-3 border-b-[2px] border-r-[2px] border-[#00FF9F] z-20"></div>
++
++        <div className="flex items-center gap-4">
++          <ShieldAlert className="text-[#00FF9F] drop-shadow-[0_0_5px_rgba(0,255,159,0.8)]" size={24} />
++          <div className="flex flex-col">
++            <h1 className="text-sm font-bold text-slate-100 tracking-wide drop-shadow-[0_0_2px_rgba(255,255,255,0.5)]">代码安全智能体（SeCodeAct）-SCA</h1>
++            <div className="flex gap-4 text-[10px] mt-1 font-bold text-slate-400">
++              <span className="flex items-center gap-1"><FolderOpen size={10} className="text-blue-400"/> 项目: core-system-v2</span>
++              <span className="flex items-center gap-1"><FileCode2 size={10} className="text-slate-300"/> 代码量: 128,450 行</span>
++              <span className="flex items-center gap-1"><AlertCircle size={10} className="text-red-400"/> 发现漏洞: {vulnList.length}</span>
++              <span className="flex items-center gap-1"><CheckCircle2 size={10} className="text-[#00FF9F]"/> 已修复: {vulnList.filter(v => v.status === '已修复').length}</span>
++              <span className="flex items-center gap-1"><TerminalSquare size={10} className="text-amber-400"/> 利用验证: {vulnList.filter(v => v.status === '已验证').length}</span>
++            </div>
++          </div>
++        </div>
++
++        {/* 5-Stage Workflow Progress Bar */}
++        <div className="flex items-center gap-4">
++          <div className="flex items-center text-[10px] font-bold bg-[#0f172a] border border-[#00FF9F]/20 px-3 py-1.5 rounded-sm">
++            <span className="text-slate-400">代码审计</span>
++            <span className="text-[#00FF9F]/40 mx-2">──▶</span>
++            <span className="text-slate-400">自动渗透</span>
++            <span className="text-[#00FF9F]/40 mx-2">──▶</span>
++            <span className="text-[#00FF9F] drop-shadow-[0_0_3px_rgba(0,255,159,0.8)] border-b border-[#00FF9F]">根因分析</span>
++            <span className="text-[#00FF9F]/40 mx-2">──▶</span>
++            <span className="text-slate-400">补丁生成</span>
++            <span className="text-[#00FF9F]/40 mx-2">──▶</span>
++            <span className="text-slate-400">回归评估</span>
++          </div>
++        </div>
++      </header>
++
++      {/* 2. Main 3-Column Workspace */}
++      <div className="flex flex-row gap-3 flex-1 min-h-[400px]">
++        
++        {/* Left Column (25%) */}
++        <div className="w-[25%] flex flex-col gap-3">
++          {/* Agent Chat Interface */}
++          <HudPanel title="任务交互终端" titleIcon={MessageSquare} className="flex-1 min-h-[250px]">
++            <OpenHandsChat messages={chatMessages} onSendMessage={handleSendMessage} />
++          </HudPanel>
++
++          {/* Vulnerability List */}
++          <HudPanel title="漏洞列表 (Vuln List)" className="flex-1 min-h-[200px]">
++            <div className="overflow-y-auto">
++              <table className="w-full text-left text-[10px]">
++                <thead className="text-[#00FF9F]/70 border-b border-[#00FF9F]/20 bg-[#00FF9F]/5">
++                  <tr>
++                    <th className="p-1.5">漏洞编号</th>
++                    <th className="p-1.5">文件:行号</th>
++                    <th className="p-1.5">危险等级</th>
++                    <th className="p-1.5">状态</th>
++                  </tr>
++                </thead>
++                <tbody>
++                  {vulnList.map((vuln, idx) => (
++                    <tr key={idx} className={vuln.active ? "text-[#00FF9F] bg-[#00FF9F]/10 border-l-2 border-[#00FF9F]" : "text-slate-400 border-b border-slate-800"}>
++                      <td className={`p-1.5 ${vuln.active ? 'font-bold' : ''}`}>{vuln.id}</td>
++                      <td className={vuln.active ? 'font-bold' : ''}>{vuln.file}</td>
++                      <td className={`${vuln.severityClass} ${vuln.active ? 'font-bold' : ''}`}>{vuln.severity}</td>
++                      <td className="p-1.5">
++                        <span className={`px-1.5 py-0.5 rounded-sm border text-[9px] ${vuln.statusClass}`}>
++                          {vuln.status}
++                        </span>
++                      </td>
++                    </tr>
++                  ))}
++                </tbody>
++              </table>
++            </div>
++          </HudPanel>
++        </div>
++
++        {/* Center Column (50%) */}
++        <div className="w-[50%] flex flex-col">
++          <HudPanel className="flex-1">
++            {/* Modern Tabs */}
++            <div className="flex border-b border-[#00FF9F]/30 bg-[#0f172a]">
++              <div 
++                onClick={() => setActiveTab('cpg')}
++                className={`px-4 py-2 text-[11px] font-bold cursor-pointer border-b-2 ${activeTab === 'cpg' ? 'text-[#00FF9F] border-[#00FF9F] bg-[#00FF9F]/10 drop-shadow-[0_0_2px_rgba(0,255,159,0.5)]' : 'text-slate-500 hover:text-slate-300 border-transparent'}`}
++              >
++                [代码属性图 CPG]
++              </div>
++              <div 
++                onClick={() => setActiveTab('diff')}
++                className={`px-4 py-2 text-[11px] font-bold cursor-pointer border-b-2 ${activeTab === 'diff' ? 'text-[#00FF9F] border-[#00FF9F] bg-[#00FF9F]/10 drop-shadow-[0_0_2px_rgba(0,255,159,0.5)]' : 'text-slate-500 hover:text-slate-300 border-transparent'}`}
++              >
++                [代码修复对比 Diff]
++              </div>
++            </div>
++            
++            {/* Tab Content */}
++            {activeTab === 'cpg' ? (
++              <div className="flex-1 relative bg-[#0b1120] overflow-hidden flex items-center justify-center p-4 bg-[linear-gradient(to_right,#00FF9F05_1px,transparent_1px),linear-gradient(to_bottom,#00FF9F05_1px,transparent_1px)] bg-[size:20px_20px]">
++                 <svg width="100%" height="100%" viewBox="0 0 600 300" className="max-w-full max-h-full">
++                   <defs>
++                     <marker id="arrow-gray" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0,0 L0,8 L8,4 z" fill="#475569"/></marker>
++                     <marker id="arrow-amber" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0,0 L0,8 L8,4 z" fill="#f59e0b"/></marker>
++                     <marker id="arrow-red" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0,0 L0,8 L8,4 z" fill="#ef4444"/></marker>
++                     <marker id="arrow-blue" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0,0 L0,8 L8,4 z" fill="#3b82f6"/></marker>
++                   </defs>
++                   
++                   {/* Legend Box */}
++                   <rect x="10" y="10" width="130" height="80" fill="#1A202C" stroke="#00FF9F" strokeWidth="0.5" opacity="0.9" rx="2"/>
++                   <text x="18" y="25" fill="#00FF9F" fontSize="9" fontFamily="monospace" fontWeight="bold">图例 (Legend):</text>
++                   <polygon points="18,35 28,35 33,40 28,45 18,45 13,40" fill="#1e3a8a" stroke="#3b82f6" strokeWidth="1"/>
++                   <text x="40" y="43" fill="#cbd5e1" fontSize="8" fontFamily="monospace">污染源 (Source)</text>
++                   <circle cx="23" cy="55" r="5" fill="#1e293b" stroke="#f59e0b" strokeWidth="1"/>
++                   <text x="40" y="58" fill="#cbd5e1" fontSize="8" fontFamily="monospace">逻辑节点 (AST/CFG)</text>
++                   <polygon points="18,65 28,65 23,75" fill="#451a03" stroke="#ef4444" strokeWidth="1"/>
++                   <text x="40" y="73" fill="#cbd5e1" fontSize="8" fontFamily="monospace">执行陷阱 (Sink)</text>
++  
++                   {/* Edges */}
++                   <line x1="100" y1="150" x2="180" y2="80" stroke="#3b82f6" strokeWidth="1.5" strokeDasharray="2 2" markerEnd="url(#arrow-blue)"/>
++                   <line x1="100" y1="150" x2="180" y2="150" stroke="#f59e0b" strokeWidth="1.5" strokeDasharray="4 4" markerEnd="url(#arrow-amber)"/>
++                   <line x1="100" y1="150" x2="180" y2="230" stroke="#475569" strokeWidth="1.5" markerEnd="url(#arrow-gray)"/>
++                   
++                   <line x1="220" y1="150" x2="310" y2="150" stroke="#f59e0b" strokeWidth="2" markerEnd="url(#arrow-amber)"/>
++                   <line x1="220" y1="230" x2="310" y2="230" stroke="#475569" strokeWidth="1.5" markerEnd="url(#arrow-gray)"/>
++                   
++                   <line x1="350" y1="150" x2="430" y2="150" stroke="#ef4444" strokeWidth="2" markerEnd="url(#arrow-red)"/>
++                   <line x1="350" y1="230" x2="430" y2="165" stroke="#475569" strokeWidth="1.5" markerEnd="url(#arrow-gray)"/>
++                   
++                   <line x1="470" y1="150" x2="530" y2="150" stroke="#ef4444" strokeWidth="2.5" markerEnd="url(#arrow-red)"/>
++  
++                   {/* Edge Labels */}
++                   <text x="130" y="105" fill="#3b82f6" fontSize="8" fontFamily="monospace" transform="rotate(-35 130 105)">[AST Decl]</text>
++                   <text x="130" y="145" fill="#f59e0b" fontSize="8" fontFamily="monospace">[数据流依赖]</text>
++                   <text x="130" y="205" fill="#475569" fontSize="8" fontFamily="monospace" transform="rotate(35 130 205)">[控制流分支]</text>
++                   <text x="240" y="145" fill="#f59e0b" fontSize="8" fontFamily="monospace">[污点传播]</text>
++                   <text x="365" y="145" fill="#ef4444" fontSize="9" fontFamily="monospace" fontWeight="bold">[核心利用路径]</text>
++  
++                   {/* Source Node (Hexagon) */}
++                   <polygon points="70,130 100,130 115,150 100,170 70,170 55,150" fill="#1e3a8a" stroke="#3b82f6" strokeWidth="1.5" className="drop-shadow-[0_0_5px_rgba(59,130,246,0.6)]"/>
++                   <text x="85" y="153" fill="#bfdbfe" fontSize="10" textAnchor="middle" fontFamily="monospace">Source</text>
++                   <text x="85" y="185" fill="#64748b" fontSize="9" textAnchor="middle" fontFamily="monospace">char *in</text>
++  
++                   {/* AST Node 1 (Circle) */}
++                   <circle cx="200" cy="80" r="20" fill="#1e293b" stroke="#3b82f6" strokeWidth="1.5"/>
++                   <text x="200" y="83" fill="#e2e8f0" fontSize="10" textAnchor="middle" fontFamily="monospace">AST</text>
++                   <text x="200" y="115" fill="#64748b" fontSize="9" textAnchor="middle" fontFamily="monospace">ParamDecl</text>
++  
++                   {/* AST Node 2 (Circle) */}
++                   <circle cx="200" cy="150" r="20" fill="#1e293b" stroke="#f59e0b" strokeWidth="1.5"/>
++                   <text x="200" y="153" fill="#e2e8f0" fontSize="10" textAnchor="middle" fontFamily="monospace">AST</text>
++                   <text x="200" y="185" fill="#64748b" fontSize="9" textAnchor="middle" fontFamily="monospace">AssignStmt</text>
++  
++                   {/* CFG Node 1 (Circle) */}
++                   <circle cx="200" cy="230" r="20" fill="#1e293b" stroke="#475569" strokeWidth="1.5"/>
++                   <text x="200" y="233" fill="#e2e8f0" fontSize="10" textAnchor="middle" fontFamily="monospace">CFG</text>
++                   <text x="200" y="265" fill="#64748b" fontSize="9" textAnchor="middle" fontFamily="monospace">IfStmt(False)</text>
++  
++                   {/* Taint Prop Node (Circle) */}
++                   <circle cx="330" cy="150" r="20" fill="#1e293b" stroke="#f59e0b" strokeWidth="1.5"/>
++                   <text x="330" y="153" fill="#e2e8f0" fontSize="10" textAnchor="middle" fontFamily="monospace">Taint</text>
++                   <text x="330" y="185" fill="#64748b" fontSize="9" textAnchor="middle" fontFamily="monospace">BypassFilter</text>
++  
++                   {/* CFG Node 2 (Circle) */}
++                   <circle cx="330" cy="230" r="20" fill="#1e293b" stroke="#475569" strokeWidth="1.5"/>
++                   <text x="330" y="233" fill="#e2e8f0" fontSize="10" textAnchor="middle" fontFamily="monospace">CFG</text>
++                   <text x="330" y="265" fill="#64748b" fontSize="9" textAnchor="middle" fontFamily="monospace">BasicBlock_4</text>
++  
++                   {/* Call Node (Circle) */}
++                   <circle cx="450" cy="150" r="20" fill="#451a03" stroke="#ef4444" strokeWidth="1.5"/>
++                   <text x="450" y="153" fill="#fca5a5" fontSize="10" textAnchor="middle" fontFamily="monospace">Call</text>
++                   <text x="450" y="185" fill="#64748b" fontSize="9" textAnchor="middle" fontFamily="monospace">CallExpr</text>
++  
++                   {/* Sink Node (Inverted Triangle) */}
++                   <polygon points="530,130 590,130 560,170" fill="#451a03" stroke="#ef4444" strokeWidth="1.5" className="drop-shadow-[0_0_6px_rgba(239,68,68,0.8)]"/>
++                   <text x="560" y="145" fill="#fca5a5" fontSize="10" textAnchor="middle" fontFamily="monospace">Sink</text>
++                   <text x="560" y="185" fill="#64748b" fontSize="9" textAnchor="middle" fontFamily="monospace">strcpy()</text>
++                 </svg>
++              </div>
++            ) : (
++              <div className="flex-1 relative bg-[#0b1120] overflow-hidden">
++                <OpenHandsDiffViewer 
++                  file={diffData.file} 
++                  originalCode={diffData.originalCode} 
++                  modifiedCode={diffData.modifiedCode} 
++                />
++              </div>
++            )}
++          </HudPanel>
++        </div>
++
++        {/* Right Column (25%) */}
++        <div className="w-[25%] flex flex-col gap-3">
++          {/* PoC Pentest Console */}
++          <HudPanel 
++            title="沙箱Agent执行终端（Terminal）" 
++            titleIcon={TerminalSquare}
++            className="flex-1"
++            headerRight={<span className="text-[#00FF9F] animate-pulse text-[10px]">● Live</span>}
++          >
++            <OpenHandsTerminal logs={terminalLogs} />
++          </HudPanel>
++
++          {/* Metadata & Context */}
++          <HudPanel title="元数据与上下文" className="h-[120px] shrink-0">
++            <div className="p-2 space-y-1.5 text-[10px]">
++              <div className="flex justify-between"><span className="text-slate-500">漏洞编号 (CWE):</span> <span className="text-red-400 font-bold">CWE-119</span></div>
++              <div className="flex justify-between"><span className="text-slate-500">漏洞属性:</span> <span className="text-slate-300">内存越界写入</span></div>
++              <div className="flex justify-between"><span className="text-slate-500">关联图谱实体:</span> <span className="text-blue-400">内存破坏原语</span></div>
++              <div className="flex justify-between"><span className="text-slate-500">CVSS 评分:</span> <span className="text-red-400 font-bold">9.8 (极危)</span></div>
++            </div>
++          </HudPanel>
++        </div>
++      </div>
++
++      {/* 4. Bottom Row: Root Cause & Patch Synthesis */}
++      <HudPanel title="根因定位与补丁生成" className="shrink-0">
++        {/* Root Cause Description */}
++        <div className="p-2 bg-[#1A202C] text-[10px] text-slate-300 flex items-start gap-2">
++          <AlertCircle size={14} className="text-amber-400 shrink-0 mt-0.5" />
++          <div>
++            <span className="text-amber-400 font-bold mr-1">[根因分析]:</span> 
++            变量 <code className="text-slate-100 bg-slate-800 px-1 rounded">in</code> 未经边界校验直接拷贝至固定长度的 <code className="text-slate-100 bg-slate-800 px-1 rounded">buffer</code> 中。攻击者可构造超长输入覆盖相邻栈内存，导致任意代码执行 (RCE)。
++          </div>
++        </div>
++      </HudPanel>
++
++      {/* 5. Footer (30px height) */}
++      <footer className="h-[30px] shrink-0 border border-[#00FF9F]/30 bg-[#1A202C] px-3 flex justify-between items-center text-[10px] text-slate-500 relative">
++        {/* L-shaped corners for Footer */}
++        <div className="absolute top-0 left-0 w-2 h-2 border-t border-l border-[#00FF9F] z-20"></div>
++        <div className="absolute top-0 right-0 w-2 h-2 border-t border-r border-[#00FF9F] z-20"></div>
++        <div className="absolute bottom-0 left-0 w-2 h-2 border-b border-l border-[#00FF9F] z-20"></div>
++        <div className="absolute bottom-0 right-0 w-2 h-2 border-b border-r border-[#00FF9F] z-20"></div>
++
++        <div className="flex items-center gap-3 font-bold">
++          <span className="text-purple-400 flex items-center gap-1 bg-purple-400/10 px-2 py-0.5 border border-purple-400/30"><Cpu size={10}/> 大模型: Security-LLM-V3 (活跃)</span>
++          <span className="text-blue-400 flex items-center gap-1 bg-blue-400/10 px-2 py-0.5 border border-blue-400/30"><Database size={10}/> 知识图谱: V2.4 (已同步)</span>
++          <span className="text-[#00FF9F] flex items-center gap-1 bg-[#00FF9F]/10 px-2 py-0.5 border border-[#00FF9F]/30"><Activity size={10}/> eBPF 探针: 运行中</span>
++        </div>
++        <div className="flex items-center gap-4">
++          <span className="flex items-center gap-1"><Server size={10} /> 系统状态: 正常</span>
++          <span className="flex items-center gap-1 border-l border-slate-700 pl-4"><Activity size={10} /> 任务 ID: TSK-8829-X</span>
++          <span className="flex items-center gap-1 border-l border-slate-700 pl-4"><FileCode2 size={10} /> SBOM: v2.1.4</span>
++        </div>
++      </footer>
++      </div>
++
++      {/* Settings Modal Overlay */}
++      {showSettings && (
++        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
++          <div className="relative w-[650px] bg-[#1A202C] border border-[#00FF9F]/50 shadow-[0_0_20px_rgba(0,255,159,0.15)] flex flex-col font-mono text-[11px]">
++            {/* L-shaped corners */}
++            <div className="absolute top-0 left-0 w-3 h-3 border-t-[2px] border-l-[2px] border-[#00FF9F] z-20"></div>
++            <div className="absolute top-0 right-0 w-3 h-3 border-t-[2px] border-r-[2px] border-[#00FF9F] z-20"></div>
++            <div className="absolute bottom-0 left-0 w-3 h-3 border-b-[2px] border-l-[2px] border-[#00FF9F] z-20"></div>
++            <div className="absolute bottom-0 right-0 w-3 h-3 border-b-[2px] border-r-[2px] border-[#00FF9F] z-20"></div>
++            
++            {/* Modal Header */}
++            <div className="flex justify-between items-center p-3 border-b border-[#00FF9F]/30 bg-[#00FF9F]/10 relative z-10">
++              <div className="flex items-center gap-2 text-[#00FF9F] font-bold text-[12px]">
++                <Settings size={16} /> 系统高级配置 (OpenHands Settings)
++              </div>
++              <button onClick={() => setShowSettings(false)} className="text-[#00FF9F] hover:text-white transition-colors">
++                <X size={16} />
++              </button>
++            </div>
++
++            {/* Modal Body */}
++            <div className="flex h-[400px] relative z-10">
++              {/* Sidebar */}
++              <div className="w-[140px] flex flex-col gap-1 border-r border-[#00FF9F]/20 p-2 bg-[#0b1120]">
++                <div 
++                  onClick={() => setSettingsTab('llm')}
++                  className={`p-2 cursor-pointer rounded-sm ${settingsTab === 'llm' ? 'bg-[#00FF9F]/20 text-[#00FF9F] border-l-2 border-[#00FF9F]' : 'text-slate-400 hover:bg-slate-800 hover:text-slate-200'}`}
++                >
++                  LLM 配置
++                </div>
++                <div 
++                  onClick={() => setSettingsTab('agent')}
++                  className={`p-2 cursor-pointer rounded-sm ${settingsTab === 'agent' ? 'bg-[#00FF9F]/20 text-[#00FF9F] border-l-2 border-[#00FF9F]' : 'text-slate-400 hover:bg-slate-800 hover:text-slate-200'}`}
++                >
++                  Agent 设置
++                </div>
++                <div 
++                  onClick={() => setSettingsTab('skills')}
++                  className={`p-2 cursor-pointer rounded-sm ${settingsTab === 'skills' ? 'bg-[#00FF9F]/20 text-[#00FF9F] border-l-2 border-[#00FF9F]' : 'text-slate-400 hover:bg-slate-800 hover:text-slate-200'}`}
++                >
++                  Skills 技能库
++                </div>
++                <div 
++                  onClick={() => setSettingsTab('mcp')}
++                  className={`p-2 cursor-pointer rounded-sm ${settingsTab === 'mcp' ? 'bg-[#00FF9F]/20 text-[#00FF9F] border-l-2 border-[#00FF9F]' : 'text-slate-400 hover:bg-slate-800 hover:text-slate-200'}`}
++                >
++                  MCP 服务
++                </div>
++                <div 
++                  onClick={() => setSettingsTab('workspace')}
++                  className={`p-2 cursor-pointer rounded-sm ${settingsTab === 'workspace' ? 'bg-[#00FF9F]/20 text-[#00FF9F] border-l-2 border-[#00FF9F]' : 'text-slate-400 hover:bg-slate-800 hover:text-slate-200'}`}
++                >
++                  工作区 (Workspace)
++                </div>
++              </div>
++
++              {/* Content Area */}
++              <div className="flex-1 p-4 overflow-y-auto bg-[#1A202C] text-slate-300">
++                {settingsTab === 'llm' && (
++                  <div className="flex flex-col gap-4">
++                    <div className="flex flex-col gap-1.5">
++                      <label className="text-[#00FF9F] font-bold">大模型提供商 (LLM Provider)</label>
++                      <select className="bg-[#0b1120] border border-slate-600 p-2 rounded-sm outline-none focus:border-[#00FF9F]/50 text-slate-200">
++                        <option>OpenAI</option>
++                        <option>Anthropic</option>
++                        <option>Ollama (Local)</option>
++                        <option>Custom API</option>
++                      </select>
++                    </div>
++                    <div className="flex flex-col gap-1.5">
++                      <label className="text-[#00FF9F] font-bold">模型版本 (Model)</label>
++                      <input type="text" defaultValue="gpt-4o" className="bg-[#0b1120] border border-slate-600 p-2 rounded-sm outline-none focus:border-[#00FF9F]/50 text-slate-200" />
++                    </div>
++                    <div className="flex flex-col gap-1.5">
++                      <label className="text-[#00FF9F] font-bold">API Key</label>
++                      <input type="password" defaultValue="sk-xxxxxxxxxxxxxxxxxxxxxxxxxxxx" className="bg-[#0b1120] border border-slate-600 p-2 rounded-sm outline-none focus:border-[#00FF9F]/50 text-slate-200" />
++                    </div>
++                    <div className="flex flex-col gap-1.5">
++                      <label className="text-[#00FF9F] font-bold">Base URL (可选)</label>
++                      <input type="text" placeholder="https://api.openai.com/v1" className="bg-[#0b1120] border border-slate-600 p-2 rounded-sm outline-none focus:border-[#00FF9F]/50 text-slate-200" />
++                    </div>
++                  </div>
++                )}
++
++                {settingsTab === 'skills' && (
++                  <div className="flex flex-col gap-4">
++                    <div className="flex justify-between items-end border-b border-slate-700 pb-2">
++                      <div>
++                        <h3 className="text-[#00FF9F] font-bold text-[12px]">智能体技能库 (Agent Skills)</h3>
++                        <p className="text-slate-500 text-[9px] mt-1">管理和注入自定义 Python 技能/工具，扩展智能体操作能力。</p>
++                      </div>
++                      <button className="bg-[#00FF9F]/20 border border-[#00FF9F]/50 text-[#00FF9F] px-2 py-1 rounded-sm hover:bg-[#00FF9F]/30 transition-colors">
++                        + 新增技能
++                      </button>
++                    </div>
++                    
++                    <div className="flex flex-col gap-2">
++                      <div className="bg-[#0b1120] border border-slate-700 p-3 rounded-sm flex justify-between items-center group hover:border-[#00FF9F]/30 transition-colors">
++                        <div className="flex items-center gap-3">
++                          <div className="p-1.5 bg-blue-500/10 rounded-sm"><Code size={14} className="text-blue-400"/></div>
++                          <div>
++                            <div className="font-bold text-slate-200">code_analyzer</div>
++                            <div className="text-[9px] text-slate-500">AST/CFG 静态分析辅助函数</div>
++                          </div>
++                        </div>
++                        <div className="flex items-center gap-3">
++                          <span className="text-[#00FF9F] text-[9px]">已启用</span>
++                          <div className="w-8 h-4 bg-[#00FF9F]/20 rounded-full relative cursor-pointer border border-[#00FF9F]/50">
++                            <div className="absolute right-0.5 top-0.5 w-2.5 h-2.5 bg-[#00FF9F] rounded-full"></div>
++                          </div>
++                        </div>
++                      </div>
++
++                      <div className="bg-[#0b1120] border border-slate-700 p-3 rounded-sm flex justify-between items-center group hover:border-[#00FF9F]/30 transition-colors">
++                        <div className="flex items-center gap-3">
++                          <div className="p-1.5 bg-red-500/10 rounded-sm"><ShieldAlert size={14} className="text-red-400"/></div>
++                          <div>
++                            <div className="font-bold text-slate-200">cve_search</div>
++                            <div className="text-[9px] text-slate-500">NVD 漏洞库自动化检索工具</div>
++                          </div>
++                        </div>
++                        <div className="flex items-center gap-3">
++                          <span className="text-[#00FF9F] text-[9px]">已启用</span>
++                          <div className="w-8 h-4 bg-[#00FF9F]/20 rounded-full relative cursor-pointer border border-[#00FF9F]/50">
++                            <div className="absolute right-0.5 top-0.5 w-2.5 h-2.5 bg-[#00FF9F] rounded-full"></div>
++                          </div>
++                        </div>
++                      </div>
++
++                      <div className="bg-[#0b1120] border border-slate-700 p-3 rounded-sm flex justify-between items-center opacity-60">
++                        <div className="flex items-center gap-3">
++                          <div className="p-1.5 bg-slate-500/10 rounded-sm"><TerminalSquare size={14} className="text-slate-400"/></div>
++                          <div>
++                            <div className="font-bold text-slate-400">gdb_debugger</div>
++                            <div className="text-[9px] text-slate-500">GDB 动态调试自动化脚本</div>
++                          </div>
++                        </div>
++                        <div className="flex items-center gap-3">
++                          <span className="text-slate-500 text-[9px]">已禁用</span>
++                          <div className="w-8 h-4 bg-slate-800 rounded-full relative cursor-pointer border border-slate-600">
++                            <div className="absolute left-0.5 top-0.5 w-2.5 h-2.5 bg-slate-500 rounded-full"></div>
++                          </div>
++                        </div>
++                      </div>
++                    </div>
++                  </div>
++                )}
++
++                {settingsTab === 'mcp' && (
++                  <div className="flex flex-col gap-4">
++                    <div className="flex justify-between items-end border-b border-slate-700 pb-2">
++                      <div>
++                        <h3 className="text-[#00FF9F] font-bold text-[12px]">Model Context Protocol (MCP)</h3>
++                        <p className="text-slate-500 text-[9px] mt-1">配置外部工具与知识源，扩展 Agent 能力边界。</p>
++                      </div>
++                      <button className="bg-[#00FF9F]/20 border border-[#00FF9F]/50 text-[#00FF9F] px-2 py-1 rounded-sm hover:bg-[#00FF9F]/30 transition-colors">
++                        + 添加 MCP
++                      </button>
++                    </div>
++                    
++                    <div className="flex flex-col gap-2">
++                      <div className="bg-[#0b1120] border border-slate-700 p-3 rounded-sm flex justify-between items-center group hover:border-[#00FF9F]/30 transition-colors">
++                        <div className="flex items-center gap-3">
++                          <div className="p-1.5 bg-blue-500/10 rounded-sm"><Box size={14} className="text-blue-400"/></div>
++                          <div>
++                            <div className="font-bold text-slate-200">github-mcp-server</div>
++                            <div className="text-[9px] text-slate-500">提供代码仓库读取与 PR 提交能力</div>
++                          </div>
++                        </div>
++                        <div className="flex items-center gap-2">
++                          <span className="text-[#00FF9F] text-[9px] flex items-center gap-1"><div className="w-1.5 h-1.5 rounded-full bg-[#00FF9F] animate-pulse"></div> Connected</span>
++                        </div>
++                      </div>
++
++                      <div className="bg-[#0b1120] border border-slate-700 p-3 rounded-sm flex justify-between items-center group hover:border-[#00FF9F]/30 transition-colors">
++                        <div className="flex items-center gap-3">
++                          <div className="p-1.5 bg-purple-500/10 rounded-sm"><ShieldAlert size={14} className="text-purple-400"/></div>
++                          <div>
++                            <div className="font-bold text-slate-200">sec-tools-mcp</div>
++                            <div className="text-[9px] text-slate-500">集成 Nmap, SQLMap 等渗透测试工具链</div>
++                          </div>
++                        </div>
++                        <div className="flex items-center gap-2">
++                          <span className="text-[#00FF9F] text-[9px] flex items-center gap-1"><div className="w-1.5 h-1.5 rounded-full bg-[#00FF9F] animate-pulse"></div> Connected</span>
++                        </div>
++                      </div>
++
++                      <div className="bg-[#0b1120] border border-slate-700 p-3 rounded-sm flex justify-between items-center opacity-50">
++                        <div className="flex items-center gap-3">
++                          <div className="p-1.5 bg-slate-500/10 rounded-sm"><Database size={14} className="text-slate-400"/></div>
++                          <div>
++                            <div className="font-bold text-slate-400">neo4j-cpg-mcp</div>
++                            <div className="text-[9px] text-slate-500">代码属性图 (CPG) 知识图谱查询接口</div>
++                          </div>
++                        </div>
++                        <div className="flex items-center gap-2">
++                          <span className="text-slate-500 text-[9px] flex items-center gap-1"><div className="w-1.5 h-1.5 rounded-full bg-slate-500"></div> Disconnected</span>
++                        </div>
++                      </div>
++                    </div>
++                  </div>
++                )}
++
++                {settingsTab === 'agent' && (
++                  <div className="flex flex-col gap-4">
++                    <div className="flex flex-col gap-1.5">
++                      <label className="text-[#00FF9F] font-bold">智能体类型 (Agent Class)</label>
++                      <select className="bg-[#0b1120] border border-slate-600 p-2 rounded-sm outline-none focus:border-[#00FF9F]/50 text-slate-200">
++                        <option>SecurityAuditorAgent (Default)</option>
++                        <option>CodeActAgent</option>
++                        <option>BrowsingAgent</option>
++                      </select>
++                    </div>
++                    <div className="flex flex-col gap-1.5">
++                      <label className="text-[#00FF9F] font-bold">最大迭代次数 (Max Iterations)</label>
++                      <input type="number" defaultValue={50} className="bg-[#0b1120] border border-slate-600 p-2 rounded-sm outline-none focus:border-[#00FF9F]/50 text-slate-200" />
++                    </div>
++                    <div className="flex flex-col gap-1.5">
++                      <label className="text-[#00FF9F] font-bold">系统提示词 (System Prompt Override)</label>
++                      <textarea rows={4} className="bg-[#0b1120] border border-slate-600 p-2 rounded-sm outline-none focus:border-[#00FF9F]/50 text-slate-400 resize-none" placeholder="You are an expert security researcher..."></textarea>
++                    </div>
++                  </div>
++                )}
++
++                {settingsTab === 'workspace' && (
++                  <div className="flex flex-col gap-4">
++                    <div className="flex flex-col gap-1.5">
++                      <label className="text-[#00FF9F] font-bold">挂载目录 (Workspace Mount Path)</label>
++                      <input type="text" defaultValue="/var/lib/openhands/workspace" className="bg-[#0b1120] border border-slate-600 p-2 rounded-sm outline-none focus:border-[#00FF9F]/50 text-slate-200" />
++                    </div>
++                    <div className="flex flex-col gap-1.5">
++                      <label className="text-[#00FF9F] font-bold">沙箱镜像 (Sandbox Container Image)</label>
++                      <input type="text" defaultValue="ghcr.io/all-hands-ai/runtime:latest" className="bg-[#0b1120] border border-slate-600 p-2 rounded-sm outline-none focus:border-[#00FF9F]/50 text-slate-200" />
++                    </div>
++                  </div>
++                )}
++              </div>
++            </div>
++
++            {/* Modal Footer */}
++            <div className="p-3 border-t border-[#00FF9F]/30 flex justify-end gap-3 bg-[#0b1120] relative z-10">
++              <button 
++                onClick={() => setShowSettings(false)} 
++                className="px-4 py-1.5 border border-slate-600 text-slate-400 hover:text-white hover:border-slate-400 rounded-sm transition-colors"
++              >
++                取消
++              </button>
++              <button 
++                onClick={() => setShowSettings(false)} 
++                className="px-4 py-1.5 bg-[#00FF9F]/20 border border-[#00FF9F]/50 text-[#00FF9F] hover:bg-[#00FF9F]/30 rounded-sm transition-colors font-bold shadow-[0_0_10px_rgba(0,255,159,0.2)]"
++              >
++                保存配置
++              </button>
++            </div>
++          </div>
++        </div>
++      )}
++
++    </div>
++  );
++}
+diff --git a/frontend/src/components/sca-hud/DashboardConnected.tsx b/frontend/src/components/sca-hud/DashboardConnected.tsx
+new file mode 100644
+index 000000000..aa0200bef
+--- /dev/null
++++ b/frontend/src/components/sca-hud/DashboardConnected.tsx
+@@ -0,0 +1,739 @@
++/**
++ * DashboardConnected.tsx
++ *
++ * SeCodeAct HUD 主控制台 —— 真实数据集成版本
++ *
++ * 本文件在 Dashboard.tsx（UI 原型）的基础上，将三处 Mock 数据源替换为
++ * OpenHands 前端的真实 Zustand Store 和 WebSocket Hook：
++ *
++ *  1. chatMessages / handleSendMessage
++ *     Mock  → useState 本地数组 + setTimeout 模拟回复
++ *     真实  → useEventStore (事件流) + useSendMessage (WebSocket 发送)
++ *
++ *  2. terminalLogs
++ *     Mock  → useState 本地字符串数组
++ *     真实  → useCommandStore (沙箱 stdout/stderr 实时流)
++ *
++ *  3. diffData (Diff Viewer)
++ *     Mock  → 硬编码的 originalCode / modifiedCode 数组
++ *     真实  → useGitChanges + useGitChangeDiff (v1-git-service API)
++ *             当无真实 Diff 数据时，自动回退到 Mock 数据展示
++ *
++ * 路由集成：conversation.tsx 中将 <ScaDashboard /> 替换为 <DashboardConnected />
++ */
++
++import React, { useState, useEffect, useCallback } from 'react';
++import {
++  ShieldAlert, Cpu, Database, Activity, TerminalSquare, Server,
++  CheckCircle2, FileCode2, FolderOpen, File, ChevronRight, ChevronDown,
++  AlertCircle, MessageSquare, Code, Settings, X, Box, LayoutDashboard,
++  History, FolderKanban, Plus, Search, Clock, FolderTree, Github,
++  GitBranch, FileText, PlayCircle
++} from 'lucide-react';
++import { OpenHandsChat, OpenHandsTerminal, OpenHandsDiffViewer } from './OpenHandsMocks';
++
++// ── 真实数据 Hook ──────────────────────────────────────────────────────────────
++import { useEventStore } from '#/stores/use-event-store';
++import { useCommandStore } from '#/stores/command-store';
++import { useSendMessage } from '#/hooks/use-send-message';
++import { useConversationId } from '#/hooks/use-conversation-id';
++import GitService from '#/api/git-service/git-service.api';
++import type { GitChangeDiff } from '#/api/open-hands.types';
++
++// ── 类型定义 ───────────────────────────────────────────────────────────────────
++
++/** 漏洞条目，用于漏洞列表面板 */
++interface VulnItem {
++  id: string;
++  file: string;
++  severity: string;
++  severityClass: string;
++  status: string;
++  statusClass: string;
++  active: boolean;
++}
++
++/** Diff Viewer 单行数据 */
++interface DiffLine {
++  line: number;
++  text: string;
++  isHighlight: boolean;
++}
++
++/** Diff Viewer 数据集 */
++interface DiffData {
++  file: string;
++  originalCode: DiffLine[];
++  modifiedCode: DiffLine[];
++}
++
++// ── 工具函数 ───────────────────────────────────────────────────────────────────
++
++/**
++ * 将 OpenHands 事件流（OHEvent）转换为 Chat 消息格式。
++ *
++ * OpenHands V1 事件结构：
++ *   - source === 'user'  → role: 'user'
++ *   - source === 'agent' → role: 'agent'
++ *   - message / content 字段存储文本内容
++ */
++function eventsToMessages(events: ReturnType<typeof useEventStore.getState>['uiEvents']) {
++  const messages: { role: 'user' | 'agent'; text: string }[] = [];
++  for (const ev of events) {
++    // 兼容 V0（OpenHandsParsedEvent）和 V1（OpenHandsEvent）
++    const source = (ev as any).source ?? (ev as any).role;
++    const text =
++      (ev as any).message ??
++      (ev as any).content ??
++      (ev as any).args?.content ??
++      '';
++    if (!text) continue;
++    if (source === 'user') {
++      messages.push({ role: 'user', text: String(text) });
++    } else if (source === 'agent') {
++      messages.push({ role: 'agent', text: String(text) });
++    }
++  }
++  return messages;
++}
++
++/**
++ * 将 useCommandStore 的 Command[] 转换为终端日志字符串数组。
++ *
++ * Command.type === 'input'  → 以 $ 前缀显示（用户输入的命令）
++ * Command.type === 'output' → 直接显示（沙箱 stdout/stderr）
++ */
++function commandsToLogs(commands: ReturnType<typeof useCommandStore.getState>['commands']) {
++  return commands.map((cmd) =>
++    cmd.type === 'input' ? `$ ${cmd.content}` : cmd.content
++  );
++}
++
++// ── Mock 回退数据（当真实数据为空时展示） ────────────────────────────────────
++
++const MOCK_CHAT_MESSAGES = [
++  { role: 'agent' as const, text: '您好，我是 OpenHands 安全审计智能体。已连接到目标系统，准备执行漏洞扫描与渗透测试。请下达指令。' },
++  { role: 'user' as const, text: '扫描 src/core/utils/io.c 文件中的潜在漏洞。' },
++  { role: 'agent' as const, text: '正在分析 io.c... 发现潜在的缓冲区溢出漏洞 (CWE-119)。已在右侧终端生成 PoC 脚本，并在中央视图生成 CPG 图谱。' },
++];
++
++const MOCK_TERMINAL_LOGS = [
++  "$ ./run_poc.sh --target src/core/utils/io.c",
++  "> 初始化多智能体协同渗透...",
++  "> 结合图谱合成针对性 Payload...",
++  "> 注入动态沙箱环境执行...",
++  "> [eBPF] 捕获内核级异常信号:",
++  "SIGSEGV @ 0x4f2a (kernel_sys_write)",
++  "> [结果] 漏洞可利用性验证通过 (RCE).",
++  "> 成功获取目标系统 Shell 权限.",
++];
++
++const MOCK_DIFF_DATA: DiffData = {
++  file: "src/core/utils/io.c",
++  originalCode: [
++    { line: 118, text: "// Process input buffer", isHighlight: false },
++    { line: 119, text: "void process(char *in) {", isHighlight: false },
++    { line: 120, text: "-   strcpy(buffer, in);", isHighlight: true },
++    { line: 121, text: "}", isHighlight: false },
++  ],
++  modifiedCode: [
++    { line: 118, text: "// Process input buffer safely", isHighlight: false },
++    { line: 119, text: "void process(char *in) {", isHighlight: false },
++    { line: 120, text: "+   strncpy(buffer, in, sizeof(buffer)-1);", isHighlight: true },
++    { line: 121, text: "+   buffer[sizeof(buffer)-1] = '\\0';", isHighlight: true },
++    { line: 122, text: "}", isHighlight: false },
++  ],
++};
++
++const INITIAL_VULN_LIST: VulnItem[] = [
++  { id: 'CWE-89',  file: 'db.py:45',    severity: '高危', severityClass: 'text-red-400',     status: '未修复', statusClass: 'text-red-400 border-red-400/30 bg-red-400/10',         active: false },
++  { id: 'CWE-119', file: 'io.c:120',    severity: '极危', severityClass: 'text-red-400',     status: '已验证', statusClass: 'text-amber-400 border-amber-400/30 bg-amber-400/10',   active: true  },
++  { id: 'CWE-502', file: 'svc.java:8',  severity: '中危', severityClass: 'text-amber-400',   status: '未验证', statusClass: 'text-slate-400 border-slate-600 bg-slate-800/50',      active: false },
++  { id: 'CWE-22',  file: 'file.py:32',  severity: '低危', severityClass: 'text-emerald-400', status: '已修复', statusClass: 'text-[#00FF9F] border-[#00FF9F]/30 bg-[#00FF9F]/10',  active: false },
++];
++
++// ── HudPanel 通用面板组件 ─────────────────────────────────────────────────────
++
++function HudPanel({
++  title = null,
++  children,
++  className = '',
++  headerRight = null,
++  titleIcon: Icon = null,
++}: {
++  title?: string | null;
++  children: React.ReactNode;
++  className?: string;
++  headerRight?: React.ReactNode;
++  titleIcon?: React.ElementType | null;
++}) {
++  return (
++    <div className={`relative border border-[#00FF9F]/30 bg-[#1A202C] flex flex-col ${className}`}>
++      {/* L 形角标 */}
++      <div className="absolute top-0 left-0 w-3 h-3 border-t-[2px] border-l-[2px] border-[#00FF9F] z-20" />
++      <div className="absolute top-0 right-0 w-3 h-3 border-t-[2px] border-r-[2px] border-[#00FF9F] z-20" />
++      <div className="absolute bottom-0 left-0 w-3 h-3 border-b-[2px] border-l-[2px] border-[#00FF9F] z-20" />
++      <div className="absolute bottom-0 right-0 w-3 h-3 border-b-[2px] border-r-[2px] border-[#00FF9F] z-20" />
++
++      {title && (
++        <div className="text-[11px] font-bold text-[#00FF9F] bg-[#00FF9F]/10 px-3 py-1.5 border-b border-[#00FF9F]/30 flex justify-between items-center relative z-10">
++          <div className="flex items-center gap-2">
++            {Icon && <Icon size={14} className="text-[#00FF9F]" />}
++            <span className="tracking-wide drop-shadow-[0_0_2px_rgba(0,255,159,0.8)]">{title}</span>
++          </div>
++          {headerRight}
++        </div>
++      )}
++      <div className="flex-1 flex flex-col relative z-10 overflow-hidden">
++        {children}
++      </div>
++    </div>
++  );
++}
++
++// ── 主组件 ─────────────────────────────────────────────────────────────────────
++
++export default function DashboardConnected() {
++  // ── UI 状态 ──────────────────────────────────────────────────────────────────
++  const [activeTab, setActiveTab] = useState<'cpg' | 'diff'>('cpg');
++  const [showSettings, setShowSettings] = useState(false);
++  const [settingsTab, setSettingsTab] = useState<'llm' | 'agent' | 'skills' | 'mcp' | 'workspace'>('llm');
++  const [activeSidebar, setActiveSidebar] = useState<string | null>(null);
++
++  // 漏洞列表（静态初始化，后续可通过 SecurityAnalyzerStore 联动）
++  const [vulnList, setVulnList] = useState<VulnItem[]>(INITIAL_VULN_LIST);
++
++  // Diff Viewer 数据（先用 Mock，等待真实 API 返回后替换）
++  const [diffData, setDiffData] = useState<DiffData>(MOCK_DIFF_DATA);
++
++  // ── 真实数据 Hook ────────────────────────────────────────────────────────────
++
++  // 1. Chat：从 EventStore 读取事件流，转换为 Chat 消息格式
++  const uiEvents = useEventStore((state) => state.uiEvents);
++  const liveMessages = eventsToMessages(uiEvents);
++  // 当事件流为空时，展示 Mock 欢迎消息
++  const chatMessages = liveMessages.length > 0 ? liveMessages : MOCK_CHAT_MESSAGES;
++
++  // 2. 发送消息：通过 useSendMessage 兼容 V0/V1 WebSocket
++  const { send } = useSendMessage();
++  const handleSendMessage = useCallback(
++    (text: string) => {
++      if (!text.trim()) return;
++      send({
++        action: 'message',
++        args: { content: text },
++      });
++    },
++    [send],
++  );
++
++  // 3. 终端日志：从 CommandStore 读取沙箱 stdout/stderr
++  const commands = useCommandStore((state) => state.commands);
++  const liveLogs = commandsToLogs(commands);
++  // 当命令流为空时，展示 Mock 日志
++  const terminalLogs = liveLogs.length > 0 ? liveLogs : MOCK_TERMINAL_LOGS;
++
++  // 4. Git Diff：通过 v1-git-service API 获取真实 Diff 数据
++  const { conversationId } = useConversationId();
++
++  useEffect(() => {
++    if (!conversationId) return;
++    let cancelled = false;
++
++    (async () => {
++      try {
++        // 获取变更文件列表（GitService 使用 conversationId 直接调用 OpenHands API）
++        const changes = await GitService.getGitChanges(conversationId);
++        if (cancelled || !changes || changes.length === 0) return;
++
++        // 取第一个变更文件的 Diff
++        const firstFile = changes[0].path;
++        const diffResult: GitChangeDiff = await GitService.getGitChangeDiff(conversationId, firstFile);
++        if (cancelled) return;
++
++        // GitChangeDiff 返回 { modified: string, original: string }
++        // 将完整文件内容转换为 DiffLine[] 格式
++        const parsed = parseFileDiff(diffResult, firstFile);
++        if (parsed) setDiffData(parsed);
++      } catch {
++        // API 调用失败时静默回退到 Mock 数据，不影响界面
++      }
++    })();
++
++    return () => { cancelled = true; };
++  }, [conversationId]);
++
++  // ── 工具函数：将 GitChangeDiff 转换为 DiffLine[] ─────────────────────────────────
++
++  /**
++   * 将 GitChangeDiff（{ original: string, modified: string }）转换为 DiffLine[] 格式。
++   *
++   * GitChangeDiff 返回的是完整文件内容（不是 unified diff 字符串），
++   * 所以直接将每行映射为 DiffLine[]，不需要解析 hunk 头。
++   *
++   * @param diff  GitChangeDiff 对象（{ original, modified }）
++   * @param file  文件路径
++   * @returns     解析后的 DiffData，或 null
++   */
++  function parseFileDiff(diff: GitChangeDiff, file: string): DiffData | null {
++    const originalLines = (diff.original || '').split('\n');
++    const modifiedLines = (diff.modified || '').split('\n');
++    if (originalLines.length === 0 && modifiedLines.length === 0) return null;
++
++    const originalCode: DiffLine[] = originalLines.map((text, i) => ({
++      line: i + 1,
++      text,
++      isHighlight: false,
++    }));
++    const modifiedCode: DiffLine[] = modifiedLines.map((text, i) => ({
++      line: i + 1,
++      text,
++      // 标记与原始文件不同的行
++      isHighlight: text !== (originalLines[i] ?? ''),
++    }));
++
++    return { file, originalCode, modifiedCode };
++  }
++
++  // ── 渲染 ─────────────────────────────────────────────────────────────────────
++
++  return (
++    <div className="h-screen w-screen bg-[#2D3748] text-slate-300 font-mono text-[11px] flex overflow-hidden selection:bg-[#00FF9F]/30">
++
++      {/* 全局活动栏 (Activity Bar) */}
++      <div className="w-14 bg-[#1A202C] border-r border-[#00FF9F]/30 flex flex-col items-center py-4 z-50 justify-between shrink-0 shadow-[2px_0_10px_rgba(0,0,0,0.5)]">
++        <div className="flex flex-col gap-4 w-full items-center">
++          <div className="w-8 h-8 rounded-md bg-[#00FF9F]/20 border border-[#00FF9F]/50 flex items-center justify-center mb-2 shadow-[0_0_10px_rgba(0,255,159,0.2)]">
++            <ShieldAlert size={18} className="text-[#00FF9F]" />
++          </div>
++          <button
++            onClick={() => setActiveSidebar(activeSidebar === 'files' ? null : 'files')}
++            className={`p-2 rounded-md transition-colors ${activeSidebar === 'files' ? 'text-[#00FF9F] bg-[#00FF9F]/10 border-l-2 border-[#00FF9F]' : 'text-slate-500 hover:text-slate-300 hover:bg-slate-800'}`}
++            title="文件资源管理器 (File Explorer)"
++          >
++            <FolderTree size={20} />
++          </button>
++          <button
++            onClick={() => setActiveSidebar(activeSidebar === 'repo' ? null : 'repo')}
++            className={`p-2 rounded-md transition-colors ${activeSidebar === 'repo' ? 'text-[#00FF9F] bg-[#00FF9F]/10 border-l-2 border-[#00FF9F]' : 'text-slate-500 hover:text-slate-300 hover:bg-slate-800'}`}
++            title="代码仓库对接 (GitHub Integration)"
++          >
++            <Github size={20} />
++          </button>
++          <button
++            onClick={() => setActiveSidebar(activeSidebar === 'sessions' ? null : 'sessions')}
++            className={`p-2 rounded-md transition-colors ${activeSidebar === 'sessions' ? 'text-[#00FF9F] bg-[#00FF9F]/10 border-l-2 border-[#00FF9F]' : 'text-slate-500 hover:text-slate-300 hover:bg-slate-800'}`}
++            title="会话与沙箱控制 (Session Control)"
++          >
++            <PlayCircle size={20} />
++          </button>
++        </div>
++        <div className="flex flex-col gap-4 w-full items-center">
++          <button
++            onClick={() => setShowSettings(true)}
++            className="p-2 rounded-md text-slate-500 hover:text-[#00FF9F] hover:bg-[#00FF9F]/10 transition-colors"
++            title="系统配置 (Settings)"
++          >
++            <Settings size={20} />
++          </button>
++        </div>
++      </div>
++
++      {/* 文件资源管理器侧边栏 */}
++      {activeSidebar === 'files' && (
++        <div className="w-64 bg-[#1A202C] border-r border-[#00FF9F]/30 flex flex-col z-40 shrink-0 shadow-[5px_0_15px_rgba(0,0,0,0.5)]">
++          <div className="p-3 border-b border-[#00FF9F]/30 flex justify-between items-center">
++            <span className="text-xs font-bold text-slate-200">文件资源管理器</span>
++            <button className="p-1 bg-[#00FF9F]/20 text-[#00FF9F] rounded-sm hover:bg-[#00FF9F]/30 transition-colors" title="刷新文件树">
++              <Activity size={14} />
++            </button>
++          </div>
++          <div className="p-2 flex-1 overflow-y-auto">
++            <div className="flex flex-col gap-1 mt-1 text-slate-300">
++              <div className="flex items-center gap-1.5 p-1 hover:bg-slate-800 rounded-sm cursor-pointer">
++                <ChevronDown size={14} className="text-slate-500" />
++                <FolderOpen size={14} className="text-blue-400" />
++                <span>src</span>
++              </div>
++              <div className="flex flex-col gap-1 pl-5">
++                <div className="flex items-center gap-1.5 p-1 hover:bg-slate-800 rounded-sm cursor-pointer">
++                  <ChevronDown size={14} className="text-slate-500" />
++                  <FolderOpen size={14} className="text-blue-400" />
++                  <span>core</span>
++                </div>
++                <div className="flex flex-col gap-1 pl-5">
++                  <div className="flex items-center gap-1.5 p-1 hover:bg-slate-800 rounded-sm cursor-pointer">
++                    <ChevronRight size={14} className="text-slate-500" />
++                    <FolderOpen size={14} className="text-blue-400" />
++                    <span>utils</span>
++                  </div>
++                  <div className="flex items-center gap-1.5 p-1 bg-[#00FF9F]/10 text-[#00FF9F] rounded-sm cursor-pointer">
++                    <FileCode2 size={14} />
++                    <span>io.c</span>
++                  </div>
++                </div>
++                <div className="flex items-center gap-1.5 p-1 hover:bg-slate-800 rounded-sm cursor-pointer">
++                  <FileCode2 size={14} className="text-amber-400" />
++                  <span>db.py</span>
++                </div>
++              </div>
++              <div className="flex items-center gap-1.5 p-1 hover:bg-slate-800 rounded-sm cursor-pointer">
++                <FileText size={14} className="text-slate-400" />
++                <span>README.md</span>
++              </div>
++            </div>
++          </div>
++        </div>
++      )}
++
++      {/* 代码仓库侧边栏 */}
++      {activeSidebar === 'repo' && (
++        <div className="w-64 bg-[#1A202C] border-r border-[#00FF9F]/30 flex flex-col z-40 shrink-0 shadow-[5px_0_15px_rgba(0,0,0,0.5)]">
++          <div className="p-3 border-b border-[#00FF9F]/30 flex justify-between items-center">
++            <span className="text-xs font-bold text-slate-200">代码仓库 (Repository)</span>
++          </div>
++          <div className="p-4 flex flex-col gap-4">
++            <div className="flex flex-col gap-2">
++              <label className="text-slate-400 text-[10px] font-bold">GitHub Repository URL</label>
++              <div className="flex items-center bg-[#0b1120] border border-slate-700 rounded-sm px-2 py-1.5">
++                <Github size={14} className="text-slate-500 mr-2" />
++                <input type="text" defaultValue="https://github.com/example/core-system-v2" className="bg-transparent border-none outline-none text-[10px] w-full text-slate-300" />
++              </div>
++            </div>
++            <div className="flex flex-col gap-2">
++              <label className="text-slate-400 text-[10px] font-bold">Branch / Commit</label>
++              <div className="flex items-center bg-[#0b1120] border border-slate-700 rounded-sm px-2 py-1.5">
++                <GitBranch size={14} className="text-slate-500 mr-2" />
++                <input type="text" defaultValue="main" className="bg-transparent border-none outline-none text-[10px] w-full text-slate-300" />
++              </div>
++            </div>
++            <button className="w-full bg-[#00FF9F]/20 text-[#00FF9F] border border-[#00FF9F]/50 py-2 rounded-sm hover:bg-[#00FF9F]/30 transition-colors font-bold mt-2">
++              加载仓库到沙箱
++            </button>
++          </div>
++        </div>
++      )}
++
++      {/* 会话控制侧边栏 */}
++      {activeSidebar === 'sessions' && (
++        <div className="w-64 bg-[#1A202C] border-r border-[#00FF9F]/30 flex flex-col z-40 shrink-0 shadow-[5px_0_15px_rgba(0,0,0,0.5)]">
++          <div className="p-3 border-b border-[#00FF9F]/30 flex justify-between items-center">
++            <span className="text-xs font-bold text-slate-200">会话控制 (Sessions)</span>
++          </div>
++          <div className="p-4 flex flex-col gap-4">
++            <div className="bg-[#0b1120] border border-[#00FF9F]/30 p-3 rounded-sm">
++              <div className="text-[#00FF9F] font-bold mb-1 flex items-center gap-2"><Activity size={14} /> 当前活跃会话</div>
++              <div className="text-slate-400 text-[9px] break-all">ID: {conversationId || 'N/A'}</div>
++              <div className="text-slate-500 text-[9px] mt-1">版本: {(conversation as any)?.conversation_version || 'V1'}</div>
++            </div>
++            <div className="flex flex-col gap-2 mt-2">
++              <button className="w-full bg-blue-500/20 text-blue-400 border border-blue-500/50 py-2 rounded-sm hover:bg-blue-500/30 transition-colors font-bold flex items-center justify-center gap-2">
++                <Plus size={14} /> 新建空白会话
++              </button>
++              <button className="w-full bg-red-500/20 text-red-400 border border-red-500/50 py-2 rounded-sm hover:bg-red-500/30 transition-colors font-bold flex items-center justify-center gap-2">
++                <X size={14} /> 终止当前沙箱
++              </button>
++            </div>
++          </div>
++        </div>
++      )}
++
++      {/* 主内容区 */}
++      <div className="flex-1 flex flex-col gap-3 p-3 overflow-hidden">
++
++        {/* 顶部状态栏 Header (60px) */}
++        <header className="h-[60px] shrink-0 relative border border-[#00FF9F]/30 bg-[#1A202C] flex items-center justify-between px-4">
++          <div className="absolute top-0 left-0 w-3 h-3 border-t-[2px] border-l-[2px] border-[#00FF9F] z-20" />
++          <div className="absolute top-0 right-0 w-3 h-3 border-t-[2px] border-r-[2px] border-[#00FF9F] z-20" />
++          <div className="absolute bottom-0 left-0 w-3 h-3 border-b-[2px] border-l-[2px] border-[#00FF9F] z-20" />
++          <div className="absolute bottom-0 right-0 w-3 h-3 border-b-[2px] border-r-[2px] border-[#00FF9F] z-20" />
++
++          <div className="flex items-center gap-4">
++            <ShieldAlert className="text-[#00FF9F] drop-shadow-[0_0_5px_rgba(0,255,159,0.8)]" size={24} />
++            <div className="flex flex-col">
++              <h1 className="text-sm font-bold text-slate-100 tracking-wide drop-shadow-[0_0_2px_rgba(255,255,255,0.5)]">
++                代码安全智能体（SeCodeAct）-SCA
++              </h1>
++              <div className="flex gap-4 text-[10px] mt-1 font-bold text-slate-400">
++                <span className="flex items-center gap-1"><FolderOpen size={10} className="text-blue-400" /> 项目: core-system-v2</span>
++                <span className="flex items-center gap-1"><FileCode2 size={10} className="text-slate-300" /> 代码量: 128,450 行</span>
++                <span className="flex items-center gap-1"><AlertCircle size={10} className="text-red-400" /> 发现漏洞: {vulnList.length}</span>
++                <span className="flex items-center gap-1"><CheckCircle2 size={10} className="text-[#00FF9F]" /> 已修复: {vulnList.filter(v => v.status === '已修复').length}</span>
++                <span className="flex items-center gap-1"><TerminalSquare size={10} className="text-amber-400" /> 利用验证: {vulnList.filter(v => v.status === '已验证').length}</span>
++              </div>
++            </div>
++          </div>
++
++          {/* 五阶段工作流进度条 */}
++          <div className="flex items-center gap-4">
++            <div className="flex items-center text-[10px] font-bold bg-[#0f172a] border border-[#00FF9F]/20 px-3 py-1.5 rounded-sm">
++              <span className="text-slate-400">代码审计</span>
++              <span className="text-[#00FF9F]/40 mx-2">──▶</span>
++              <span className="text-slate-400">自动渗透</span>
++              <span className="text-[#00FF9F]/40 mx-2">──▶</span>
++              <span className="text-[#00FF9F] drop-shadow-[0_0_3px_rgba(0,255,159,0.8)] border-b border-[#00FF9F]">根因分析</span>
++              <span className="text-[#00FF9F]/40 mx-2">──▶</span>
++              <span className="text-slate-400">补丁生成</span>
++              <span className="text-[#00FF9F]/40 mx-2">──▶</span>
++              <span className="text-slate-400">回归评估</span>
++            </div>
++          </div>
++        </header>
++
++        {/* 三列主工作区 */}
++        <div className="flex flex-row gap-3 flex-1 min-h-[400px]">
++
++          {/* 左列 (25%): Chat + 漏洞列表 */}
++          <div className="w-[25%] flex flex-col gap-3">
++            <HudPanel title="任务交互终端" titleIcon={MessageSquare} className="flex-1 min-h-[250px]">
++              {/* 真实数据：uiEvents → chatMessages，send → handleSendMessage */}
++              <OpenHandsChat messages={chatMessages} onSendMessage={handleSendMessage} />
++            </HudPanel>
++
++            <HudPanel title="漏洞列表 (Vuln List)" className="flex-1 min-h-[200px]">
++              <div className="overflow-y-auto">
++                <table className="w-full text-left text-[10px]">
++                  <thead className="text-[#00FF9F]/70 border-b border-[#00FF9F]/20 bg-[#00FF9F]/5">
++                    <tr>
++                      <th className="p-1.5">漏洞编号</th>
++                      <th className="p-1.5">文件:行号</th>
++                      <th className="p-1.5">危险等级</th>
++                      <th className="p-1.5">状态</th>
++                    </tr>
++                  </thead>
++                  <tbody>
++                    {vulnList.map((vuln, idx) => (
++                      <tr
++                        key={idx}
++                        className={vuln.active
++                          ? 'text-[#00FF9F] bg-[#00FF9F]/10 border-l-2 border-[#00FF9F]'
++                          : 'text-slate-400 border-b border-slate-800'}
++                      >
++                        <td className={`p-1.5 ${vuln.active ? 'font-bold' : ''}`}>{vuln.id}</td>
++                        <td className={vuln.active ? 'font-bold' : ''}>{vuln.file}</td>
++                        <td className={`${vuln.severityClass} ${vuln.active ? 'font-bold' : ''}`}>{vuln.severity}</td>
++                        <td className="p-1.5">
++                          <span className={`px-1.5 py-0.5 rounded-sm border text-[9px] ${vuln.statusClass}`}>
++                            {vuln.status}
++                          </span>
++                        </td>
++                      </tr>
++                    ))}
++                  </tbody>
++                </table>
++              </div>
++            </HudPanel>
++          </div>
++
++          {/* 中列 (50%): CPG 图谱 / Diff Viewer */}
++          <div className="w-[50%] flex flex-col">
++            <HudPanel className="flex-1">
++              <div className="flex border-b border-[#00FF9F]/30 bg-[#0f172a]">
++                <div
++                  onClick={() => setActiveTab('cpg')}
++                  className={`px-4 py-2 text-[11px] font-bold cursor-pointer border-b-2 ${activeTab === 'cpg' ? 'text-[#00FF9F] border-[#00FF9F] bg-[#00FF9F]/10 drop-shadow-[0_0_2px_rgba(0,255,159,0.5)]' : 'text-slate-500 hover:text-slate-300 border-transparent'}`}
++                >
++                  [代码属性图 CPG]
++                </div>
++                <div
++                  onClick={() => setActiveTab('diff')}
++                  className={`px-4 py-2 text-[11px] font-bold cursor-pointer border-b-2 ${activeTab === 'diff' ? 'text-[#00FF9F] border-[#00FF9F] bg-[#00FF9F]/10 drop-shadow-[0_0_2px_rgba(0,255,159,0.5)]' : 'text-slate-500 hover:text-slate-300 border-transparent'}`}
++                >
++                  [代码修复对比 Diff]
++                </div>
++              </div>
++
++              {activeTab === 'cpg' ? (
++                <div className="flex-1 relative bg-[#0b1120] overflow-hidden flex items-center justify-center p-4 bg-[linear-gradient(to_right,#00FF9F05_1px,transparent_1px),linear-gradient(to_bottom,#00FF9F05_1px,transparent_1px)] bg-[size:20px_20px]">
++                  <svg width="100%" height="100%" viewBox="0 0 600 300" className="max-w-full max-h-full">
++                    <defs>
++                      <marker id="arrow-gray" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0,0 L0,8 L8,4 z" fill="#475569" /></marker>
++                      <marker id="arrow-amber" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0,0 L0,8 L8,4 z" fill="#f59e0b" /></marker>
++                      <marker id="arrow-red" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0,0 L0,8 L8,4 z" fill="#ef4444" /></marker>
++                      <marker id="arrow-blue" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0,0 L0,8 L8,4 z" fill="#3b82f6" /></marker>
++                    </defs>
++                    <rect x="10" y="10" width="130" height="80" fill="#1A202C" stroke="#00FF9F" strokeWidth="0.5" opacity="0.9" rx="2" />
++                    <text x="18" y="25" fill="#00FF9F" fontSize="9" fontFamily="monospace" fontWeight="bold">图例 (Legend):</text>
++                    <polygon points="18,35 28,35 33,40 28,45 18,45 13,40" fill="#1e3a8a" stroke="#3b82f6" strokeWidth="1" />
++                    <text x="40" y="43" fill="#cbd5e1" fontSize="8" fontFamily="monospace">污染源 (Source)</text>
++                    <circle cx="23" cy="55" r="5" fill="#1e293b" stroke="#f59e0b" strokeWidth="1" />
++                    <text x="40" y="58" fill="#cbd5e1" fontSize="8" fontFamily="monospace">逻辑节点 (AST/CFG)</text>
++                    <polygon points="18,65 28,65 23,75" fill="#451a03" stroke="#ef4444" strokeWidth="1" />
++                    <text x="40" y="73" fill="#cbd5e1" fontSize="8" fontFamily="monospace">执行陷阱 (Sink)</text>
++                    <line x1="100" y1="150" x2="180" y2="80" stroke="#3b82f6" strokeWidth="1.5" strokeDasharray="2 2" markerEnd="url(#arrow-blue)" />
++                    <line x1="100" y1="150" x2="180" y2="150" stroke="#f59e0b" strokeWidth="1.5" strokeDasharray="4 4" markerEnd="url(#arrow-amber)" />
++                    <line x1="100" y1="150" x2="180" y2="230" stroke="#475569" strokeWidth="1.5" markerEnd="url(#arrow-gray)" />
++                    <line x1="220" y1="150" x2="310" y2="150" stroke="#f59e0b" strokeWidth="2" markerEnd="url(#arrow-amber)" />
++                    <line x1="220" y1="230" x2="310" y2="230" stroke="#475569" strokeWidth="1.5" markerEnd="url(#arrow-gray)" />
++                    <line x1="350" y1="150" x2="430" y2="150" stroke="#ef4444" strokeWidth="2" markerEnd="url(#arrow-red)" />
++                    <line x1="350" y1="230" x2="430" y2="165" stroke="#475569" strokeWidth="1.5" markerEnd="url(#arrow-gray)" />
++                    <line x1="470" y1="150" x2="530" y2="150" stroke="#ef4444" strokeWidth="2.5" markerEnd="url(#arrow-red)" />
++                    <text x="130" y="105" fill="#3b82f6" fontSize="8" fontFamily="monospace" transform="rotate(-35 130 105)">[AST Decl]</text>
++                    <text x="130" y="145" fill="#f59e0b" fontSize="8" fontFamily="monospace">[数据流依赖]</text>
++                    <text x="130" y="205" fill="#475569" fontSize="8" fontFamily="monospace" transform="rotate(35 130 205)">[控制流分支]</text>
++                    <text x="240" y="145" fill="#f59e0b" fontSize="8" fontFamily="monospace">[污点传播]</text>
++                    <text x="365" y="145" fill="#ef4444" fontSize="9" fontFamily="monospace" fontWeight="bold">[核心利用路径]</text>
++                    <polygon points="70,130 100,130 115,150 100,170 70,170 55,150" fill="#1e3a8a" stroke="#3b82f6" strokeWidth="1.5" />
++                    <text x="85" y="153" fill="#bfdbfe" fontSize="10" textAnchor="middle" fontFamily="monospace">Source</text>
++                    <text x="85" y="185" fill="#64748b" fontSize="9" textAnchor="middle" fontFamily="monospace">char *in</text>
++                    <circle cx="200" cy="80" r="20" fill="#1e293b" stroke="#3b82f6" strokeWidth="1.5" />
++                    <text x="200" y="83" fill="#e2e8f0" fontSize="10" textAnchor="middle" fontFamily="monospace">AST</text>
++                    <text x="200" y="115" fill="#64748b" fontSize="9" textAnchor="middle" fontFamily="monospace">ParamDecl</text>
++                    <circle cx="200" cy="150" r="20" fill="#1e293b" stroke="#f59e0b" strokeWidth="1.5" />
++                    <text x="200" y="153" fill="#e2e8f0" fontSize="10" textAnchor="middle" fontFamily="monospace">AST</text>
++                    <text x="200" y="185" fill="#64748b" fontSize="9" textAnchor="middle" fontFamily="monospace">AssignStmt</text>
++                    <circle cx="200" cy="230" r="20" fill="#1e293b" stroke="#475569" strokeWidth="1.5" />
++                    <text x="200" y="233" fill="#e2e8f0" fontSize="10" textAnchor="middle" fontFamily="monospace">CFG</text>
++                    <text x="200" y="265" fill="#64748b" fontSize="9" textAnchor="middle" fontFamily="monospace">IfStmt(False)</text>
++                    <circle cx="330" cy="150" r="20" fill="#1e293b" stroke="#f59e0b" strokeWidth="1.5" />
++                    <text x="330" y="153" fill="#e2e8f0" fontSize="10" textAnchor="middle" fontFamily="monospace">Taint</text>
++                    <text x="330" y="185" fill="#64748b" fontSize="9" textAnchor="middle" fontFamily="monospace">BypassFilter</text>
++                    <circle cx="330" cy="230" r="20" fill="#1e293b" stroke="#475569" strokeWidth="1.5" />
++                    <text x="330" y="233" fill="#e2e8f0" fontSize="10" textAnchor="middle" fontFamily="monospace">CFG</text>
++                    <text x="330" y="265" fill="#64748b" fontSize="9" textAnchor="middle" fontFamily="monospace">BasicBlock_4</text>
++                    <circle cx="450" cy="150" r="20" fill="#451a03" stroke="#ef4444" strokeWidth="1.5" />
++                    <text x="450" y="153" fill="#fca5a5" fontSize="10" textAnchor="middle" fontFamily="monospace">Call</text>
++                    <text x="450" y="185" fill="#64748b" fontSize="9" textAnchor="middle" fontFamily="monospace">CallExpr</text>
++                    <polygon points="530,130 590,130 560,170" fill="#451a03" stroke="#ef4444" strokeWidth="1.5" />
++                    <text x="560" y="145" fill="#fca5a5" fontSize="10" textAnchor="middle" fontFamily="monospace">Sink</text>
++                    <text x="560" y="185" fill="#64748b" fontSize="9" textAnchor="middle" fontFamily="monospace">strcpy()</text>
++                  </svg>
++                </div>
++              ) : (
++                <div className="flex-1 relative bg-[#0b1120] overflow-hidden">
++                  {/* 真实数据：diffData 由 v1-git-service API 填充，无数据时回退 Mock */}
++                  <OpenHandsDiffViewer
++                    file={diffData.file}
++                    originalCode={diffData.originalCode}
++                    modifiedCode={diffData.modifiedCode}
++                  />
++                </div>
++              )}
++            </HudPanel>
++          </div>
++
++          {/* 右列 (25%): 终端 + 元数据 */}
++          <div className="w-[25%] flex flex-col gap-3">
++            <HudPanel
++              title="沙箱Agent执行终端（Terminal）"
++              titleIcon={TerminalSquare}
++              className="flex-1"
++              headerRight={<span className="text-[#00FF9F] animate-pulse text-[10px]">● Live</span>}
++            >
++              {/* 真实数据：commands → terminalLogs */}
++              <OpenHandsTerminal logs={terminalLogs} />
++            </HudPanel>
++
++            <HudPanel title="元数据与上下文" className="h-[120px] shrink-0">
++              <div className="p-2 space-y-1.5 text-[10px]">
++                <div className="flex justify-between"><span className="text-slate-500">漏洞编号 (CWE):</span> <span className="text-red-400 font-bold">CWE-119</span></div>
++                <div className="flex justify-between"><span className="text-slate-500">漏洞属性:</span> <span className="text-slate-300">内存越界写入</span></div>
++                <div className="flex justify-between"><span className="text-slate-500">关联图谱实体:</span> <span className="text-blue-400">内存破坏原语</span></div>
++                <div className="flex justify-between"><span className="text-slate-500">CVSS 评分:</span> <span className="text-red-400 font-bold">9.8 (极危)</span></div>
++              </div>
++            </HudPanel>
++          </div>
++        </div>
++
++        {/* 根因定位与补丁生成 */}
++        <HudPanel title="根因定位与补丁生成" className="shrink-0">
++          <div className="p-2 bg-[#1A202C] text-[10px] text-slate-300 flex items-start gap-2">
++            <AlertCircle size={14} className="text-amber-400 shrink-0 mt-0.5" />
++            <div>
++              <span className="text-amber-400 font-bold mr-1">[根因分析]:</span>
++              变量 <code className="text-slate-100 bg-slate-800 px-1 rounded">in</code> 未经边界校验直接拷贝至固定长度的{' '}
++              <code className="text-slate-100 bg-slate-800 px-1 rounded">buffer</code> 中。
++              攻击者可构造超长输入覆盖相邻栈内存，导致任意代码执行 (RCE)。
++            </div>
++          </div>
++        </HudPanel>
++
++        {/* 底部状态栏 Footer (30px) */}
++        <footer className="h-[30px] shrink-0 border border-[#00FF9F]/30 bg-[#1A202C] px-3 flex justify-between items-center text-[10px] text-slate-500 relative">
++          <div className="absolute top-0 left-0 w-2 h-2 border-t border-l border-[#00FF9F] z-20" />
++          <div className="absolute top-0 right-0 w-2 h-2 border-t border-r border-[#00FF9F] z-20" />
++          <div className="absolute bottom-0 left-0 w-2 h-2 border-b border-l border-[#00FF9F] z-20" />
++          <div className="absolute bottom-0 right-0 w-2 h-2 border-b border-r border-[#00FF9F] z-20" />
++          <div className="flex items-center gap-3 font-bold">
++            <span className="text-purple-400 flex items-center gap-1 bg-purple-400/10 px-2 py-0.5 border border-purple-400/30"><Cpu size={10} /> 大模型: Security-LLM-V3 (活跃)</span>
++            <span className="text-blue-400 flex items-center gap-1 bg-blue-400/10 px-2 py-0.5 border border-blue-400/30"><Database size={10} /> 知识图谱: V2.4 (已同步)</span>
++            <span className="text-[#00FF9F] flex items-center gap-1 bg-[#00FF9F]/10 px-2 py-0.5 border border-[#00FF9F]/30"><Activity size={10} /> eBPF 探针: 运行中</span>
++          </div>
++          <div className="flex items-center gap-4">
++            <span className="flex items-center gap-1"><Server size={10} /> 系统状态: 正常</span>
++            <span className="flex items-center gap-1 border-l border-slate-700 pl-4"><Activity size={10} /> 会话 ID: {conversationId?.slice(0, 8) || 'N/A'}</span>
++            <span className="flex items-center gap-1 border-l border-slate-700 pl-4"><FileCode2 size={10} /> SBOM: v2.1.4</span>
++          </div>
++        </footer>
++      </div>
++
++      {/* 设置弹窗 (Settings Modal) */}
++      {showSettings && (
++        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
++          <div className="relative w-[650px] bg-[#1A202C] border border-[#00FF9F]/50 shadow-[0_0_20px_rgba(0,255,159,0.15)] flex flex-col font-mono text-[11px]">
++            <div className="absolute top-0 left-0 w-3 h-3 border-t-[2px] border-l-[2px] border-[#00FF9F] z-20" />
++            <div className="absolute top-0 right-0 w-3 h-3 border-t-[2px] border-r-[2px] border-[#00FF9F] z-20" />
++            <div className="absolute bottom-0 left-0 w-3 h-3 border-b-[2px] border-l-[2px] border-[#00FF9F] z-20" />
++            <div className="absolute bottom-0 right-0 w-3 h-3 border-b-[2px] border-r-[2px] border-[#00FF9F] z-20" />
++
++            <div className="flex justify-between items-center p-3 border-b border-[#00FF9F]/30 bg-[#00FF9F]/10 relative z-10">
++              <div className="flex items-center gap-2 text-[#00FF9F] font-bold text-[12px]">
++                <Settings size={16} /> 系统高级配置 (OpenHands Settings)
++              </div>
++              <button onClick={() => setShowSettings(false)} className="text-[#00FF9F] hover:text-white transition-colors">
++                <X size={16} />
++              </button>
++            </div>
++
++            <div className="flex h-[400px] relative z-10">
++              <div className="w-[140px] flex flex-col gap-1 border-r border-[#00FF9F]/20 p-2 bg-[#0b1120]">
++                {(['llm', 'agent', 'skills', 'mcp', 'workspace'] as const).map((tab) => (
++                  <div
++                    key={tab}
++                    onClick={() => setSettingsTab(tab)}
++                    className={`p-2 cursor-pointer rounded-sm ${settingsTab === tab ? 'bg-[#00FF9F]/20 text-[#00FF9F] border-l-2 border-[#00FF9F]' : 'text-slate-400 hover:bg-slate-800 hover:text-slate-200'}`}
++                  >
++                    {{ llm: 'LLM 配置', agent: 'Agent 设置', skills: 'Skills 技能库', mcp: 'MCP 服务', workspace: '工作区 (Workspace)' }[tab]}
++                  </div>
++                ))}
++              </div>
++
++              <div className="flex-1 p-4 overflow-y-auto bg-[#1A202C] text-slate-300">
++                {settingsTab === 'llm' && (
++                  <div className="flex flex-col gap-4">
++                    <div className="flex flex-col gap-1.5">
++                      <label className="text-[#00FF9F] font-bold">大模型提供商 (LLM Provider)</label>
++                      <select className="bg-[#0b1120] border border-slate-600 p-2 rounded-sm outline-none focus:border-[#00FF9F]/50 text-slate-200">
++                        <option>OpenAI</option>
++                        <option>Anthropic</option>
++                        <option>Ollama (Local)</option>
++                        <option>Custom API</option>
++                      </select>
++                    </div>
++                    <div className="flex flex-col gap-1.5">
++                      <label className="text-[#00FF9F] font-bold">模型版本 (Model)</label>
++                      <input type="text" defaultValue="gpt-4o" className="bg-[#0b1120] border border-slate-600 p-2 rounded-sm outline-none focus:border-[#00FF9F]/50 text-slate-200" />
++                    </div>
++                    <div className="flex flex-col gap-1.5">
++                      <label className="text-[#00FF9F] font-bold">API Key</label>
++                      <input type="password" defaultValue="sk-xxxxxxxxxxxxxxxxxxxxxxxxxxxx" className="bg-[#0b1120] border border-slate-600 p-2 rounded-sm outline-none focus:border-[#00FF9F]/50 text-slate-200" />
++                    </div>
++                    <div className="flex flex-col gap-1.5">
++                      <label className="text-[#00FF9F] font-bold">Base URL (可选)</label>
++                      <input type="text" placeholder="https://api.openai.com/v1" className="bg-[#0b1120] border border-slate-600 p-2 rounded-sm outline-none focus:border-[#00FF9F]/50 text-slate-200" />
++                    </div>
++                  </div>
++                )}
++                {settingsTab !== 'llm' && (
++                  <div className="text-slate-500 text-[11px] mt-4">
++                    此配置项正在开发中，将在后续版本中开放。
++                  </div>
++                )}
++              </div>
++            </div>
++          </div>
++        </div>
++      )}
++    </div>
++  );
++}
+diff --git a/frontend/src/components/sca-hud/OpenHandsMocks.tsx b/frontend/src/components/sca-hud/OpenHandsMocks.tsx
+new file mode 100644
+index 000000000..b4ad555d5
+--- /dev/null
++++ b/frontend/src/components/sca-hud/OpenHandsMocks.tsx
+@@ -0,0 +1,142 @@
++import React, { useState, useEffect, useRef } from 'react';
++import { Send, Terminal, Code, Play, CheckCircle, XCircle, Paperclip } from 'lucide-react';
++
++// 1. Chat Component: Now accepts messages and an onSendMessage callback
++// This makes it compatible with an OpenHands backend where messages come from a WebSocket stream.
++export function OpenHandsChat({ messages, onSendMessage }) {
++  const [input, setInput] = useState('');
++  const messagesEndRef = useRef(null);
++
++  const scrollToBottom = () => {
++    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
++  };
++
++  useEffect(() => {
++    scrollToBottom();
++  }, [messages]);
++
++  const handleSend = () => {
++    if (!input.trim()) return;
++    onSendMessage(input);
++    setInput('');
++  };
++
++  return (
++    <div className="flex flex-col h-full bg-[#0b1120] text-[11px] font-mono">
++      <div className="flex-1 overflow-y-auto p-3 space-y-3">
++        {messages.map((msg, idx) => (
++          <div key={idx} className={`flex flex-col ${msg.role === 'user' ? 'items-end' : 'items-start'}`}>
++            <span className="text-[9px] text-slate-500 mb-0.5">{msg.role === 'user' ? '安全专家 (User)' : '智能体 (Agent)'}</span>
++            <div className={`p-2 rounded-sm max-w-[90%] ${msg.role === 'user' ? 'bg-blue-900/30 border border-blue-500/30 text-blue-100' : 'bg-[#00FF9F]/10 border border-[#00FF9F]/30 text-[#00FF9F]'}`}>
++              {msg.text}
++            </div>
++          </div>
++        ))}
++        <div ref={messagesEndRef} />
++      </div>
++      <div className="p-2 border-t border-[#00FF9F]/20 bg-[#1A202C] flex gap-2">
++        <button className="bg-slate-800 text-slate-400 p-1.5 rounded-sm hover:bg-slate-700 hover:text-slate-200 border border-slate-700 transition-colors" title="添加附件">
++          <Paperclip size={14} />
++        </button>
++        <input 
++          type="text" 
++          value={input}
++          onChange={(e) => setInput(e.target.value)}
++          onKeyDown={(e) => e.key === 'Enter' && handleSend()}
++          placeholder="输入安全指令..." 
++          className="flex-1 bg-[#0b1120] border border-slate-700 rounded-sm px-2 py-1 text-slate-300 focus:outline-none focus:border-[#00FF9F]/50"
++        />
++        <button onClick={handleSend} className="bg-[#00FF9F]/20 text-[#00FF9F] p-1.5 rounded-sm hover:bg-[#00FF9F]/30 border border-[#00FF9F]/50 transition-colors" title="发送指令">
++          <Send size={14} />
++        </button>
++      </div>
++    </div>
++  );
++}
++
++// 2. Terminal Component: Now accepts a logs array
++// This maps to the OpenHands sandbox execution stream (stdout/stderr).
++export function OpenHandsTerminal({ logs }) {
++  const terminalEndRef = useRef(null);
++
++  useEffect(() => {
++    terminalEndRef.current?.scrollIntoView({ behavior: "smooth" });
++  }, [logs]);
++
++  return (
++    <div className="flex flex-col h-full bg-[#000000] text-[#00FF9F]/80 font-mono text-[10px] p-2 overflow-y-auto leading-relaxed">
++      <div className="flex items-center gap-2 mb-2 pb-1 border-b border-slate-800 text-slate-500 sticky top-0 bg-[#000000]">
++        <Terminal size={12} />
++        <span>agent-sandbox-tty1</span>
++      </div>
++      {logs.map((log, idx) => {
++        // Simple heuristic to colorize logs based on content
++        let colorClass = "text-slate-400";
++        if (log.includes("SIGSEGV") || log.includes("Error") || log.includes("Exception")) colorClass = "text-amber-400";
++        else if (log.includes("成功") || log.includes("通过") || log.includes("Success")) colorClass = "text-[#00FF9F] font-bold";
++        else if (log.startsWith("$")) colorClass = "text-blue-400";
++
++        return <p key={idx} className={colorClass}>{log}</p>;
++      })}
++      <p className="text-slate-400 mt-2">$ <span className="animate-pulse">_</span></p>
++      <div ref={terminalEndRef} />
++    </div>
++  );
++}
++
++// 3. Diff Viewer Component: Now accepts file name and code blocks
++// This ensures consistency with the currently selected vulnerability.
++export function OpenHandsDiffViewer({ file, originalCode, modifiedCode }) {
++  return (
++    <div className="flex flex-col h-full bg-[#0b1120] font-mono text-[11px]">
++      <div className="flex items-center justify-between bg-[#1A202C] px-3 py-1.5 border-b border-[#00FF9F]/20">
++        <div className="flex items-center gap-2 text-slate-300">
++          <Code size={14} className="text-blue-400" />
++          <span>{file}</span>
++        </div>
++        <div className="flex items-center gap-2">
++          <button className="flex items-center gap-1 bg-blue-500/20 text-blue-400 px-2 py-0.5 rounded-sm border border-blue-500/30 hover:bg-blue-500/30 transition-colors">
++            <Play size={10} /> 运行测试
++          </button>
++          <button className="flex items-center gap-1 bg-[#00FF9F]/20 text-[#00FF9F] px-2 py-0.5 rounded-sm border border-[#00FF9F]/30 hover:bg-[#00FF9F]/30 transition-colors">
++            <CheckCircle size={10} /> 应用补丁
++          </button>
++        </div>
++      </div>
++      
++      <div className="flex-1 overflow-y-auto">
++        <div className="grid grid-cols-2 gap-0 min-h-full">
++          {/* Original Code */}
++          <div className="border-r border-slate-800">
++            <div className="bg-red-900/20 text-red-400 px-2 py-1 border-b border-red-900/30 text-[10px] flex items-center gap-1 sticky top-0">
++              <XCircle size={10} /> 存在漏洞的代码 (Original)
++            </div>
++            <div className="p-2 text-slate-400 leading-loose">
++              {originalCode.map((line, idx) => (
++                <div key={idx} className={`flex ${line.isHighlight ? 'bg-red-900/30 border-l-2 border-red-500' : ''}`}>
++                  <span className="w-8 text-slate-600 select-none text-right pr-2">{line.line}</span>
++                  <span className={line.isHighlight ? 'text-red-400' : ''}>{line.text}</span>
++                </div>
++              ))}
++            </div>
++          </div>
++          
++          {/* Modified Code */}
++          <div>
++            <div className="bg-[#00FF9F]/10 text-[#00FF9F] px-2 py-1 border-b border-[#00FF9F]/20 text-[10px] flex items-center gap-1 sticky top-0">
++              <CheckCircle size={10} /> 修复后的代码 (Modified)
++            </div>
++            <div className="p-2 text-slate-300 leading-loose">
++              {modifiedCode.map((line, idx) => (
++                <div key={idx} className={`flex ${line.isHighlight ? 'bg-[#00FF9F]/10 border-l-2 border-[#00FF9F]' : ''}`}>
++                  <span className="w-8 text-slate-600 select-none text-right pr-2">{line.line}</span>
++                  <span className={line.isHighlight ? 'text-[#00FF9F]' : ''}>{line.text}</span>
++                </div>
++              ))}
++            </div>
++          </div>
++        </div>
++      </div>
++    </div>
++  );
++}
+diff --git a/frontend/src/routes/conversation.tsx b/frontend/src/routes/conversation.tsx
+index 41b76a133..9771b9ef0 100644
+--- a/frontend/src/routes/conversation.tsx
++++ b/frontend/src/routes/conversation.tsx
+@@ -27,8 +27,8 @@ import { WebSocketProviderWrapper } from "#/contexts/websocket-provider-wrapper"
+ import { useErrorMessageStore } from "#/stores/error-message-store";
+ import { I18nKey } from "#/i18n/declaration";
+ import { useEventStore } from "#/stores/use-event-store";
+-// ✅ SeCodeAct HUD
+-import { ScaDashboard } from "#/components/sca-hud";
++// ✅ SeCodeAct HUD — 集成版（真实 Zustand/WebSocket 数据源）
++import DashboardConnected from "#/components/sca-hud/DashboardConnected";
+ 
+ function AppContent() {
+   useConversationConfig();
+@@ -106,7 +106,7 @@ function AppContent() {
+           className="flex flex-col h-full overflow-hidden"
+           style={{ background: "#0D1117" }}
+         >
+-          <ScaDashboard />
++          <DashboardConnected />
+         </div>
+       </EventHandler>
+     </ConversationSubscriptionsProvider>

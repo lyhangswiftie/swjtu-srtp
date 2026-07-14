@@ -1,0 +1,22 @@
+{
+  "cveId": "CVE-2024-22120",
+  "sourceFile": "/home/ubuntu/securecodeact/samples/cve-2024-22120/audit.c",
+  "diffFile": "/home/ubuntu/securecodeact/reports/TC-SCA-025/patch/patch.diff",
+  "workdir": "/home/ubuntu/securecodeact/reports/TC-SCA-025/patch/workdir",
+  "startedAt": "2026-05-18T13:52:25Z",
+  "stage": "APPLIED",
+  "check_result": {
+    "returncode": 0,
+    "stdout": "",
+    "stderr": "",
+    "command": "git apply --check /home/ubuntu/securecodeact/reports/TC-SCA-025/patch/workdir/adjusted.diff"
+  },
+  "apply_result": {
+    "returncode": 0,
+    "stdout": "",
+    "stderr": "",
+    "command": "git apply /home/ubuntu/securecodeact/reports/TC-SCA-025/patch/workdir/adjusted.diff"
+  },
+  "patchedFile": "/home/ubuntu/securecodeact/reports/TC-SCA-025/patch/workdir/audit.c",
+  "completedAt": "2026-05-18T13:52:25Z"
+}

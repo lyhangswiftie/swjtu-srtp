@@ -1,0 +1,51 @@
+{
+  "schema": "sca-pipeline-summary-v1",
+  "runId": "sca-20260507-143912",
+  "pipelineId": "TC-SCA-025",
+  "cveId": "CVE-2024-22120",
+  "sourceFile": "samples/cve-2024-22120/audit.c",
+  "overallStatus": "PIPELINE_WARN",
+  "generatedAt": "2026-05-07T14:41:45Z",
+  "duration": "4.4s",
+  "stepCounts": {
+    "total": 9,
+    "pass": 7,
+    "warn": 2,
+    "fail": 0,
+    "skip": 0
+  },
+  "gates": {
+    "G1_dry_run": "PASS",
+    "G2_real_run": "PASS",
+    "G3_smoke_test": "PASS",
+    "G4_cpg_stage": "WARN",
+    "G5_poc_stage": "PASS",
+    "G6_patch_stage": "PASS",
+    "G7_report_gen": "PASS"
+  },
+  "artifacts": {
+    "pipeline_run_json": "reports/TC-SCA-025/sca_pipeline_run.json",
+    "pipeline_plan_json": "reports/TC-SCA-025/pipeline-plan.json",
+    "patch_diff": "reports/TC-SCA-025/patch/patch.diff",
+    "patch_guard_json": "reports/TC-SCA-025/patch/patch-guard.json",
+    "patch_apply_json": "reports/TC-SCA-025/patch/patch-apply-result.json",
+    "regression_json": "reports/TC-SCA-025/patch/regression-result.json",
+    "patch_run_json": "reports/TC-SCA-025/patch/patch_run.json"
+  },
+  "patchVerification": {
+    "guardDecision": "PASS",
+    "applyStatus": "UNKNOWN",
+    "regressionStatus": "REGRESSION_PASS",
+    "overallStatus": "PATCH_VERIFIED"
+  },
+  "cpgStats": {
+    "nodeCount": 124,
+    "edgeCount": 124,
+    "source": "inherited_from_TC-SCA-019",
+    "cpgWarning": "CPG 阶段降级（WARN）：流水线执行时沙箱无 Docker/Joern 完整环境，Joern c2cpg.sh 未能在 TC-SCA-025 输出目录生成新的 joern-cpg.json。CPG 证据继承自 TC-SCA-019（audit.c 同一文件，124 nodes / 124 edges），已归档至 reports/TC-SCA-025/cpg/joern-cpg.json，标注 inherited_from_TC-SCA-019。"
+  },
+  "g8Status": "PASS",
+  "g9Status": "PASS",
+  "g10Status": "PASS",
+  "refreshedAt": "2026-05-07T15:21:31Z"
+}

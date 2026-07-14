@@ -1,0 +1,40 @@
+# SecureCodeAct (SCA) Python 依赖清单
+# 版本：v3.0 | 更新日期：2026-05-07
+#
+# 安装方式：
+#   pip install -r requirements.txt
+#
+# 分类说明：
+#   [core]     核心流水线脚本（sca_pipeline.py 等）必须依赖
+#   [optional] 可选工具脚本（neo4j 知识图谱、WebSocket 通信等）
+#   [dev]      开发/测试工具
+
+# ── [core] 核心流水线依赖 ─────────────────────────────────────
+# YAML 配置文件解析（sca_pipeline.py 读取 configs/sca_pipeline.yaml）
+PyYAML>=6.0.2
+
+# HTTP 请求（send_agent_message.py、send_patch_instruction.py）
+requests>=2.32.3
+
+# ── [optional] 可选工具依赖 ───────────────────────────────────
+# Neo4j 知识图谱（scripts/neo4j_*.py）
+# neo4j>=5.27.0
+
+# Flask REST 服务（scripts/neo4j_service.py）
+# flask>=3.1.0
+# flask-cors>=5.0.1
+
+# WebSocket 通信（scripts/send_agent_message.py）
+# websockets>=13.1
+
+# Socket.IO 客户端（scripts/send_patch_instruction.py）
+# python-socketio[asyncio_client]>=5.12.1
+
+# Excel 报告生成（scripts/gen_sca014_*.py）
+# openpyxl>=3.1.5
+# pandas>=2.2.3
+
+# ── [dev] 开发工具 ────────────────────────────────────────────
+# 代码风格检查
+# flake8>=7.0.0
+# black>=24.0.0

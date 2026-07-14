@@ -1,0 +1,23 @@
+=== P0-2: Runtime Container Network Configuration Verification ===
+Container: openhands-runtime-6f0ac117794544679500555e1f388c30
+Date: 2026-04-04
+
+--- Key Findings ---
+HostConfig.NetworkMode: host
+NetworkSettings.Networks: ["host"]
+NetworkSettings.IPAddress: "" (empty - expected for host network)
+NetworkSettings.Gateway: "" (empty - expected for host network)
+NetworkSettings.SandboxKey: /var/run/docker/netns/default
+
+--- Verification ---
+✅ NetworkMode = "host" CONFIRMED
+✅ Container shares host network namespace
+✅ No port mapping needed (uses host ports directly)
+✅ SANDBOX_USE_HOST_NETWORK=true workaround verified
+
+--- docker inspect output (key fields) ---
+{
+  "HostConfig.NetworkMode": "host",
+  "NetworkSettings.Networks": {"host": {"Gateway": "", "IPAddress": ""}},
+  "NetworkSettings.SandboxKey": "/var/run/docker/netns/default"
+}

@@ -1,0 +1,21 @@
+============================= test session starts ==============================
+platform linux -- Python 3.11.0rc1, pytest-9.0.3, pluggy-1.6.0 -- /usr/bin/python3
+cachedir: .pytest_cache
+rootdir: /home/ubuntu/securecodeact
+configfile: pytest.ini
+plugins: anyio-4.11.0
+collecting ... collected 11 items
+
+tests/unit/test_patch_guard.py::TestPatchGuardPass::test_pass_has_no_blocked_reasons PASSED [  9%]
+tests/unit/test_patch_guard.py::TestPatchGuardPass::test_valid_patch_passes PASSED [ 18%]
+tests/unit/test_patch_guard.py::TestPatchGuardBlocked::test_dangerous_commands_blocked PASSED [ 27%]
+tests/unit/test_patch_guard.py::TestPatchGuardBlocked::test_sensitive_path_blocked PASSED [ 36%]
+tests/unit/test_patch_guard.py::TestPatchGuardBlocked::test_system_call_blocked PASSED [ 45%]
+tests/unit/test_patch_guard.py::TestPatchGuardWarn::test_large_deletion_warns PASSED [ 54%]
+tests/unit/test_patch_guard.py::TestPatchGuardMissing::test_missing_diff_file_blocked PASSED [ 63%]
+tests/unit/test_patch_guard.py::TestParseDiff::test_parse_counts_lines PASSED [ 72%]
+tests/unit/test_patch_guard.py::TestParseDiff::test_parse_valid_diff PASSED [ 81%]
+tests/unit/test_patch_guard.py::TestLoadPolicy::test_load_default_when_missing PASSED [ 90%]
+tests/unit/test_patch_guard.py::TestLoadPolicy::test_load_real_policy PASSED [100%]
+
+============================== 11 passed in 0.11s ==============================

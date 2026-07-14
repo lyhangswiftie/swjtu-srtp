@@ -1,0 +1,28 @@
+diff --git a/src/libs/zbxaudit/audit.c b/src/libs/zbxaudit/audit.c
+index a3f8b2c..d7e9f1a 100644
+--- a/src/libs/zbxaudit/audit.c
++++ b/src/libs/zbxaudit/audit.c
+@@ -178,12 +178,15 @@ static void	zbx_audit_entry_append_ip(zbx_audit_entry_t *entry, const char *cli
+ 	char	*value_esc;
+ 
+ 	/* CVE-2024-22120 漏洞修复：使用转义后的字符串替代直接拼接 */
+-	/* 漏洞代码：clientip 未经完整 SQL 转义 */
+-	value_esc = zbx_db_dyn_escape_string(clientip);
+-	zbx_snprintf_alloc(&sql, &sql_alloc, &sql_offset,
+-		", '%s'", clientip);	/* 直接拼接，未使用 value_esc */
++	/* 修复代码：使用转义后的字符串 */
++	value_esc = zbx_db_dyn_escape_string(clientip);
++	zbx_snprintf_alloc(&sql, &sql_alloc,
++		&sql_offset, ", '%s'", value_esc);	/* 使用转义后的 value_esc */
++	zbx_free(value_esc);
+ 
+ 	zbx_db_execute("%s", sql);
+ 	zbx_free(sql);
+ }
+ 
++/* SCA-016 Patch: CVE-2024-22120 SQL Injection Fix
++ * Fix: Replace direct clientip concatenation with properly escaped value_esc
++ * CWE-89: Improper Neutralization of Special Elements used in an SQL Command
++ * CVSS: 9.1 (Critical)
++ * Verified: 2026-04-07
++ */

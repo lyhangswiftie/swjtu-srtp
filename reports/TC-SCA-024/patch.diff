@@ -1,0 +1,15 @@
+--- a/audit.c
++++ b/audit.c
+@@ -36,10 +36,10 @@
+     char sql[1024];
+     char *value_esc = zbx_db_dyn_escape_string(clientip);
+ 
+-    /* VULNERABLE: uses clientip instead of escaped value_esc */
++    /* FIXED (CVE-2024-22120): use escaped value_esc to prevent SQL injection */
+     snprintf(sql, sizeof(sql),
+              "INSERT INTO auditlog(clientip) VALUES('%s')",
+-             clientip);  /* <-- taint sink: should be value_esc */
++             value_esc);  /* <-- fixed: use escaped value */
+ 
+     zbx_db_execute("%s", sql);
+     free(value_esc);

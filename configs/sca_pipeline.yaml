@@ -1,0 +1,81 @@
+version: "1.0"
+pipeline_id: "TC-SCA-025"
+
+default_cve: "CVE-2024-22120"
+default_source: "samples/cve-2024-22120/audit.c"
+default_output: "reports/TC-SCA-025"
+
+execution:
+  fail_fast: false
+  continue_on_warn: true
+  timeout_seconds_per_step: 120
+  require_artifacts: true
+
+steps:
+  cve_consistency:
+    enabled: true
+    description: "CVE 数据一致性检查"
+    command: "python3 scripts/root_cause_analysis.py {source}"
+    output_dir: "{output}"
+
+  cpg_analysis:
+    enabled: true
+    description: "Joern CPG 分析"
+    command: "bash scripts/joern_cpg_smoke.sh {source}"
+    output_dir: "{output}/cpg"
+    artifacts:
+      - "{output}/cpg/joern-cpg.json"
+
+  poc_gate:
+    enabled: true
+    description: "PoC 安全闸门"
+    command: "python3 scripts/poc_gate.py {cve} {output}/poc/sample_poc.py --no-require-sandbox --output {output}/poc"
+    output_dir: "{output}/poc"
+    artifacts:
+      - "{output}/poc/poc_audit.jsonl"
+
+  patch_generate:
+    enabled: true
+    description: "Patch 生成"
+    command: "python3 scripts/gen_fix_patch.py {source} --cve {cve} --output {output}/patch/patch.diff"
+    artifacts:
+      - "{output}/patch/patch.diff"
+
+  patch_guard:
+    enabled: true
+    description: "Patch 安全检查"
+    command: "python3 scripts/patch_guard.py {output}/patch/patch.diff --policy configs/patch_policy.yaml --output {output}/patch/patch-guard.json"
+    artifacts:
+      - "{output}/patch/patch-guard.json"
+
+  patch_apply_check:
+    enabled: true
+    description: "Patch 预检查"
+    command: "python3 scripts/patch_apply.py {source} --diff {output}/patch/patch.diff --check --output-dir {output}/patch"
+    artifacts:
+      - "{output}/patch/patch-apply-result.json"
+
+  patch_apply:
+    enabled: true
+    description: "Patch 临时工作区应用"
+    command: "python3 scripts/patch_apply.py {source} --diff {output}/patch/patch.diff --apply --workdir {output}/patch/workdir --output-dir {output}/patch"
+
+  regression:
+    enabled: true
+    description: "回归验证"
+    command: "python3 scripts/regression_runner.py {source} --diff {output}/patch/patch.diff --cve {cve} --output-dir {output}/patch"
+    artifacts:
+      - "{output}/patch/regression-result.json"
+
+  patch_report:
+    enabled: true
+    description: "修复报告生成"
+    command: "python3 scripts/patch_report.py --output-dir {output}/patch --cve {cve}"
+    artifacts:
+      - "{output}/patch/patch_run.json"
+
+report:
+  markdown: true
+  json: true
+  include_logs: true
+  include_artifacts: true

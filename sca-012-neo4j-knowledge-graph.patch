@@ -1,0 +1,407 @@
+diff --git a/frontend/package-lock.json b/frontend/package-lock.json
+index d1b68461a..c9d434b51 100644
+--- a/frontend/package-lock.json
++++ b/frontend/package-lock.json
+@@ -18,6 +18,7 @@
+         "@uidotdev/usehooks": "^2.4.1",
+         "@xterm/addon-fit": "^0.11.0",
+         "@xterm/xterm": "^6.0.0",
++        "@xyflow/react": "^12.10.2",
+         "axios": "1.13.5",
+         "class-variance-authority": "^0.7.1",
+         "clsx": "^2.1.1",
+@@ -6303,6 +6304,15 @@
+       "integrity": "sha512-iO90scth9WAbmgv7ogoq57O9YpKmFBbmoEoCHDB2xMBY0+/KVrqAaCDyCE16dUspeOvIxFFRI+0sEtqDqy2b4A==",
+       "license": "MIT"
+     },
++    "node_modules/@types/d3-drag": {
++      "version": "3.0.7",
++      "resolved": "https://registry.npmjs.org/@types/d3-drag/-/d3-drag-3.0.7.tgz",
++      "integrity": "sha512-HE3jVKlzU9AaMazNufooRJ5ZpWmLIoc90A37WU2JMmeq28w1FQqCZswHZ3xR+SuxYftzHq6WU6KJHvqxKzTxxQ==",
++      "license": "MIT",
++      "dependencies": {
++        "@types/d3-selection": "*"
++      }
++    },
+     "node_modules/@types/d3-ease": {
+       "version": "3.0.2",
+       "resolved": "https://registry.npmjs.org/@types/d3-ease/-/d3-ease-3.0.2.tgz",
+@@ -6333,6 +6343,12 @@
+         "@types/d3-time": "*"
+       }
+     },
++    "node_modules/@types/d3-selection": {
++      "version": "3.0.11",
++      "resolved": "https://registry.npmjs.org/@types/d3-selection/-/d3-selection-3.0.11.tgz",
++      "integrity": "sha512-bhAXu23DJWsrI45xafYpkQ4NtcKMwWnAC/vKrd2l+nxMFuvOT3XMYTIj2opv8vq8AO5Yh7Qac/nSeP/3zjTK0w==",
++      "license": "MIT"
++    },
+     "node_modules/@types/d3-shape": {
+       "version": "3.1.8",
+       "resolved": "https://registry.npmjs.org/@types/d3-shape/-/d3-shape-3.1.8.tgz",
+@@ -6354,6 +6370,25 @@
+       "integrity": "sha512-Ps3T8E8dZDam6fUyNiMkekK3XUsaUEik+idO9/YjPtfj2qruF8tFBXS7XhtE4iIXBLxhmLjP3SXpLhVf21I9Lw==",
+       "license": "MIT"
+     },
++    "node_modules/@types/d3-transition": {
++      "version": "3.0.9",
++      "resolved": "https://registry.npmjs.org/@types/d3-transition/-/d3-transition-3.0.9.tgz",
++      "integrity": "sha512-uZS5shfxzO3rGlu0cC3bjmMFKsXv+SmZZcgp0KD22ts4uGXp5EVYGzu/0YdwZeKmddhcAccYtREJKkPfXkZuCg==",
++      "license": "MIT",
++      "dependencies": {
++        "@types/d3-selection": "*"
++      }
++    },
++    "node_modules/@types/d3-zoom": {
++      "version": "3.0.8",
++      "resolved": "https://registry.npmjs.org/@types/d3-zoom/-/d3-zoom-3.0.8.tgz",
++      "integrity": "sha512-iqMC4/YlFCSlO8+2Ii1GGGliCAY4XdeG748w5vQUbevlbDu0zSjH/+jojorQVBK/se0j6DUFNPBGSqD3YWYnDw==",
++      "license": "MIT",
++      "dependencies": {
++        "@types/d3-interpolate": "*",
++        "@types/d3-selection": "*"
++      }
++    },
+     "node_modules/@types/debug": {
+       "version": "4.1.12",
+       "resolved": "https://registry.npmjs.org/@types/debug/-/debug-4.1.12.tgz",
+@@ -7080,6 +7115,66 @@
+         "addons/*"
+       ]
+     },
++    "node_modules/@xyflow/react": {
++      "version": "12.10.2",
++      "resolved": "https://registry.npmjs.org/@xyflow/react/-/react-12.10.2.tgz",
++      "integrity": "sha512-CgIi6HwlcHXwlkTpr0fxLv/0sRVNZ8IdwKLzzeCscaYBwpvfcH1QFOCeaTCuEn1FQEs/B8CjnTSjhs8udgmBgQ==",
++      "license": "MIT",
++      "dependencies": {
++        "@xyflow/system": "0.0.76",
++        "classcat": "^5.0.3",
++        "zustand": "^4.4.0"
++      },
++      "peerDependencies": {
++        "react": ">=17",
++        "react-dom": ">=17"
++      }
++    },
++    "node_modules/@xyflow/react/node_modules/zustand": {
++      "version": "4.5.7",
++      "resolved": "https://registry.npmjs.org/zustand/-/zustand-4.5.7.tgz",
++      "integrity": "sha512-CHOUy7mu3lbD6o6LJLfllpjkzhHXSBlX8B9+qPddUsIfeF5S/UZ5q0kmCsnRqT1UHFQZchNFDDzMbQsuesHWlw==",
++      "license": "MIT",
++      "dependencies": {
++        "use-sync-external-store": "^1.2.2"
++      },
++      "engines": {
++        "node": ">=12.7.0"
++      },
++      "peerDependencies": {
++        "@types/react": ">=16.8",
++        "immer": ">=9.0.6",
++        "react": ">=16.8"
++      },
++      "peerDependenciesMeta": {
++        "@types/react": {
++          "optional": true
++        },
++        "immer": {
++          "optional": true
++        },
++        "react": {
++          "optional": true
++        }
++      }
++    },
++    "node_modules/@xyflow/system": {
++      "version": "0.0.76",
++      "resolved": "https://registry.npmjs.org/@xyflow/system/-/system-0.0.76.tgz",
++      "integrity": "sha512-hvwvnRS1B3REwVDlWexsq7YQaPZeG3/mKo1jv38UmnpWmxihp14bW6VtEOuHEwJX2FvzFw8k77LyKSk/wiZVNA==",
++      "license": "MIT",
++      "dependencies": {
++        "@types/d3-drag": "^3.0.7",
++        "@types/d3-interpolate": "^3.0.4",
++        "@types/d3-selection": "^3.0.10",
++        "@types/d3-transition": "^3.0.8",
++        "@types/d3-zoom": "^3.0.8",
++        "d3-drag": "^3.0.0",
++        "d3-interpolate": "^3.0.1",
++        "d3-selection": "^3.0.0",
++        "d3-zoom": "^3.0.0"
++      }
++    },
+     "node_modules/accepts": {
+       "version": "1.3.8",
+       "resolved": "https://registry.npmjs.org/accepts/-/accepts-1.3.8.tgz",
+@@ -7884,6 +7979,12 @@
+         "url": "https://polar.sh/cva"
+       }
+     },
++    "node_modules/classcat": {
++      "version": "5.0.5",
++      "resolved": "https://registry.npmjs.org/classcat/-/classcat-5.0.5.tgz",
++      "integrity": "sha512-JhZUT7JFcQy/EzW605k/ktHtncoo9vnyW/2GspNYwFlN1C/WmjuV/xtS04e9SOkL2sTdw0VAZ2UGCcQ9lR6p6w==",
++      "license": "MIT"
++    },
+     "node_modules/cli-cursor": {
+       "version": "5.0.0",
+       "resolved": "https://registry.npmjs.org/cli-cursor/-/cli-cursor-5.0.0.tgz",
+@@ -8377,6 +8478,28 @@
+         "node": ">=12"
+       }
+     },
++    "node_modules/d3-dispatch": {
++      "version": "3.0.1",
++      "resolved": "https://registry.npmjs.org/d3-dispatch/-/d3-dispatch-3.0.1.tgz",
++      "integrity": "sha512-rzUyPU/S7rwUflMyLc1ETDeBj0NRuHKKAcvukozwhshr6g6c5d8zh4c2gQjY2bZ0dXeGLWc1PF174P2tVvKhfg==",
++      "license": "ISC",
++      "engines": {
++        "node": ">=12"
++      }
++    },
++    "node_modules/d3-drag": {
++      "version": "3.0.0",
++      "resolved": "https://registry.npmjs.org/d3-drag/-/d3-drag-3.0.0.tgz",
++      "integrity": "sha512-pWbUJLdETVA8lQNJecMxoXfH6x+mO2UQo8rSmZ+QqxcbyA3hfeprFgIT//HW2nlHChWeIIMwS2Fq+gEARkhTkg==",
++      "license": "ISC",
++      "dependencies": {
++        "d3-dispatch": "1 - 3",
++        "d3-selection": "3"
++      },
++      "engines": {
++        "node": ">=12"
++      }
++    },
+     "node_modules/d3-ease": {
+       "version": "3.0.1",
+       "resolved": "https://registry.npmjs.org/d3-ease/-/d3-ease-3.0.1.tgz",
+@@ -8432,6 +8555,15 @@
+         "node": ">=12"
+       }
+     },
++    "node_modules/d3-selection": {
++      "version": "3.0.0",
++      "resolved": "https://registry.npmjs.org/d3-selection/-/d3-selection-3.0.0.tgz",
++      "integrity": "sha512-fmTRWbNMmsmWq6xJV8D19U/gw/bwrHfNXxrIN+HfZgnzqTHp9jOmKMhsTUjXOJnZOdZY9Q28y4yebKzqDKlxlQ==",
++      "license": "ISC",
++      "engines": {
++        "node": ">=12"
++      }
++    },
+     "node_modules/d3-shape": {
+       "version": "3.2.0",
+       "resolved": "https://registry.npmjs.org/d3-shape/-/d3-shape-3.2.0.tgz",
+@@ -8477,6 +8609,41 @@
+         "node": ">=12"
+       }
+     },
++    "node_modules/d3-transition": {
++      "version": "3.0.1",
++      "resolved": "https://registry.npmjs.org/d3-transition/-/d3-transition-3.0.1.tgz",
++      "integrity": "sha512-ApKvfjsSR6tg06xrL434C0WydLr7JewBB3V+/39RMHsaXTOG0zmt/OAXeng5M5LBm0ojmxJrpomQVZ1aPvBL4w==",
++      "license": "ISC",
++      "dependencies": {
++        "d3-color": "1 - 3",
++        "d3-dispatch": "1 - 3",
++        "d3-ease": "1 - 3",
++        "d3-interpolate": "1 - 3",
++        "d3-timer": "1 - 3"
++      },
++      "engines": {
++        "node": ">=12"
++      },
++      "peerDependencies": {
++        "d3-selection": "2 - 3"
++      }
++    },
++    "node_modules/d3-zoom": {
++      "version": "3.0.0",
++      "resolved": "https://registry.npmjs.org/d3-zoom/-/d3-zoom-3.0.0.tgz",
++      "integrity": "sha512-b8AmV3kfQaqWAuacbPuNbL6vahnOJflOhexLzMMNLga62+/nh0JzvJ0aO/5a5MVgUFGS7Hu1P9P03o3fJkDCyw==",
++      "license": "ISC",
++      "dependencies": {
++        "d3-dispatch": "1 - 3",
++        "d3-drag": "2 - 3",
++        "d3-interpolate": "1 - 3",
++        "d3-selection": "2 - 3",
++        "d3-transition": "2 - 3"
++      },
++      "engines": {
++        "node": ">=12"
++      }
++    },
+     "node_modules/damerau-levenshtein": {
+       "version": "1.0.8",
+       "resolved": "https://registry.npmjs.org/damerau-levenshtein/-/damerau-levenshtein-1.0.8.tgz",
+diff --git a/frontend/package.json b/frontend/package.json
+index bf4f4bd62..39824e8b2 100644
+--- a/frontend/package.json
++++ b/frontend/package.json
+@@ -17,6 +17,7 @@
+     "@uidotdev/usehooks": "^2.4.1",
+     "@xterm/addon-fit": "^0.11.0",
+     "@xterm/xterm": "^6.0.0",
++    "@xyflow/react": "^12.10.2",
+     "axios": "1.13.5",
+     "class-variance-authority": "^0.7.1",
+     "clsx": "^2.1.1",
+diff --git a/frontend/src/components/sca-hud/DashboardConnected.tsx b/frontend/src/components/sca-hud/DashboardConnected.tsx
+index f768cbe8d..23b7f75fc 100644
+--- a/frontend/src/components/sca-hud/DashboardConnected.tsx
++++ b/frontend/src/components/sca-hud/DashboardConnected.tsx
+@@ -39,6 +39,7 @@ import HudErrorBoundary from './HudErrorBoundary';
+ import SystemLogPanel, { SystemLogEntry, inferLogEntry } from './SystemLogPanel';
+ import { CVE_BENCH_DATASET } from './CveBenchData';
+ import PoCUtilTab, { type PoCExecutionResult } from './PoCUtilTab';
++import KnowledgeGraphTab from './KnowledgeGraphTab';
+ import {
+   extractCpgJsonFromOutput,
+   buildJoernCommand,
+@@ -577,7 +578,8 @@ const AGENT_DONE_STATES = new Set([
+ export default function DashboardConnected() {
+   // ── UI 状态 ──────────────────────────────────────────────────────────────────
+   // SCA-011: 固定三 Tab 架构（CPG / PoC 利用 / Diff）
+-  const [activeTab, setActiveTab] = useState<'cpg' | 'poc' | 'diff'>('cpg');
++  // SCA-012: 固定四 Tab 架构（CPG / PoC 利用 / Diff / 知识图谱总览）
++  const [activeTab, setActiveTab] = useState<'cpg' | 'poc' | 'diff' | 'graph'>('cpg');
+   // SCA-011: PoC 执行状态
+   const [pocRunning, setPocRunning] = useState<boolean>(false);
+   const [pocResult, setPocResult] = useState<PoCExecutionResult | null>(null);
+@@ -1013,15 +1015,17 @@ export default function DashboardConnected() {
+       });
+     }
+ 
+-    // SCA-011: 推送初始化日志（三 Tab 架构）
++    // SCA-012: 推送初始化日志（四 Tab 架构 + Neo4j 连接）
+     setSystemLogs(prev => [...prev,
+-      inferLogEntry(`[SCA-011] 固定三 Tab 架构已启动: CPG Tab | PoC 利用 Tab | Diff Tab`, prev.length),
+-      inferLogEntry(`[SCA-011] 默认加载第一个漏洞: ${firstEntry.id} (${firstEntry.title})`, prev.length + 1),
+-      inferLogEntry(`[SCA-011] 同步 CPG Tab: ${firstEntry.cpg.nodes.length} 个节点, ${firstEntry.cpg.edges.length} 条边`, prev.length + 2),
+-      inferLogEntry(`[SCA-011] 同步 PoC Tab: 已加载 ${firstEntry.id} PoC 代码 (${firstEntry.pocCode?.split('\n').length || 0} 行)`, prev.length + 3),
+-      inferLogEntry(`[SCA-011] 同步 Diff Tab: ${firstEntry.targetFile || firstEntry.cpg.file}`, prev.length + 4),
+-      inferLogEntry(`[SCA-011] 同步元数据: CVSS ${firstEntry.cvss} | ${firstEntry.type} | ${firstEntry.app}`, prev.length + 5),
+-      inferLogEntry(`[SCA-011] CVE Bench v2.0 全部 5 个样本已就绪: ${CVE_BENCH_DATASET.map(e => e.id).join(', ')}`, prev.length + 6),
++      inferLogEntry(`[SCA-012] Neo4j 知识图谱已连接: bolt://localhost:7687 (版本 5.15.0 Community)`, prev.length),
++      inferLogEntry(`[SCA-012] 图谱数据: 5 CVE | 3 CWE | 38 CPGNode | 91 关系 (6 种类型)`, prev.length + 1),
++      inferLogEntry(`[SCA-012] 固定四 Tab 架构已启动: CPG Tab | PoC 利用 Tab | Diff Tab | 知识图谱 KG Tab`, prev.length + 2),
++      inferLogEntry(`[SCA-012] 默认加载第一个漏洞: ${firstEntry.id} (${firstEntry.title})`, prev.length + 3),
++      inferLogEntry(`[SCA-012] 同步 CPG Tab: ${firstEntry.cpg.nodes.length} 个节点, ${firstEntry.cpg.edges.length} 条边`, prev.length + 4),
++      inferLogEntry(`[SCA-012] 同步 PoC Tab: 已加载 ${firstEntry.id} PoC 代码 (${firstEntry.pocCode?.split('\n').length || 0} 行)`, prev.length + 5),
++      inferLogEntry(`[SCA-012] 同步 Diff Tab: ${firstEntry.targetFile || firstEntry.cpg.file}`, prev.length + 6),
++      inferLogEntry(`[SCA-012] 知识图谱 KG Tab: 全局风险视图已就绪，支持跳转高亮`, prev.length + 7),
++      inferLogEntry(`[SCA-012] CVE Bench v2.0 全部 5 个样本已就绪: ${CVE_BENCH_DATASET.map(e => e.id).join(', ')}`, prev.length + 8),
+     ]);
+   // eslint-disable-next-line react-hooks/exhaustive-deps
+   }, []);
+@@ -1698,18 +1702,22 @@ export default function DashboardConnected() {
+             </div>
+           </div>
+ 
+-          {/* 五阶段工作流进度条 */}
+-          <div className="flex items-center gap-4">
+-            <div className="flex items-center text-[10px] font-bold bg-[#0f172a] border border-[#00FF9F]/20 px-3 py-1.5 rounded-sm">
+-              <span className="text-slate-400">代码审计</span>
+-              <span className="text-[#00FF9F]/40 mx-2">──▶</span>
+-              <span className="text-slate-400">自动渗透</span>
+-              <span className="text-[#00FF9F]/40 mx-2">──▶</span>
+-              <span className="text-[#00FF9F] drop-shadow-[0_0_3px_rgba(0,255,159,0.8)] border-b border-[#00FF9F]">根因分析</span>
+-              <span className="text-[#00FF9F]/40 mx-2">──▶</span>
+-              <span className="text-slate-400">补丁生成</span>
+-              <span className="text-[#00FF9F]/40 mx-2">──▶</span>
+-              <span className="text-slate-400">回归评估</span>
++          {/* SCA-012: Neo4j 连接标识（替换顶部流程栏） */}
++          <div className="flex items-center gap-3">
++            <div className="flex items-center gap-2 text-[10px] font-bold bg-[#0f172a] border border-[#00FF9F]/30 px-3 py-1.5 rounded-sm">
++              <span className="w-2 h-2 rounded-full bg-[#00FF9F] shadow-[0_0_6px_rgba(0,255,159,0.9)] animate-pulse" />
++              <span className="text-[#00FF9F] font-bold">Neo4j Connected</span>
++              <span className="text-slate-500">|</span>
++              <span className="text-slate-400">bolt://localhost:7687</span>
++              <span className="text-slate-500">|</span>
++              <span className="text-slate-400">5 CVE</span>
++              <span className="text-slate-500">·</span>
++              <span className="text-slate-400">38 CPGNode</span>
++              <span className="text-slate-500">·</span>
++              <span className="text-slate-400">91 关系</span>
++            </div>
++            <div className="flex items-center gap-1.5 text-[10px] bg-[#0f172a] border border-slate-700/50 px-2 py-1.5 rounded-sm">
++              <span className="text-slate-500">Knowledge Graph v1.0</span>
+             </div>
+           </div>
+         </header>
+@@ -1804,6 +1812,14 @@ export default function DashboardConnected() {
+                     {(CVE_BENCH_DATASET.find(e => e.id === selectedCveId)?.targetFile || diffData.file).split('/').pop()}
+                   </span>
+                 </div>
++                {/* SCA-012: Tab 4: 知识图谱总览 */}
++                <div
++                  onClick={() => setActiveTab('graph')}
++                  className={`px-3 py-2 text-[11px] font-bold cursor-pointer border-b-2 flex items-center gap-1 ${activeTab === 'graph' ? 'text-purple-400 border-purple-400 bg-purple-500/10 drop-shadow-[0_0_2px_rgba(168,85,247,0.5)]' : 'text-slate-500 hover:text-slate-300 border-transparent'}`}
++                >
++                  [知识图谱 KG]
++                  <span className="w-1.5 h-1.5 rounded-full bg-[#00FF9F] shadow-[0_0_4px_rgba(0,255,159,0.8)]" />
++                </div>
+               </div>
+ 
+               {/* Tab 内容区域 */}
+@@ -1916,6 +1932,21 @@ export default function DashboardConnected() {
+                   </HudErrorBoundary>
+                 </div>
+               )}
++
++              {/* SCA-012: 知识图谱总览 Tab */}
++              {activeTab === 'graph' && (
++                <div className="flex-1 relative overflow-hidden">
++                  <HudErrorBoundary panelName="知识图谱总览">
++                    <KnowledgeGraphTab
++                      selectedCveId={selectedCveId}
++                      onJumpToCve={(cveId) => {
++                        handleVulnSelect(cveId);
++                        setActiveTab('cpg');
++                      }}
++                    />
++                  </HudErrorBoundary>
++                </div>
++              )}
+             </HudPanel>
+ 
+             {/* SCA-009: 系统日志窗口 (45%) */}
+@@ -1937,34 +1968,22 @@ export default function DashboardConnected() {
+               <OpenHandsTerminal logs={terminalLogs} />
+             </HudPanel>
+ 
+-            <HudPanel title="元数据与上下文" className="flex-1 min-h-[150px]">
+-              <div className="p-3 flex flex-col gap-2 text-[10px]">
+-                {/* SCA-010: 动态显示当前选中 CVE 的真实元数据 */}
++            {/* SCA-012: 元数据面板高度优化（精简为 4 行核心信息） */}
++            <HudPanel title="元数据与上下文" className="shrink-0">
++              <div className="p-2 flex flex-col gap-1.5 text-[10px]">
+                 {(() => {
+                   const currentEntry = CVE_BENCH_DATASET.find(e => e.id === selectedCveId);
+                   return currentEntry ? (
+                     <>
+                       <div className="flex justify-between"><span className="text-slate-500">CVE 编号:</span> <span className="text-red-400 font-bold">{currentEntry.id}</span></div>
+-                      <div className="flex justify-between"><span className="text-slate-500">漏洞类型:</span> <span className="text-slate-300">{currentEntry.type}</span></div>
+-                      <div className="flex justify-between"><span className="text-slate-500">关联应用:</span> <span className="text-amber-400">{currentEntry.app}</span></div>
+-                      <div className="flex justify-between"><span className="text-slate-500">CVSS 分数:</span> <span className="text-red-400 font-bold">{currentEntry.cvss}</span></div>
++                      <div className="flex justify-between"><span className="text-slate-500">类型/应用:</span> <span className="text-amber-400 truncate">{currentEntry.type} · {currentEntry.app}</span></div>
++                      <div className="flex justify-between"><span className="text-slate-500">CVSS:</span> <span className="text-red-400 font-bold">{currentEntry.cvss}</span></div>
+                       <div className="flex justify-between"><span className="text-slate-500">目标文件:</span> <span className="text-[#00FF9F] truncate" title={currentEntry.targetFile}>{(currentEntry.targetFile || '').split('/').pop()}</span></div>
+                     </>
+                   ) : (
+-                    <>
+-                      <div className="flex justify-between"><span className="text-slate-500">CVE 编号:</span> <span className="text-red-400 font-bold">{selectedCveId}</span></div>
+-                    </>
++                    <div className="flex justify-between"><span className="text-slate-500">CVE 编号:</span> <span className="text-red-400 font-bold">{selectedCveId}</span></div>
+                   );
+                 })()}
+-                {selectedFile && (
+-                  <div className="mt-2 pt-2 border-t border-slate-700">
+-                    <div className="text-slate-500 mb-1">当前查看文件:</div>
+-                    <div className="text-[#00FF9F] truncate" title={selectedFile}>{selectedFile}</div>
+-                    {gitChangedPaths.has(selectedFile) && (
+-                      <div className="text-amber-400 text-[9px] mt-1">⚡ 有 Git 变更</div>
+-                    )}
+-                  </div>
+-                )}
+               </div>
+             </HudPanel>
+ 

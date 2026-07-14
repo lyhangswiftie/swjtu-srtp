@@ -1,0 +1,40 @@
+version: "1.0"
+
+allowed_patch_targets:
+  - "samples/cve-2024-22120/audit.c"
+  - "src/libs/zbxaudit/audit.c"
+  - "lib/import.php"
+  - "CustomerThreadController.php"
+  - "audit.c"
+
+blocked_paths:
+  - ".env"
+  - "id_rsa"
+  - "authorized_keys"
+  - "/etc/passwd"
+  - "/etc/shadow"
+  - "secrets/"
+  - "private_key"
+  - ".pem"
+  - ".key"
+  - "credentials"
+
+blocked_added_patterns:
+  - "system\\s*\\("
+  - "popen\\s*\\("
+  - "eval\\s*\\("
+  - "exec\\s*\\("
+  - "shell_exec\\s*\\("
+  - "chmod\\s+777"
+  - "curl\\s+.*\\|\\s*bash"
+  - "wget\\s+.*\\|\\s*bash"
+  - "nc\\s+-e"
+  - "bash\\s+-i\\s+>&"
+  - "rm\\s+-rf\\s+/"
+  - "mkfs\\."
+  - "dd\\s+if=/dev/zero"
+
+max_deleted_lines: 50
+max_added_lines: 200
+require_unified_diff: true
+require_target_match: true

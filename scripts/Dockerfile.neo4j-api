@@ -1,0 +1,14 @@
+FROM python:3.12-slim
+
+WORKDIR /app
+
+# Install Neo4j Python driver, Flask, and Flask-CORS
+RUN pip install --no-cache-dir neo4j>=5.27.0 flask>=3.1.0 flask-cors>=5.0.1
+
+# Copy the service and import scripts
+COPY scripts/neo4j_service.py /app/neo4j_service.py
+COPY scripts/neo4j_import.py /app/neo4j_import.py
+COPY scripts/neo4j_cross_cve_relations.py /app/neo4j_cross_cve_relations.py
+
+# Default command: run the Flask API
+CMD ["python", "neo4j_service.py"]

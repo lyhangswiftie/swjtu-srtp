@@ -1,0 +1,9 @@
+[TC-SCA-024/G3-G4] 补丁应用器启动
+[TC-SCA-024/G3-G4] 源文件: samples/cve-2024-22120/audit.c
+[TC-SCA-024/G3-G4] diff 文件: reports/TC-SCA-024/patch.diff
+[TC-SCA-024/G3-G4] 模式: --check
+============================================================
+[TC-SCA-024/G3-G4] 临时工作区: /tmp/sca-024-patch-uc4mx53u
+[TC-SCA-024/G3] ✅ git apply --check 通过
+
+SCA_APPLY_JSON:{"cveId": "CVE-2024-22120", "sourceFile": "samples/cve-2024-22120/audit.c", "diffFile": "reports/TC-SCA-024/patch.diff", "workdir": "/tmp/sca-024-patch-uc4mx53u", "startedAt": "2026-05-07T14:04:38Z", "stage": "CHECK_PASSED", "check_result": {"returncode": 0, "stdout": "", "stderr": "", "command": "git apply --check /tmp/sca-024-patch-uc4mx53u/adjusted.diff"}, "completedAt": "2026-05-07T14:04:38Z"}

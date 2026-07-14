@@ -1,0 +1,44 @@
+=== TC-SCA-019 验证日志 ===
+时间: 2026-05-18T13:48:04Z
+Issue: #36 [TC-SCA-019] 真实 Joern CPG 端到端链路打通
+
+--- G1: CPG JSON 文件存在性检查 ---
+-rw-rw-r-- 1 ubuntu ubuntu 42K May 18 09:32 reports/TC-SCA-019/joern-cpg.json
+✅ joern-cpg.json 存在
+
+--- G3: CPG JSON Schema 校验 ---
+nodes: 124
+edges: 124
+meta keys: ['tool', 'format', 'nodeCount', 'edgeCount', 'sourceTypes', 'edgeTypes']
+✅ Schema 校验通过: nodes/edges/meta 字段完整
+✅ 节点数=124, 边数=124
+
+--- G4: 前端 CpgGraph.tsx joernError prop 检查 ---
+498:  joernError?: string | null;
+509:  joernError,
+643:      {joernError && (
+664:            {joernError}
+✅ joernError prop 已实现
+
+--- G2: joern-smoke.log 存在性检查 ---
+-rw-rw-r-- 1 ubuntu ubuntu 75K May 18 09:32 reports/TC-SCA-019/joern-smoke.log
+✅ joern-smoke.log 存在
+2054 reports/TC-SCA-019/joern-smoke.log
+
+--- G7: 证据归档检查 ---
+REPORT.md
+cpg-dot-export
+cpg_from_dot.json
+g5-cpg-real-render-agent-running.webp
+g5-cpg-real-render-full-hud.webp
+g6-joern-error-banner.webp
+joern-cpg.json
+joern-smoke.log
+✅ evidence/TC-SCA-019/ 已归档
+
+--- 截图文件检查 ---
+-rw-rw-r-- 1 ubuntu ubuntu 216K May 18 09:32 reports/TC-SCA-019/g5-cpg-real-render-agent-running.webp
+-rw-rw-r-- 1 ubuntu ubuntu 191K May 18 09:32 reports/TC-SCA-019/g5-cpg-real-render-full-hud.webp
+-rw-rw-r-- 1 ubuntu ubuntu 218K May 18 09:32 reports/TC-SCA-019/g6-joern-error-banner.webp
+
+=== TC-SCA-019 验证结论: ✅ PASS (G0-G7 全部通过) ===
