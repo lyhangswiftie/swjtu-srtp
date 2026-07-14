@@ -9,7 +9,7 @@ RUN npm ci --legacy-peer-deps
 COPY frontend ./
 RUN npm run build
 
-FROM python:3.12-slim-trixie AS base
+FROM python:3.14-slim-trixie AS base
 FROM base AS backend-builder
 
 WORKDIR /app
